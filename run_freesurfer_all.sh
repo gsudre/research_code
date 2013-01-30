@@ -3,9 +3,9 @@
 #
 # Gustavo Sudre, 01/2013
 
-AFNI_folder='~/MEG_structural/afni'
+AFNI_folder="$HOME/MEG_structural/afni"
 spacing=5
-model_script='~/research_code/MEG_sensor2mneSourceSpace.sh'
+model_script="$HOME/research_code/MEG_sensor2mneSourceSpace.sh"
 
 # for all subjects in the afni folder, check if there is already a Freesurfer
 # subject folder. If not, start the process
