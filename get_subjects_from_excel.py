@@ -4,7 +4,7 @@
 # Gustavo Sudre, 01/2013
 
 
-fname = r'/Users/sudregp/Documents/For_Gustavo/Bethany_MEGRest_Analysis_Notes_Sept11.xlsx'
+fname = r'/Users/sudregp/Documents/Bethany_MEGRest_Analysis_Notes_Sept11.xlsx'
 
 from openpyxl.reader.excel import load_workbook
 wb = load_workbook(filename=fname)
