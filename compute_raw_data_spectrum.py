@@ -25,11 +25,6 @@ NFFT = 2048  # the FFT size (NFFT). Ideally a power of 2
 
 subjs = get_subjects_from_excel()
 
-# subjs2 = ['WYWSZZZX', 'XDMHBFPE', 'XEGEHIHT', 'XGMVZXXZ']
-
-# need to check, but apparently there's not FIF file for RDUEUILH
-del(subjs['RDUEUILH'])
-
 # let's do one subject to get the dimensions
 subj = subjs.keys()[0]
 raw_fname = data_path + subj + '_rest_LP100_HP0.6_CP3_DS300_raw.fif'
