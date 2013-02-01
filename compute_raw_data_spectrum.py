@@ -7,48 +7,58 @@ This script shows how to compute the power spectral density (PSD)
 of measurements on a raw dataset. Based on the example code in the MNE website.
 
 """
-# Authors: Gustavo Sudre
+# Authors: Gustavo Sudre, 01/2013
 
 import numpy as np
 
-from mne import fiff, read_proj, read_selection
+from mne import fiff
 from mne.time_frequency import compute_raw_psd
+
+from spreadsheet import get_subjects_from_excel
 
 ###############################################################################
 # Set parameters
-data_path = '/Users/sudregp/Documents/20110909/'
-raw_fname = data_path + 'rest.fif'
-
-# Setup for reading the raw data
-raw = fiff.Raw(raw_fname)
-
+data_path = '/Users/sudregp/MEG_data/fifs/'
 tmin, tmax = 10, 130  # use the first 2min of data after the first 10s
 fmin, fmax = 1, 228  # look at frequencies between 1 and 228
 NFFT = 2048  # the FFT size (NFFT). Ideally a power of 2
-psds, freqs = compute_raw_psd(raw, tmin=tmin, tmax=tmax,
-                              fmin=fmin, fmax=fmax, NFFT=NFFT, n_jobs=1,
-                              plot=False, proj=False)
 
+subjs = get_subjects_from_excel()
 
-# Convert PSDs to dB
-psds = 10 * np.log10(psds)  
+# subjs2 = ['WYWSZZZX', 'XDMHBFPE', 'XEGEHIHT', 'XGMVZXXZ']
 
-###############################################################################
-# Compute mean and standard deviation accross channels and then plot
-def plot_psds(freqs, psds, fill_color):
-    psd_mean = np.mean(psds, axis=0)
-    psd_std = np.std(psds, axis=0)
-    hyp_limits = (psd_mean - psd_std, psd_mean + psd_std)
+# need to check, but apparently there's not FIF file for RDUEUILH
+del(subjs['RDUEUILH'])
 
-    pl.plot(freqs, psd_mean)
-    pl.fill_between(freqs, hyp_limits[0], y2=hyp_limits[1], color=fill_color,
-                    alpha=0.5)
+# let's do one subject to get the dimensions
+subj = subjs.keys()[0]
+raw_fname = data_path + subj + '_rest_LP100_HP0.6_CP3_DS300_raw.fif'
+raw = fiff.Raw(raw_fname)
+picks = fiff.pick_channels_regexp(raw.info['ch_names'], 'M..-*')
+tmp, freqs = compute_raw_psd(raw, tmin=tmin, tmax=tmax, picks=picks,
+        fmin=fmin, fmax=fmax, NFFT=NFFT, n_jobs=1,
+        plot=False, proj=False)
+psds = np.zeros_like(np.tile(tmp, [len(subjs), 1, 1]))
 
-import pylab as pl
-pl.figure()
-plot_psds(freqs, psds, (0, 0, 1, .3))
-pl.xlabel('Freq (Hz)')
-pl.ylabel('Power Spectral Density (dB/Hz)')
-pl.legend(['Without SSP'])
-pl.show()
+# Loop through all the subjects we find. Calculate the power in all channels
+for idx, subj in enumerate(subjs):
+    raw_fname = data_path + subj + '_rest_LP100_HP0.6_CP3_DS300_raw.fif'
 
+    # Setup for reading the raw data
+    raw = fiff.Raw(raw_fname)
+
+    psds[idx], freqs = compute_raw_psd(raw, tmin=tmin, tmax=tmax, picks=picks,
+        fmin=fmin, fmax=fmax, NFFT=NFFT, n_jobs=1,
+        plot=False, proj=False)
+
+# Creating labels based on ADHD diagnostic
+adhd = np.zeros(len(subjs), dtype=bool)
+for idx, subj in enumerate(subjs):
+    if subjs[subj].find('ADHD') >= 0 or subjs[subj].find('proband') >= 0:
+        adhd[idx] = True
+    elif subjs[subj].find('NV') >= 0 or subjs[subj].find('unaffected') >= 0:
+        adhd[idx] = False
+    else:
+        print "Don't know status of subject " + subj
+
+np.savez('../MEG_data/analysis/rest/good_PSDS', psds=psds, subjs=subjs, adhd=adhd, info=raw.info, freqs=freqs, picks=picks)
