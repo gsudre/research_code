@@ -39,8 +39,8 @@ cd ~
 mne_setup_forward_model --homog --subject $SUBJECT --surf --ico 4 | tee -a "$SUBJECT"_mne_model.log
 
 # Create high-density head model for co-registration
-mkheadsurf -subjid $SUBJECT -srcvol T1.mgz
-mne_surf2bem --surf $SUBJECTS_DIR/$SUBJECT/surf/lh.seghead --id 4 --check --fif $SUBJECTS_DIR/$SUBJECT/bem/"$SUBJECT"-head-dense.fif
+mkheadsurf -subjid $SUBJECT -srcvol T1.mgz | tee -a "$SUBJECT"_mne_model.log
+mne_surf2bem --surf $SUBJECTS_DIR/$SUBJECT/surf/lh.seghead --id 4 --check --fif $SUBJECTS_DIR/$SUBJECT/bem/"$SUBJECT"-head-dense.fif | tee -a "$SUBJECT"_mne_model.log
 cd  $SUBJECTS_DIR/$SUBJECT/bem
 mv "$SUBJECT"-head.fif "$SUBJECT"-head-sparse.fif
 cp "$SUBJECT"-head-dense.fif "$SUBJECT"-head.fif
