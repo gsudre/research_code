@@ -35,5 +35,11 @@ for idx, bar in enumerate(limits):
     band_psd[:, idx] = np.mean(np.mean(psds[:, :, index], axis=2), axis=1)
 
 clf = RandomForestClassifier(n_estimators=10)
-clf = clf.fit(band_psd, adhd)
+clf = clf.fit(band_psd, adhd.astype(int))
 clf.predict(band_psd)
+
+
+from sklearn import cross_validation, svm
+svc = svm.SVC(C=1, kernel='linear')
+kfold = cross_validation.KFold(len(adhd), n_folds=3)
+cross_validation.cross_val_score(svc, band_psd, adhd, cv=kfold, n_jobs=-1)
