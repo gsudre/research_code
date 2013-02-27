@@ -1,8 +1,10 @@
-import mne
 import numpy as np
+import dsp_utils as dsp
+import pylab as pl
 
+import pdb
 
-def calculate_weights(forward, cov, reg=0):
+def calculate_weights(forward, cov, reg=0, norm_weights=True):
 
     inv_Cb = np.linalg.pinv(cov.data[:306, :306] + reg * np.eye(306))
     L = forward['sol']['data']
@@ -45,11 +47,37 @@ def calculate_weights(forward, cov, reg=0):
     else:
         optimal_orientation = forward['source_rr']
 
-    weight = np.zeros([forward['nsource'], 306])
+    print 'CHANGE ME!'
+    weights = np.zeros([forward['nsource'], 306])
     for dip in range(forward['nsource']):
         gain = L[:306, dip]
         num = np.dot(gain.T, inv_Cb)
         den = np.dot(num, gain)  # this is a scalar
-        weight[dip, :] = num / den
+        weights[dip, :] = num / den
 
-    return weight
+    if norm_weights:
+        normed_weights = np.sum(weights ** 2, axis=-1) ** (1. / 2)
+        weights = weights / normed_weights[:, np.newaxis]
+
+    return weights
+
+
+def find_best_voxels(stc, rois, bands):
+    # Returns the indices of the voxels with maximum power per band in each ROI, in the format roi x band. stc is SourceEstimate, rois is a list of Labels, and bands is a list of length 2 vectors
+
+    fs = 1. / stc.tstep
+    # pdb.set_trace()
+
+    best_voxels = np.zeros([len(rois), len(bands)])
+    for idr, roi in enumerate(rois):
+        roi_activity = stc.in_label(roi)
+        psds, freqs = dsp.compute_psd(roi_activity.data, fs)
+        pl.figure()
+        pl.plot(freqs, psds.T)
+        pl.show()
+        for idb, band in enumerate(bands):
+            index = np.logical_and(freqs >= band[0], freqs <= band[1])
+            band_psd = np.mean(psds[:, index], axis=1)
+            # pdb.set_trace()
+            best_voxels[idr, idb] = band_psd.argmax()
+    return best_voxels
