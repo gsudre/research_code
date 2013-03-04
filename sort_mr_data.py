@@ -74,6 +74,16 @@ for file in dicoms:
         tar.close()
         rtCopied = 'Y'
 
+        # checking if we have all the physiological data we need
+        ecgData = glob.glob(targetFolder + '/E' + scanId + '/ECG_*')
+        respData = glob.glob(targetFolder + '/E' + scanId + '/Resp_*')
+        if len(ecgData) != len(respData):
+            print '\tDifferent numbers of respiration and ECG data!'
+        elif len(ecgData) == 1:
+            print '\tOnly found one set of physiological data: check that it is a child!'
+        elif len(ecgData) != 4:
+            print '\tFound unexpected number of physiological files (%d)!' % len(ecgData)
+
     # moving extracted files inside maskId folder
     folder2move = glob.glob(targetFolder + '/*' + mrn + '/*')
     shutil.move(folder2move[0], targetFolder)
