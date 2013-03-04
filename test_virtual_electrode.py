@@ -117,16 +117,18 @@ plot_sparse_source_estimates(fwd['src'], stc, bgcolor=(1, 1, 1), opacity=0.5, hi
 '''
 
 selected_voxels = ve.find_best_voxels(src, labels, bands)
-label_activity = np.zeros((len(labels)))
+num_trials = 5
+num_samples = 100
+label_activity = np.zeros([num_trials, len(labels), num_samples])
 pli = []
-fmin=4
-fmax=8
-for band in arange(len(bands)):
+for band in np.arange(len(bands)):
     label_ts = np.zeros((len(labels), ntimes))
     for idl, label in enumerate(labels):
         label_signal = src.in_label(label)
         label_ts[idl, :] = label_signal.data[selected_voxels[idl, band], :]
-    con = mne.connectivity.spectral_connectivity(label_signal,
-        method='wpli2_debiased', mode='multitaper', sfreq=Fs, fmin=fmin,
-        fmax=fmax, faverage=True, mt_adaptive=True, n_jobs=2)
+        # here we pick 5 artifact-free trials with 4096 samples (about 13s in the original paper) and use that as trials
+        for trial in np.arange(num_trials):
+            label_activity[trial, idl, :] = label_ts[idl, trial:trial + num_samples]
+    con = mne.connectivity.spectral_connectivity(label_activity,
+        method='pli', mode='multitaper', sfreq=Fs, fmin=bands[band][0], fmax=bands[band][1], faverage=True, mt_adaptive=True, n_jobs=2)
     pli.append(con)
