@@ -2,7 +2,7 @@
 # by Gustavo Sudre, March 2013
 import mne
 import numpy as np
-import pdb
+
 
 def group_consecutives(vals, step=1):
     """Return list of consecutive lists of numbers from vals (number list)."""
@@ -18,16 +18,20 @@ def group_consecutives(vals, step=1):
         expect = v + step
     return result
 
-def find_good_segments(subj, data_path='/Users/sudregp/MEG_data/fifs/', threshold=4000e-13, window=5, good_chan_limit=250):
 
-
+def find_good_segments(subj, data_path='/Users/sudregp/MEG_data/fifs/',
+    threshold=4000e-13, window=5, good_chan_limit=250):
 
     raw_fname = data_path + subj + '_rest_LP100_HP0.6_CP3_DS300_raw.fif'
     raw = mne.fiff.Raw(raw_fname, preload=True)
     picks = mne.fiff.pick_channels_regexp(raw.info['ch_names'], 'M..-*')
 
-    ''' The algorithm is quite simple: think of the signal as a matrix of channels x time, where time consists of windows of 1s. 
-    This matrix is boolean, based on wehther that time period crossed the threshold. Then, we add over the channels, and look for how many consecutive time windows had the score equal to the number of channels. '''
+    ''' The algorithm is quite simple: think of the signal as a matrix
+    of channels x time, where time consists of windows of 1s. This
+    matrix is boolean, based on wehther that time period crossed the
+    threshold. Then, we add over the channels, and look for how many
+    consecutive time windows had the score equal to the number of
+    channels. '''
 
     data, time = raw[picks, :]
     num_windows = np.floor((time[-1] - time[0]) / window)
@@ -44,6 +48,7 @@ def find_good_segments(subj, data_path='/Users/sudregp/MEG_data/fifs/', threshol
     good_chunk = np.sum(good_chunk, axis=0)
 
     best_seq_len = 0
+    best_seq = [0]  # just so we can return something
     num_good_channels = len(picks)
     while best_seq_len <= 1 and num_good_channels >= good_chan_limit:
         # pdb.set_trace()
@@ -63,6 +68,9 @@ def find_good_segments(subj, data_path='/Users/sudregp/MEG_data/fifs/', threshol
         print 'Hit minimum number of allowed bad channels. Stopping.\n'
     else:
         # formatting the output
-        print 'Longest window: {}s ({} to {}), {} channels\n'.format(best_seq_len * window, time_window_start[best_seq[0]], time_window_start[best_seq[-1]] + window, num_good_channels)
+        print 'Longest window: {}s ({} to {}), {} channels\n'.format(
+            best_seq_len * window, time_window_start[best_seq[0]],
+            time_window_start[best_seq[-1]] + window, num_good_channels)
 
-
+    return (time_window_start[best_seq[0]],
+        time_window_start[best_seq[-1]] + window, num_good_channels)
