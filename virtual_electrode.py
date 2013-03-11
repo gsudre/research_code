@@ -1,5 +1,9 @@
 import numpy as np
 import dsp_utils as dsp
+import pdb
+import multiprocessing
+
+job_num = int(multiprocessing.cpu_count()/2)
 
 
 def calculate_weights(forward, cov, reg=0, norm_weights=True):
@@ -68,7 +72,7 @@ def find_best_voxels(stc, rois, bands):
     best_voxels = np.zeros([len(rois), len(bands)])
     for idr, roi in enumerate(rois):
         roi_activity = stc.in_label(roi)
-        psds, freqs = dsp.compute_psd(roi_activity.data, fs, n_jobs=6)
+        psds, freqs = dsp.compute_psd(roi_activity.data, fs, n_jobs=job_num)
         for idb, band in enumerate(bands):
             index = np.logical_and(freqs >= band[0], freqs <= band[1])
             band_psd = np.mean(psds[:, index], axis=1)
@@ -76,7 +80,7 @@ def find_best_voxels(stc, rois, bands):
     return best_voxels
 
 
-def compute_all_labels_pli(subj):
+def compute_all_labels_pli(subj, tmax=np.Inf):
 
     import find_good_segments as fgs
     import mne
@@ -85,6 +89,12 @@ def compute_all_labels_pli(subj):
 
     # Load real data as templates
     start, end, num_chans = fgs.find_good_segments(subj, threshold=3500e-15)
+
+    if start == 0:
+        start = start + 3
+
+    if end - start > tmax:
+        start = end - tmax
 
     bands = ([.5, 4], [4, 8], [8, 13], [13, 30], [30, 58])
     data_path = '/Users/sudregp/MEG_data/fifs/'
@@ -107,7 +117,7 @@ def compute_all_labels_pli(subj):
     cov = mne.compute_raw_data_covariance(raw, tmin=start, tmax=end, picks=picks)
     weights = calculate_weights(fwd, cov, reg=0)
 
-    data, times = raw[picks, :]
+    data, times = raw[picks, raw.time_as_index(start):raw.time_as_index(end)]
     print 'Multiplying data by beamformer weights...'
     sol = np.dot(weights, data)
     src = mne.SourceEstimate(sol, (fwd['src'][0]['vertno'], fwd['src'][1]['vertno']), times[0], times[1] - times[0])
@@ -125,12 +135,15 @@ def compute_all_labels_pli(subj):
         label_ts = np.zeros((len(labels), src.data.shape[1]))
         for idl, label in enumerate(labels):
             label_signal = src.in_label(label)
-            label_ts[idl, :] = label_signal.data[selected_voxels[idl, band], :]
+            label_ts = label_signal.data[selected_voxels[idl, band], :]
 
+            cur = 0
             for trial in np.arange(num_trials):
-                label_activity[trial, idl, :] = label_ts[idl, trial:trial + num_samples]
+                label_activity[trial, idl, :] = label_ts[cur:cur + num_samples]
+                cur = cur + num_samples
+
         con = mne.connectivity.spectral_connectivity(label_activity,
-            method='pli', mode='multitaper', sfreq=raw.info['sfreq'], fmin=bands[band][0], fmax=bands[band][1], faverage=True, mt_adaptive=True, n_jobs=6)[0]
+            method='pli', mode='multitaper', sfreq=raw.info['sfreq'], fmin=bands[band][0], fmax=bands[band][1], faverage=True, mt_adaptive=True, n_jobs=job_num)[0]
         pli.append(np.squeeze(con))
 
     return pli, labels, bands
