@@ -1,3 +1,9 @@
+'''
+
+Set of function to test the stability of PLI estimates after varying the amount of data that goes in for calculating the covariance matrix.
+
+'''
+
 import pylab as pl
 import numpy as np
 import virtual_electrode as ve
@@ -27,43 +33,50 @@ def plot_pli(A, ax=None, limits=None, cbar=True):
         cbar = fig.colorbar(mappable, ax=ax)
 
 
-# def plot_many_pli():
-data_len = np.hstack((np.r_[220:70:-20], 70))
-band_names = ['delta', 'theta', 'alpha', 'beta', 'gamma']
-subplot_inds = [2, 3, 4, 6, 7, 8, 10, 11, 12]
-subj = 'CSBWHYOV'
+def plot_many_pli(subj, plis, data_len, reg):
 
-# first, the complete pli
-pli, labels, bands = ve.compute_all_labels_pli(subj)
-plis = [pli]
+    band_names = ['delta', 'theta', 'alpha', 'beta', 'gamma']
+    subplot_inds = [2, 3, 4, 6, 7, 8, 10, 11, 12]
+    # now that we're done with the heavy computation, let's plot every band
+    for plot_band, band_name in enumerate(band_names):
 
-# then compute it for the chopped data
-for l in data_len:
-    pli, labels, bands = ve.compute_all_labels_pli(subj, tmax=l)
-    plis.append(pli)
+        pl.figure()
 
-# now that we're done with the heavy computation, let's plot every band
-for plot_band, band_name in enumerate(band_names):
+        # figure out the color axis
+        vmin = np.inf
+        vmax = -np.inf
+        for l in range(len(data_len)):
+            if vmax < np.amax(plis[l][plot_band]):
+                vmax = np.amax(plis[l][plot_band])
+            if vmin > np.amin(plis[l][plot_band]):
+                vmin = np.amin(plis[l][plot_band])
 
-    fig = pl.figure()
+        ax = pl.subplot(3, 4, 5)
+        plot_pli(plis[0][plot_band], ax=ax, limits=[vmin, vmax], cbar=True)
+        ax.set_title(band_name + '_' + str(240))
 
-    # figure out the color axis
-    vmin = np.inf
-    vmax = -np.inf
-    for l in range(len(data_len)):
-        if vmax < np.amax(plis[l][plot_band]):
-            vmax = np.amax(plis[l][plot_band])
-        if vmin > np.amin(plis[l][plot_band]):
-            vmin = np.amin(plis[l][plot_band])
+        for axid, l in enumerate(data_len):
+            ax = pl.subplot(3, 4, subplot_inds[axid])
+            plot_pli(plis[axid+1][plot_band], ax=ax, limits=[vmin, vmax], cbar=False)
+            ax.set_title(data_len[axid])
 
-    ax = pl.subplot(3, 4, 5)
-    plot_pli(plis[0][plot_band], ax=ax, limits=[vmin, vmax], cbar=True)
-    ax.set_title(band_name + '_' + str(240))
+        pl.savefig(subj + '_' + band_name + 'reg' + str(reg) + '.png')
+        pl.show(block=False)
 
-    for axid, l in enumerate(data_len):
-        ax = pl.subplot(3, 4, subplot_inds[axid])
-        plot_pli(plis[axid+1][plot_band], ax=ax, limits=[vmin, vmax], cbar=False)
-        ax.set_title(data_len[axid])
 
-    pl.savefig(subj + '_' + band_name + '.png')
-    pl.show(block=False)
+def compute_stability(subj, fix_vertex=True, reg=0):
+
+    data_len = np.hstack((np.r_[220:70:-20], 70))
+    # first, the complete pli
+    pli, labels, bands, selected_voxels = ve.compute_all_labels_pli(subj, reg=reg)
+    plis = [pli]
+
+    # then compute it for the chopped data
+    if not fix_vertex:
+        selected_voxels = None
+
+    for l in data_len:
+        pli, labels, bands, junk = ve.compute_all_labels_pli(subj, tmax=l, reg=reg, selected_voxels=selected_voxels)
+        plis.append(pli)
+
+    return plis, labels

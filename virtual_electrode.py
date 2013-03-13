@@ -80,7 +80,7 @@ def find_best_voxels(stc, rois, bands):
     return best_voxels
 
 
-def compute_all_labels_pli(subj, tmax=np.Inf):
+def compute_all_labels_pli(subj, tmax=np.Inf, reg=0, selected_voxels=None):
 
     import find_good_segments as fgs
     import mne
@@ -115,14 +115,18 @@ def compute_all_labels_pli(subj, tmax=np.Inf):
 
     picks = mne.fiff.pick_channels_regexp(raw.info['ch_names'], 'M..-*')
     cov = mne.compute_raw_data_covariance(raw, tmin=start, tmax=end, picks=picks)
-    weights = calculate_weights(fwd, cov, reg=0)
+    weights = calculate_weights(fwd, cov, reg=reg)
 
     data, times = raw[picks, raw.time_as_index(start):raw.time_as_index(end)]
     print 'Multiplying data by beamformer weights...'
     sol = np.dot(weights, data)
     src = mne.SourceEstimate(sol, (fwd['src'][0]['vertno'], fwd['src'][1]['vertno']), times[0], times[1] - times[0])
 
-    selected_voxels = find_best_voxels(src, labels, bands)
+    # we can either figure out what vertices to use based on the overall power in each band, or just use pre-selected ones
+    if selected_voxels is not None:
+        print 'WARNING: using pre-selected vertices!'
+    else:
+        selected_voxels = find_best_voxels(src, labels, bands)
 
     # here we pick 5 artifact-free trials with 4096 samples (about 13s in the original paper) and use that as trials
     num_trials = 5
@@ -146,4 +150,4 @@ def compute_all_labels_pli(subj, tmax=np.Inf):
             method='pli', mode='multitaper', sfreq=raw.info['sfreq'], fmin=bands[band][0], fmax=bands[band][1], faverage=True, mt_adaptive=True, n_jobs=job_num)[0]
         pli.append(np.squeeze(con))
 
-    return pli, labels, bands
+    return pli, labels, bands, selected_voxels
