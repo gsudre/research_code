@@ -80,7 +80,7 @@ def find_best_voxels(stc, rois, bands):
     return best_voxels
 
 
-def compute_all_labels_pli(subj, tmax=np.Inf, reg=0, selected_voxels=None):
+def compute_all_labels_pli(subj, tmax=np.Inf, reg=0, selected_voxels=None, rand_phase=False):
 
     import find_good_segments as fgs
     import mne
@@ -140,6 +140,11 @@ def compute_all_labels_pli(subj, tmax=np.Inf, reg=0, selected_voxels=None):
         for idl, label in enumerate(labels):
             label_signal = src.in_label(label)
             label_ts = label_signal.data[selected_voxels[idl, band], :]
+
+            # if we're randomizing the phase (whilst preserving power), then we offset the ROI time series by some random value
+            if rand_phase:
+                offset = np.random.randint(0, data.shape[1])
+                label_ts = np.roll(label_ts, offset, axis=1)
 
             cur = 0
             for trial in np.arange(num_trials):
