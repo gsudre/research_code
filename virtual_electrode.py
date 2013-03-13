@@ -143,8 +143,8 @@ def compute_all_labels_pli(subj, tmax=np.Inf, reg=0, selected_voxels=None, rand_
 
             # if we're randomizing the phase (whilst preserving power), then we offset the ROI time series by some random value
             if rand_phase:
-                offset = np.random.randint(0, data.shape[1])
-                label_ts = np.roll(label_ts, offset, axis=1)
+                offset = np.random.randint(0, len(label_ts))
+                label_ts = np.roll(label_ts, offset)
 
             cur = 0
             for trial in np.arange(num_trials):
