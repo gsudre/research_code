@@ -1,10 +1,11 @@
 import virtual_electrode as ve
 import numpy as np
 import multiprocessing
+import env
 
 job_num = int(multiprocessing.cpu_count())
 
-fid = open('../maps/MEG_adults_good_ADHDs.txt', 'r')
+fid = open(env.maps + 'MEG_adults_good_ADHDs.txt', 'r')
 
 # counting how many subjects we have
 subjs = fid.readlines()
@@ -47,4 +48,4 @@ for r in range(num_perms):
 fid.close()
 
 import time
-np.savez('rand_plis_ADHD_' + str(int(time.time())), rand_plis=rand_plis)
+np.savez(env.results + 'rand_plis_ADHD_' + str(int(time.time())), rand_plis=rand_plis)

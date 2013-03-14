@@ -1,5 +1,6 @@
 import numpy as np
 import dsp_utils as dsp
+import env
 
 
 # import multiprocessing
@@ -97,8 +98,8 @@ def compute_all_labels_pli(subj, tmax=np.Inf, reg=0, selected_voxels=None, rand_
         start = end - tmax
 
     bands = ([.5, 4], [4, 8], [8, 13], [13, 30], [30, 58])
-    data_path = '/Users/sudregp/MEG_data/fifs/'
-    fwd_path = '/Users/sudregp/MEG_data/analysis/rest/'
+    data_path = env.data + '/MEG_data/fifs/'
+    fwd_path = env.data + '/MEG_data/analysis/rest/'
 
     raw = mne.fiff.Raw(data_path + subj + '_rest_LP100_HP0.6_CP3_DS300_raw.fif', preload=True)  # preloading makes computing the covariance a lot faster
     fwd_fname = fwd_path + subj + '_rest_LP100_HP0.6_CP3_DS300_raw-5-fwd.fif'
