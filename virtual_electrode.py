@@ -121,13 +121,13 @@ def compute_all_labels_pli(subj, tmax=np.Inf, reg=0, selected_voxels=None, rand_
     data, times = raw[picks, raw.time_as_index(start):raw.time_as_index(end)]
     print 'Multiplying data by beamformer weights...'
     sol = np.dot(weights, data)
-    src = mne.SourceEstimate(sol, (fwd['src'][0]['vertno'], fwd['src'][1]['vertno']), times[0], times[1] - times[0])
+    src = mne.SourceEstimate(sol, [fwd['src'][0]['vertno'], fwd['src'][1]['vertno']], times[0], times[1] - times[0])
 
     # we can either figure out what vertices to use based on the overall power in each band, or just use pre-selected ones
     if selected_voxels is not None:
         print 'WARNING: using pre-selected vertices!'
     else:
-        selected_voxels = find_best_voxels(src, labels, bands)
+        selected_voxels = find_best_voxels(src, labels, bands, job_num)
 
     # here we pick 5 artifact-free trials with 4096 samples (about 13s in the original paper) and use that as trials
     num_trials = 5
