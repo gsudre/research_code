@@ -1,9 +1,9 @@
 import numpy as np
 import dsp_utils as dsp
-import pdb
-import multiprocessing
 
-job_num = int(multiprocessing.cpu_count()/2)
+
+# import multiprocessing
+# job_num = int(multiprocessing.cpu_count()/2)
 
 
 def calculate_weights(forward, cov, reg=0, norm_weights=True):
@@ -64,7 +64,7 @@ def calculate_weights(forward, cov, reg=0, norm_weights=True):
     return weights
 
 
-def find_best_voxels(stc, rois, bands):
+def find_best_voxels(stc, rois, bands, job_num=1):
     # Returns the indices of the voxels with maximum power per band in each ROI, in the format roi x band. stc is SourceEstimate, rois is a list of Labels, and bands is a list of length 2 vectors
 
     fs = 1. / stc.tstep
@@ -80,7 +80,7 @@ def find_best_voxels(stc, rois, bands):
     return best_voxels
 
 
-def compute_all_labels_pli(subj, tmax=np.Inf, reg=0, selected_voxels=None, rand_phase=False):
+def compute_all_labels_pli(subj, tmax=np.Inf, reg=0, selected_voxels=None, rand_phase=False, job_num=1):
 
     import find_good_segments as fgs
     import mne
