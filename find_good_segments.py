@@ -2,7 +2,7 @@
 # by Gustavo Sudre, March 2013
 import mne
 import numpy as np
-
+import env
 
 def group_consecutives(vals, step=1):
     """Return list of consecutive lists of numbers from vals (number list)."""
@@ -19,7 +19,7 @@ def group_consecutives(vals, step=1):
     return result
 
 
-def find_good_segments(subj, data_path='/Users/sudregp/MEG_data/fifs/',
+def find_good_segments(subj, data_path=env.data+'/MEG_data/fifs/',
     threshold=4000e-13, window=5, good_chan_limit=250):
 
     raw_fname = data_path + subj + '_rest_LP100_HP0.6_CP3_DS300_raw.fif'
