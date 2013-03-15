@@ -1,5 +1,6 @@
 import numpy as np
 import dsp_utils as dsp
+import mne
 import env
 
 
@@ -81,59 +82,52 @@ def find_best_voxels(stc, rois, bands, job_num=1):
     return best_voxels
 
 
-def compute_all_labels_pli(subj, tmax=np.Inf, reg=0, selected_voxels=None, rand_phase=False, job_num=1):
-
+def localize_activity(subj, tmax=np.Inf, clean_only=True, reg=0):
     import find_good_segments as fgs
-    import mne
-    import os
-    import glob
 
-    # Load real data as templates
-    start, end, num_chans = fgs.find_good_segments(subj, threshold=3500e-15)
-
-    if start == 0:
-        start = start + 3
-
-    if end - start > tmax:
-        start = end - tmax
-
-    bands = ([.5, 4], [4, 8], [8, 13], [13, 30], [30, 58])
     data_path = env.data + '/MEG_data/fifs/'
     fwd_path = env.data + '/MEG_data/analysis/rest/'
-
-    raw = mne.fiff.Raw(data_path + subj + '_rest_LP100_HP0.6_CP3_DS300_raw.fif', preload=True)  # preloading makes computing the covariance a lot faster
     fwd_fname = fwd_path + subj + '_rest_LP100_HP0.6_CP3_DS300_raw-5-fwd.fif'
+
+    # preloading makes computing the covariance a lot faster
+    raw = mne.fiff.Raw(data_path + subj + '_rest_LP100_HP0.6_CP3_DS300_raw.fif', preload=True)
+
+    picks = mne.fiff.pick_channels_regexp(raw.info['ch_names'], 'M..-*')
 
     # we don't need to choose picks because we only work with MEG channels, and
     # all channels are good
     fwd = mne.read_forward_solution(fwd_fname)
 
-    labels_folder = os.environ['SUBJECTS_DIR'] + '/' + subj + '/labels/'
-    label_names = glob.glob(labels_folder + '/*.label')
+    # Load real data as templates
+    if clean_only:
+        start, end, num_chans = fgs.find_good_segments(subj, threshold=3500e-15)
+        if start == 0:
+            start = start + 3
 
-    print 'Reading subject labels...'
-    labels = [mne.read_label(ln) for ln in label_names]
+        if end - start > tmax:
+            start = end - tmax
 
-    picks = mne.fiff.pick_channels_regexp(raw.info['ch_names'], 'M..-*')
-    cov = mne.compute_raw_data_covariance(raw, tmin=start, tmax=end, picks=picks)
+        cov = mne.compute_raw_data_covariance(raw, tmin=start, tmax=end, picks=picks)
+    else:
+        cov = mne.compute_raw_data_covariance(raw, picks=picks)
+
     weights = calculate_weights(fwd, cov, reg=reg)
 
     data, times = raw[picks, raw.time_as_index(start):raw.time_as_index(end)]
     print 'Multiplying data by beamformer weights...'
     sol = np.dot(weights, data)
     src = mne.SourceEstimate(sol, [fwd['src'][0]['vertno'], fwd['src'][1]['vertno']], times[0], times[1] - times[0])
+    return src
 
-    # we can either figure out what vertices to use based on the overall power in each band, or just use pre-selected ones
-    if selected_voxels is not None:
-        print 'WARNING: using pre-selected vertices!'
-    else:
-        selected_voxels = find_best_voxels(src, labels, bands, job_num)
 
+def compute_pli(src, labels, selected_voxels, bands, randomize=False, job_num=1):
     # here we pick 5 artifact-free trials with 4096 samples (about 13s in the original paper) and use that as trials
     num_trials = 5
     num_samples = 4096
     label_activity = np.zeros([num_trials, len(labels), num_samples])
     pli = []
+
+    sfreq = 1. / (src.time[1] - src.time[0])
 
     # The voxels selected in each label change based on the band so we have to put the bands loop outside, instead of sending the same signal to spectral_connectivity and passing in several bands
     for band in np.arange(len(bands)):
@@ -143,7 +137,7 @@ def compute_all_labels_pli(subj, tmax=np.Inf, reg=0, selected_voxels=None, rand_
             label_ts = label_signal.data[selected_voxels[idl, band], :]
 
             # if we're randomizing the phase (whilst preserving power), then we offset the ROI time series by some random value
-            if rand_phase:
+            if randomize:
                 offset = np.random.randint(0, len(label_ts))
                 label_ts = np.roll(label_ts, offset)
 
@@ -152,8 +146,44 @@ def compute_all_labels_pli(subj, tmax=np.Inf, reg=0, selected_voxels=None, rand_
                 label_activity[trial, idl, :] = label_ts[cur:cur + num_samples]
                 cur = cur + num_samples
 
-        con = mne.connectivity.spectral_connectivity(label_activity,
-            method='pli', mode='multitaper', sfreq=raw.info['sfreq'], fmin=bands[band][0], fmax=bands[band][1], faverage=True, mt_adaptive=True, n_jobs=job_num)[0]
+        con = mne.connectivity.spectral_connectivity(label_activity, method='pli', mode='multitaper', sfreq=sfreq, fmin=bands[band][0], fmax=bands[band][1], faverage=True, mt_adaptive=True, n_jobs=job_num)[0]
+
         pli.append(np.squeeze(con))
+
+
+def compute_all_labels_pli(subj, selected_voxels=None, rand_phase=0, job_num=1, tmax=np.Inf, reg=0):
+
+    import os
+    import glob
+
+    bands = ([.5, 4], [4, 8], [8, 13], [13, 30], [30, 58])
+
+    labels_folder = os.environ['SUBJECTS_DIR'] + '/' + subj + '/labels/'
+    label_names = glob.glob(labels_folder + '/*.label')
+
+    print 'Reading subject labels...'
+    labels = [mne.read_label(ln) for ln in label_names]
+
+    src = localize_activity(subj, tmax=tmax, reg=reg)
+
+    # we can either figure out what vertices to use based on the overall power in each band, or just use pre-selected ones
+    if selected_voxels is not None:
+        print 'WARNING: using pre-selected vertices!'
+    else:
+        selected_voxels = find_best_voxels(src, labels, bands, job_num)
+
+    if rand_phase == 0:
+        pli = compute_pli(src, labels, selected_voxels, bands, job_num=job_num)
+    else:
+        rand_plis = np.zeros([rand_phase, len(bands), len(labels), len(labels)])
+        for r in range(rand_phase):
+            print '==================================='
+            print '========  Permutation ' + str(r+1) + ' ==========='
+            print '==================================='
+            pli = compute_pli(src, labels, selected_voxels, bands, job_num=job_num, randomize=True)
+            for band in range(len(bands)):
+                rand_plis[r, band, :, :] = pli[band]
+
+        np.savez(env.results + 'rand_' + str(rand_phase) + '_plis_' + subj, rand_plis=rand_plis)
 
     return pli, labels, bands, selected_voxels
