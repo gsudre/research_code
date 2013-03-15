@@ -149,6 +149,7 @@ def compute_pli(src, labels, selected_voxels, bands, randomize=False, job_num=1)
         con = mne.connectivity.spectral_connectivity(label_activity, method='pli', mode='multitaper', sfreq=sfreq, fmin=bands[band][0], fmax=bands[band][1], faverage=True, mt_adaptive=True, n_jobs=job_num)[0]
 
         pli.append(np.squeeze(con))
+        return pli
 
 
 def compute_all_labels_pli(subj, selected_voxels=None, rand_phase=0, job_num=1, tmax=np.Inf, reg=0):

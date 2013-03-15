@@ -16,6 +16,6 @@ subj_voxels = res['subj_voxels'][()]
 
 for subj, voxels in subj_voxels.iteritems():
     print '==================================='
-    print '======  Subject ' + subj + ' ========='
+    print '=======  Subject ' + subj + ' ========='
     print '==================================='
     pli, labels, bands, junk = ve.compute_all_labels_pli(subj, rand_phase=num_perms, selected_voxels=voxels, job_num=job_num)
