@@ -127,7 +127,7 @@ def compute_pli(src, labels, selected_voxels, bands, randomize=False, job_num=1)
     label_activity = np.zeros([num_trials, len(labels), num_samples])
     pli = []
 
-    sfreq = 1. / (src.time[1] - src.time[0])
+    sfreq = 1. / (src.times[1] - src.times[0])
 
     # The voxels selected in each label change based on the band so we have to put the bands loop outside, instead of sending the same signal to spectral_connectivity and passing in several bands
     for band in np.arange(len(bands)):
