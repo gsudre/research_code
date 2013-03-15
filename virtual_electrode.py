@@ -176,6 +176,7 @@ def compute_all_labels_pli(subj, selected_voxels=None, rand_phase=0, job_num=1, 
     if rand_phase == 0:
         pli = compute_pli(src, labels, selected_voxels, bands, job_num=job_num)
     else:
+        import time
         rand_plis = np.zeros([rand_phase, len(bands), len(labels), len(labels)])
         for r in range(rand_phase):
             print '==================================='
@@ -185,6 +186,6 @@ def compute_all_labels_pli(subj, selected_voxels=None, rand_phase=0, job_num=1, 
             for band in range(len(bands)):
                 rand_plis[r, band, :, :] = pli[band]
 
-        np.savez(env.results + 'rand_' + str(rand_phase) + '_plis_' + subj, rand_plis=rand_plis)
+        np.savez(env.results + 'rand_' + str(rand_phase) + '_plis_' + subj + '_' + str(int(time.time())), rand_plis=rand_plis)
 
     return pli, labels, bands, selected_voxels

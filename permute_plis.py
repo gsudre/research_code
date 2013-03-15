@@ -3,7 +3,7 @@ import numpy as np
 import multiprocessing
 import env
 
-job_num = 1  #int(multiprocessing.cpu_count())
+job_num = 6  #int(multiprocessing.cpu_count())
 
 num_perms = 2
 
