@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import stats
 import env
+import mne
 
 pcc = [50, 46]
 par = [14, 62]
@@ -84,5 +85,47 @@ for b in range(NV.shape[1]):
             t, p = stats.ttest_ind(A, B, axis=0, equal_var=True)
             all_ps.append(p)
 
+reject_fdr, pval_fdr = mne.stats.fdr_correction(all_ps)
 
 
+def mirror(A):
+    # makes A a mirror matrix (mirrowing the lower triangle)
+    n = A.shape[0]
+    A[np.triu_indices(n)] = A.T[np.triu_indices(n)]
+    return A
+
+
+#################
+
+# since the above didn't yield anything, let's try to do the analysis in the paper and see how many ROIs have a significant connection profile
+res = np.load('/Users/sudregp/results/compiled_rand.npz')
+rand_adhd = np.mean(res['rand_ADHD'][()], axis=1)
+rand_nv = np.mean(res['rand_NV'][()], axis=1)
+nv_mean_rand_pli = np.zeros([100, 5, 68])
+adhd_mean_rand_pli = np.zeros([100, 5, 68])
+for r in range(100):
+    for b in range(5):
+        m = mirror(rand_nv[r, b, :, :])
+        # m = np.ma.masked_equal(rand_nv[r, b, :, :], 0)
+        nv_mean_rand_pli[r, b, :] = np.mean(m, axis=0)
+        m = mirror(rand_adhd[r, b, :, :])
+        adhd_mean_rand_pli[r, b, :] = np.mean(m, axis=0)
+adhd_thres = np.amax(adhd_mean_rand_pli, axis=2)
+nv_thres = np.amax(nv_mean_rand_pli, axis=2)
+
+nv = np.zeros([5, 68])
+adhd = np.zeros([5, 68])
+for r in range(100):
+    for b in range(5):
+        m = mirror(meanNV[b, :, :])
+        # m = np.ma.masked_equal(rand_nv[r, b, :, :], 0)
+        nv[b, :] = np.mean(m, axis=0)
+        m = mirror(meanADHD[b, :, :])
+        adhd[b, :] = np.mean(m, axis=0)
+
+nv_pvals = np.zeros_like(nv)
+adhd_pvals = np.zeros_like(adhd)
+for b in range(5):
+    for l in range(68):
+        nv_pvals[b, l] = np.sum(nv_thres[:, b] >= nv[b, l]) / 100.
+        adhd_pvals[b, l] = np.sum(adhd_thres[:, b] >= adhd[b, l]) / 100.
