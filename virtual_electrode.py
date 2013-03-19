@@ -120,6 +120,21 @@ def localize_activity(subj, tmax=np.Inf, clean_only=True, reg=0):
     return src
 
 
+def localize_epochs(epochs, fwd, reg=0):
+    ''' Returns a list of Sourceestimates, one per Epoch '''
+
+    cov = mne.compute_covariance(epochs)
+    weights = calculate_weights(fwd, cov, reg=reg)
+    stcs = []
+    print 'Multiplying data by beamformer weights...'
+    for epoch in epochs:
+        sol = np.dot(weights, epoch)
+        src = mne.SourceEstimate(sol, [fwd['src'][0]['vertno'], fwd['src'][1]['vertno']], epochs.tmin, epochs.times[1] - epochs.times[0])
+        stcs.append(src)
+
+    return stcs
+
+
 def compute_pli(src, labels, selected_voxels, bands, randomize=False, job_num=1):
     # here we pick 5 artifact-free trials with 4096 samples (about 13s in the original paper) and use that as trials
     num_trials = 5

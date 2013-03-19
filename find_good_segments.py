@@ -100,5 +100,5 @@ def find_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, v
     print 'Found ' + str(len(events)) + ' good epochs (' + str(len(events)*window_length) + ' sec).'
 
     events = np.array(events)
-    epochs = mne.Epochs(raw, events, None, 0, window_length, keep_comp=True)
+    epochs = mne.Epochs(raw, events, None, 0, window_length, keep_comp=True, preload=True, baseline=None, detrend=0, picks=picks)
     return epochs
