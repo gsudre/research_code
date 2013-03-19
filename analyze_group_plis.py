@@ -129,3 +129,20 @@ for b in range(5):
     for l in range(68):
         nv_pvals[b, l] = np.sum(nv_thres[:, b] >= nv[b, l]) / 100.
         adhd_pvals[b, l] = np.sum(adhd_thres[:, b] >= adhd[b, l]) / 100.
+
+# let's go with Philip's suggestion and try to analyze within NV first, with the idea that PLI for DMN regions should be hishgher than non-DMN
+dmnr = [51, 47, 15, 63, 29, 53]
+dmnl = [50, 46, 14, 62, 28, 52]
+dmn = np.concatenate((dmnl, dmnr))
+nondmn = range(68)
+nondmn = np.setdiff1d(nondmn, dmn)
+dmn2 = [14, 15]
+nondmn = range(68)
+nondmn = np.setdiff1d(nondmn, dmn2)
+pvals = []
+for b in range(5):
+    A = nv[b, nondmn]
+    B = nv[b, dmn2]
+    t, p = stats.ttest_ind(A, B, axis=0, equal_var=True)
+    pvals.append(p)
+

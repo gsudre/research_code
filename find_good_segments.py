@@ -4,6 +4,7 @@ import mne
 import numpy as np
 import env
 
+
 def group_consecutives(vals, step=1):
     """Return list of consecutive lists of numbers from vals (number list)."""
     run = []
@@ -20,7 +21,7 @@ def group_consecutives(vals, step=1):
 
 
 def find_good_segments(subj, data_path=env.data+'/MEG_data/fifs/',
-    threshold=4000e-13, window=5, good_chan_limit=250):
+                       threshold=4000e-13, window=5, good_chan_limit=250):
 
     raw_fname = data_path + subj + '_rest_LP100_HP0.6_CP3_DS300_raw.fif'
     raw = mne.fiff.Raw(raw_fname, preload=True)
@@ -51,7 +52,6 @@ def find_good_segments(subj, data_path=env.data+'/MEG_data/fifs/',
     best_seq = [0]  # just so we can return something
     num_good_channels = len(picks)
     while best_seq_len <= 1 and num_good_channels >= good_chan_limit:
-        # pdb.set_trace()
         # check which time windows had all channels being good
         good_windows = np.nonzero(good_chunk == num_good_channels)
 
@@ -73,4 +73,32 @@ def find_good_segments(subj, data_path=env.data+'/MEG_data/fifs/',
             time_window_start[best_seq[-1]] + window, num_good_channels)
 
     return (time_window_start[best_seq[0]],
-        time_window_start[best_seq[-1]] + window, num_good_channels)
+            time_window_start[best_seq[-1]] + window, num_good_channels)
+
+
+def find_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, verbose=1):
+    ''' Returns an Epochs structure with what time periods to use. window_length and step_length are in seconds'''
+
+    picks = mne.fiff.pick_channels_regexp(raw.info['ch_names'], 'M..-*')
+    data, time = raw[picks, :]
+
+    ''' We search for windows of the given length. If a good window is found, add it to the list and check the next window (non-overlapping). If the current window is no good, step to the next available window. '''
+
+    events = []
+    cur = 0
+    window_size = np.diff(raw.time_as_index([0, window_length]))[0]
+    while cur + window_size < len(time):
+        chunk = data[:, cur:(cur + window_size)]
+        peak2peak = abs(np.amax(chunk, axis=1) - np.amin(chunk, axis=1))
+        num_good_channels = np.sum(peak2peak < threshold, axis=0)
+        if num_good_channels == len(picks):
+            events.append([cur, 0, 0])
+            cur += window_size
+        else:
+            cur += step_length
+
+    print 'Found ' + str(len(events)) + ' good epochs (' + str(len(events)*window_length) + ' sec).'
+
+    events = np.array(events)
+    epochs = mne.Epochs(raw, events, None, 0, window_length, keep_comp=True)
+    return epochs
