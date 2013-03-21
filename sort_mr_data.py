@@ -15,9 +15,9 @@ import tarfile
 import shutil
 from datetime import datetime
 
-fname = '/Users/sudregp/MR_data/maskIds.xlsx'
+fname = '/Volumes/neuro/MR_data/maskIds.xlsx'
 tmpFolder = '/Users/sudregp/Downloads/'
-mrFolder = '/Users/sudregp/MR_data/'
+mrFolder = '/Volumes/neuro/MR_data/'
 
 wb = load_workbook(filename=fname)
 ws = wb.worksheets[0]

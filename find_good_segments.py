@@ -86,7 +86,8 @@ def find_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, v
 
     events = []
     cur = 0
-    window_size = np.diff(raw.time_as_index([0, window_length]))[0]
+    window_size = int(window_length * raw.info['sfreq'])
+    step_size = int(step_length * raw.info['sfreq'])
     while cur + window_size < len(time):
         chunk = data[:, cur:(cur + window_size)]
         peak2peak = abs(np.amax(chunk, axis=1) - np.amin(chunk, axis=1))
@@ -95,10 +96,14 @@ def find_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, v
             events.append([cur, 0, 0])
             cur += window_size
         else:
-            cur += step_length
+            cur += step_size
 
     print 'Found ' + str(len(events)) + ' good epochs (' + str(len(events)*window_length) + ' sec).'
 
-    events = np.array(events)
-    epochs = mne.Epochs(raw, events, None, 0, window_length, keep_comp=True, preload=True, baseline=None, detrend=0, picks=picks)
+    if len(events) > 0:
+        events = np.array(events)
+        epochs = mne.Epochs(raw, events, None, 0, window_length, keep_comp=True, preload=True, baseline=None, detrend=0, picks=picks)
+    else:
+        epochs = None
+
     return epochs
