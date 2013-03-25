@@ -55,15 +55,15 @@ def calculate_weights(forward, cov, reg=0, norm_weights=True):
     weights = np.zeros([forward['nsource'], forward['nchan']])
     for dip in range(forward['nsource']):
         gain = L[:forward['nchan'], dip]
-        num = np.dot(gain.T, inv_Cb)
-        den = np.dot(num, gain)  # this is a scalar
-        weights[dip, :] = num / den
+        power = np.dot(gain.T, inv_Cb)
+        den = np.dot(power, gain)  # this is a scalar
+        weights[dip, :] = power / den
 
     if norm_weights:
         normed_weights = np.sum(weights ** 2, axis=-1) ** (1. / 2)
         weights = weights / normed_weights[:, np.newaxis]
 
-    return weights
+    return weights, power
 
 
 def find_best_voxels(stc, rois, bands, job_num=1):
@@ -124,7 +124,7 @@ def localize_epochs(epochs, fwd, reg=0):
     ''' Returns a list of Sourceestimates, one per Epoch '''
 
     cov = mne.compute_covariance(epochs)
-    weights = calculate_weights(fwd, cov, reg=reg)
+    weights, _ = calculate_weights(fwd, cov, reg=reg)
     stcs = []
     print 'Multiplying data by beamformer weights...'
     for epoch in epochs:
@@ -163,6 +163,33 @@ def compute_pli(src, labels, selected_voxels, bands, randomize=False, job_num=1)
                 label_activity[trial, idl, :] = label_ts[cur:cur + num_samples]
                 cur = cur + num_samples
 
+        con = mne.connectivity.spectral_connectivity(label_activity, method='pli', mode='multitaper', sfreq=sfreq, fmin=bands[band][0], fmax=bands[band][1], faverage=True, mt_adaptive=True, n_jobs=job_num)[0]
+
+        pli.append(np.squeeze(con))
+    return pli
+
+
+def compute_pli_epochs(stcs, labels, selected_voxels, bands, randomize=False, job_num=1, epoch_ids=range(5)):
+
+    pli = []
+    sfreq = 1. / (stcs[0].times[1] - stcs[0].times[0])
+    label_activity = np.zeros([len(epoch_ids), len(labels), len(stcs[0].times)])
+
+    # The voxels selected in each label change based on the band so we have to put the bands loop outside, instead of sending the same signal to spectral_connectivity and passing in several bands
+    for band in np.arange(len(bands)):
+        for idl, label in enumerate(labels):
+            for trial in epoch_ids:
+                label_signal = stcs[trial].in_label(label)
+                label_ts = label_signal.data[selected_voxels[idl, band], :]
+
+                # if we're randomizing the phase (whilst preserving power), then we offset the ROI time series by some random value
+                if randomize:
+                    # we are randomizing the phase, so the shift should be within one complete cycle of the fastest frequency in the band
+                    cycle = 1. / bands[band][1] * sfreq
+                    offset = np.random.randint(0, cycle)
+                    label_ts = np.roll(label_ts, offset)
+
+                label_activity[trial, idl, :] = label_ts
         con = mne.connectivity.spectral_connectivity(label_activity, method='pli', mode='multitaper', sfreq=sfreq, fmin=bands[band][0], fmax=bands[band][1], faverage=True, mt_adaptive=True, n_jobs=job_num)[0]
 
         pli.append(np.squeeze(con))
