@@ -3,6 +3,7 @@
 import mne
 import numpy as np
 import env
+import head_motion as hm
 
 
 def group_consecutives(vals, step=1):
@@ -76,13 +77,17 @@ def find_good_segments(subj, data_path=env.data+'/MEG_data/fifs/',
             time_window_start[best_seq[-1]] + window, num_good_channels)
 
 
-def find_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, verbose=1):
+def find_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, allowed_motion=.5, verbose=1):
     ''' Returns an Epochs structure with what time periods to use. window_length and step_length are in seconds'''
 
     picks = mne.fiff.pick_channels_regexp(raw.info['ch_names'], 'M..-*')
     data, time = raw[picks, :]
 
     ''' We search for windows of the given length. If a good window is found, add it to the list and check the next window (non-overlapping). If the current window is no good, step to the next available window. '''
+
+    # if there's no CHL, discard the subject right away
+    if hm.get_head_motion(raw) is None:
+        return None
 
     events = []
     cur = 0
@@ -92,7 +97,9 @@ def find_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, v
         chunk = data[:, cur:(cur + window_size)]
         peak2peak = abs(np.amax(chunk, axis=1) - np.amin(chunk, axis=1))
         num_good_channels = np.sum(peak2peak < threshold, axis=0)
-        if num_good_channels == len(picks):
+        max_motion = hm.get_max_motion(raw, smin=cur, smax=(cur + window_size))
+        # if all channels have p2p smaller than threshold, check head movement
+        if num_good_channels == len(picks) and max_motion < allowed_motion:
             events.append([cur, 0, 0])
             cur += window_size
         else:

@@ -39,3 +39,11 @@ def get_head_motion(raw, plot=False):
         pl.show(block=False)
 
     return fid_data
+
+
+def get_max_motion(raw, tmin=0, tmax=None):
+    motion_data = get_head_motion(raw)
+    if tmax is None:
+        tmax = motion_data.shape[-1]
+    movement = np.sqrt(np.sum(motion_data[:, tmin:tmax]**2, axis=0))
+    return np.amax(movement)
