@@ -13,10 +13,12 @@ for ids, s in enumerate(subjs):
     good_segs[ids] = end - start
 
 # using the new code, which finds epochs
-good_segs = np.zeros([len(subjs)])
-for s, subj in enumerate(subjs.iterkeys()):
+good_epochs = {}
+for subj in subjs.iterkeys():
     raw_fname = env.data + '/MEG_data/fifs/' + subj + '_rest_LP100_HP0.6_CP3_DS300_raw.fif'
     raw = mne.fiff.Raw(raw_fname)
     epochs = fgs.find_good_epochs(raw, threshold=3500e-15)
     if epochs is not None:
-        good_segs[s] = epochs.get_data().shape[0]
+        good_epochs[subj] = epochs.get_data().shape[0]
+    else:
+        good_epochs[subj] = 0
