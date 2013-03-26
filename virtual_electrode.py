@@ -192,17 +192,17 @@ def compute_pli(src, labels, selected_voxels, bands, randomize=False, job_num=1)
     return pli
 
 
-def compute_pli_epochs(stcs, labels, selected_voxels, bands, randomize=False, job_num=1, epoch_ids=range(5)):
+def compute_pli_epochs(stcs, labels, selected_voxels, bands, randomize=False, job_num=1):
 
     pli = []
     sfreq = 1. / (stcs[0].times[1] - stcs[0].times[0])
-    label_activity = np.zeros([len(epoch_ids), len(labels), len(stcs[0].times)])
+    label_activity = np.zeros([len(stcs), len(labels), len(stcs[0].times)])
 
     # The voxels selected in each label change based on the band so we have to put the bands loop outside, instead of sending the same signal to spectral_connectivity and passing in several bands
     for band in np.arange(len(bands)):
         for idl, label in enumerate(labels):
-            for trial in epoch_ids:
-                label_signal = stcs[trial].in_label(label)
+            for s, stc in enumerate(stcs):
+                label_signal = stc.in_label(label)
                 label_ts = label_signal.data[selected_voxels[idl, band], :]
 
                 # if we're randomizing the phase (whilst preserving power), then we offset the ROI time series by some random value
@@ -212,7 +212,7 @@ def compute_pli_epochs(stcs, labels, selected_voxels, bands, randomize=False, jo
                     offset = np.random.randint(0, cycle)
                     label_ts = np.roll(label_ts, offset)
 
-                label_activity[trial, idl, :] = label_ts
+                label_activity[s, idl, :] = label_ts
         con = mne.connectivity.spectral_connectivity(label_activity, method='pli', mode='multitaper', sfreq=sfreq, fmin=bands[band][0], fmax=bands[band][1], faverage=True, mt_adaptive=True, n_jobs=job_num)[0]
 
         pli.append(np.squeeze(con))
