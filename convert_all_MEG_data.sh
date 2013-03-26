@@ -22,7 +22,7 @@ do
 			mne_ctf2fiff --ds $dataDir/$d/$f/ --fif tmp.fif
 			mne_rename_channels --fif tmp.fif --alias ~/.mne/renameUPT001toSTI104.txt
 			mne_process_raw --raw tmp.fif --projoff --lowpass 100 --decim 2 --grad 3 \
-				--save "outDir"/"$splitTask"_"$task"_LP100_CP3_DS300_raw.fif
+				--save "$outDir"/"$splitTask"_"$task"_LP100_CP3_DS300_raw.fif
 		fi
 	done
 done
