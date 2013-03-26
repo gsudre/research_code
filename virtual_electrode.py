@@ -82,6 +82,29 @@ def find_best_voxels(stc, rois, bands, job_num=1):
     return best_voxels
 
 
+def find_best_voxels_epochs(stcs, rois, bands, job_num=1, verbose=True):
+    # Returns the indices of the voxels with maximum power per band in each ROI, in the format roi x band. stc is SourceEstimate, rois is a list of Labels, and bands is a list of length 2 vectors
+
+    fs = 1. / (stcs[0].times[1] - stcs[0].times[0])
+
+    best_voxels = np.zeros([len(rois), len(bands)])
+    for idr, roi in enumerate(rois):
+        if verbose:
+            print '\nLooking for best voxel in label ' + str(idr+1) + '/' + str(len(rois))
+        # in each label, we sum the power over all epochs
+        psd = 0
+        for stc in stcs:
+            roi_activity = stc.in_label(roi)
+            tmp, freqs = dsp.compute_psd(roi_activity.data, fs, n_jobs=job_num)
+            psd += tmp
+        # then find the voxel with biggest power in each band
+        for idb, band in enumerate(bands):
+            index = np.logical_and(freqs >= band[0], freqs <= band[1])
+            band_psd = np.mean(psd[:, index], axis=1)
+            best_voxels[idr, idb] = band_psd.argmax()
+    return best_voxels
+
+
 def localize_activity(subj, tmax=np.Inf, clean_only=True, reg=0):
     import find_good_segments as fgs
 
