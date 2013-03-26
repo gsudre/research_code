@@ -41,9 +41,9 @@ def get_head_motion(raw, plot=False):
     return fid_data
 
 
-def get_max_motion(raw, tmin=0, tmax=None):
+def get_max_motion(raw, smin=0, smax=None):
     motion_data = get_head_motion(raw)
-    if tmax is None:
-        tmax = motion_data.shape[-1]
-    movement = np.sqrt(np.sum(motion_data[:, tmin:tmax]**2, axis=0))
+    if smax is None:
+        smax = motion_data.shape[-1]
+    movement = np.sqrt(np.sum(motion_data[:, smin:smax]**2, axis=0))
     return np.amax(movement)

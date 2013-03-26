@@ -14,15 +14,14 @@ def compute_psd(signals, Fs, NFFT=2048, fmin=0, fmax=np.inf, n_jobs=1):
         freqs = out[0][1]
         psd = np.array(zip(*out)[0])
     else:
-        parallel, my_psd, n_jobs = parallel_func(mlab.psd, n_jobs)
         psd = []
         for d in signals:
             p, freqs = mlab.psd(d, Fs=Fs, NFFT=NFFT)
             psd.append(p)
-        psd = np.array(p)
+        psd = np.array(psd)
 
     mask = (freqs >= fmin) & (freqs <= fmax)
     freqs = freqs[mask]
-    psd = psd[:, mask]
+    psd = np.squeeze(psd[:, mask])
 
     return psd, freqs
