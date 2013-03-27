@@ -9,12 +9,13 @@ def grab_fiducial(text, fidu):
     # which is the first measurement information
     m = re.search('measured ' + fidu + ' (.*)\n\tx = (.*)\n\ty = (.*)\n\tz = (.*)', text)
     if m is None:
-        print 'Error: did not find measured info for ' + fidu
-    return float(m.groups()[1]), float(m.groups()[2]), float(m.groups()[3])
+        print 'Error: did not find measurement info.'
+        sys.exit(-1)
+    else:
+        return float(m.groups()[1]), float(m.groups()[2]), float(m.groups()[3])
 
 ds = sys.argv[1]
 hc_file = ds.split('/')[-2][:-3] + '.hc'
-print 'Reading ' + hc_file
 fid = open(ds + '/' + hc_file, 'r')
 data = fid.read()
 
