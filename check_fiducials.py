@@ -4,12 +4,12 @@ import re
 import sys
 
 
-def grab_fiducial(text, fidu):
+def grab_fiducial(text, fidu, hc_file):
     # checks measurement position with respect to dewar
     # which is the first measurement information
     m = re.search('measured ' + fidu + ' (.*)\n\tx = (.*)\n\ty = (.*)\n\tz = (.*)', text)
     if m is None:
-        print 'Error: did not find measurement info.'
+        print 'Error: did not find measurement info in ' + hc_file
         sys.exit(-1)
     else:
         return float(m.groups()[1]), float(m.groups()[2]), float(m.groups()[3])
