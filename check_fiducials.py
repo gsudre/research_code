@@ -19,15 +19,15 @@ hc_file = ds.split('/')[-2][:-3] + '.hc'
 fid = open(ds + '/' + hc_file, 'r')
 data = fid.read()
 
-x, y, z = grab_fiducial(data, 'nasion')
+x, y, z = grab_fiducial(data, 'nasion', hc_file)
 if not (x > 0 and y > 0 and z < 0):
     print 'Error measuring nasion in ' + ds
 
-x, y, z = grab_fiducial(data, 'left ear')
+x, y, z = grab_fiducial(data, 'left ear', hc_file)
 if not (x < 0 and y > 0 and z < 0):
     print 'Error measuring left ear in ' + ds
 
-x, y, z = grab_fiducial(data, 'right ear')
+x, y, z = grab_fiducial(data, 'right ear', hc_file)
 if not (x > 0 and y < 0 and z < 0):
     print 'Error measuring right ear in ' + ds
 
