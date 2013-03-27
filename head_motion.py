@@ -8,7 +8,12 @@ def get_head_motion(raw, plot=False):
     fiducials = ['NASION', 'LPA', 'RPA']
     chans = {fiducials[0]: ['HLC0011', 'HLC0012', 'HLC0013'], fiducials[1]: ['HLC0021', 'HLC0022', 'HLC0023'], fiducials[2]: ['HLC0031', 'HLC0032', 'HLC0033']}
 
-    m = raw.info['dev_head_t']['trans']    # 4x4 transform
+    m = raw.info['dev_head_t']
+    if m is None:
+        print '\tCould not find device->head transform in FIF file!'
+        return None
+    else:
+        m = m['trans']    # 4x4 transform
     r = m[0:3, 0:3]         # 3x3 rotation
     t = m[0:3, 3]           # translation
 
@@ -43,7 +48,10 @@ def get_head_motion(raw, plot=False):
 
 def get_max_motion(raw, smin=0, smax=None):
     motion_data = get_head_motion(raw)
-    if smax is None:
-        smax = motion_data.shape[-1]
-    movement = np.sqrt(np.sum(motion_data[:, smin:smax]**2, axis=0))
-    return np.amax(movement)
+    if motion_data is None:
+        return np.Inf
+    else:
+        if smax is None:
+            smax = motion_data.shape[-1]
+        movement = np.sqrt(np.sum(motion_data[:, smin:smax]**2, axis=0))
+        return np.amax(movement)

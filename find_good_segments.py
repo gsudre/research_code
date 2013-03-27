@@ -4,6 +4,7 @@ import mne
 import numpy as np
 import env
 import head_motion as hm
+import pdb
 
 
 def group_consecutives(vals, step=1):
@@ -77,11 +78,22 @@ def find_good_segments(subj, data_path=env.data+'/MEG_data/fifs/',
             time_window_start[best_seq[-1]] + window, num_good_channels)
 
 
-def find_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, allowed_motion=.5, verbose=1):
+def crop_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, allowed_motion=.5, verbose=1, fmin=0, fmax=np.Inf):
     ''' Returns an Epochs structure with what time periods to use. window_length and step_length are in seconds'''
 
     picks = mne.fiff.pick_channels_regexp(raw.info['ch_names'], 'M..-*')
-    data, time = raw[picks, :]
+    # pdb.set_trace()
+    # note that we need to filter raw, so that we can pass it on later
+    if fmin > 0 and fmax < np.Inf:
+        # bandpass the signal accordingly
+        for s in picks:
+            raw[s, :] = mne.filter.band_pass_filter(raw[s, :][0], raw.info['sfreq'], fmin, fmax, l_trans_bandwidth=.25)
+    elif fmax < np.Inf:
+        for s in picks:
+            raw[s, :] = mne.filter.low_pass_filter(raw[s, :][0], raw.info['sfreq'], fmax)
+    elif fmin > 0:
+        for s in picks:
+            raw[s, :] = mne.filter.high_pass_filter(raw[s, :][0], raw.info['sfreq'], fmin, trans_bandwidth=.25)
 
     ''' We search for windows of the given length. If a good window is found, add it to the list and check the next window (non-overlapping). If the current window is no good, step to the next available window. '''
 
@@ -93,11 +105,12 @@ def find_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, a
     cur = 0
     window_size = int(window_length * raw.info['sfreq'])
     step_size = int(step_length * raw.info['sfreq'])
-    while cur + window_size < len(time):
-        chunk = data[:, cur:(cur + window_size)]
+    while cur + window_size < raw.n_times:
+        chunk = raw[picks, cur:(cur + window_size)][0]
         peak2peak = abs(np.amax(chunk, axis=1) - np.amin(chunk, axis=1))
         num_good_channels = np.sum(peak2peak < threshold, axis=0)
         max_motion = hm.get_max_motion(raw, smin=cur, smax=(cur + window_size))
+        # print str(max_motion)
         # if all channels have p2p smaller than threshold, check head movement
         if num_good_channels == len(picks) and max_motion < allowed_motion:
             events.append([cur, 0, 0])
