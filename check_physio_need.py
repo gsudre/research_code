@@ -1,7 +1,6 @@
 ''' Script to check which subjects are lacking physiological data '''
 import glob
 import os
-import pdb
 
 
 def check_1Ds(scans):
@@ -20,7 +19,7 @@ def check_1Ds(scans):
     return missing
 
 
-mr_folder = '/Users/sudregp/MR_data/'
+mr_folder = '/Volumes/neuro/MR_data/'
 
 need_phys = []  # subjects that need physiological data
 expected_rts = []  # scans for which we don't have RT folders
@@ -101,5 +100,3 @@ for subj in subjs:
                                     print '\tDid not find enough rest physiological data. ' + str(missing_rest) + '/' + str(rest_num) + ' files missing.'
                                 if missing_task > 0:
                                     print '\tDid not find enough task physiological data. ' + str(missing_task) + '/' + str(task_num) + ' files missing.'
-
-
