@@ -12,7 +12,7 @@ if sys.platform.find('linux') == 0:
     results = '/data/sudregp/results/'
     tmp = '/scratch/'
 else:
-    data = '/Users/sudregp/'
+    data = '/Volumes/neuro/'
     maps = '/Users/sudregp/research_code/maps/'
     results = '/Users/sudregp/results/'
     tmp = '/Users/sudregp/tmp/'

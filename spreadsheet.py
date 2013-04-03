@@ -1,15 +1,21 @@
-''' Script to return a dictionary subjs with the string name and subject status
-    from the Excel spreadsheet that Bethany keeps.
+''' Module to return information about subjects from the Excel spreadsheet that Bethany keeps.
 '''
-# Gustavo Sudre, 01/2013
+
+# Gustavo Sudre, 04/2013
 
 
-def get_subjects_from_excel():
-    fname = r'/Users/sudregp/Documents/Bethany_MEGRest_Analysis_Notes_Sept11.xlsx'
+def open_spreadsheet():
+    fname = r'/Volumes/shaw data/MEG/MEG_Full_Data.xlsx'
 
     from openpyxl.reader.excel import load_workbook
     wb = load_workbook(filename=fname)
     ws = wb.worksheets[0]
+
+    return ws
+
+
+def get_subjects_from_excel():
+    ws = open_spreadsheet()
 
     subjs = {}
     cnt = 1
@@ -25,11 +31,7 @@ def get_subjects_from_excel():
 
 
 def get_all_subjects():
-    fname = r'/Users/sudregp/Documents/Bethany_MEGRest_Analysis_Notes_Sept11.xlsx'
-
-    from openpyxl.reader.excel import load_workbook
-    wb = load_workbook(filename=fname)
-    ws = wb.worksheets[0]
+    ws = open_spreadsheet()
 
     subjs = {}
 
@@ -38,9 +40,38 @@ def get_all_subjects():
 
     # while we still have something written in the first collumn
     while ws.cell('A' + str(cnt)).value is not None:
-        # if there is something in the ID column
-        if isinstance(ws.cell('D' + str(cnt)).value, unicode):
-            subjs[str(ws.cell('D' + str(cnt)).value)] = str(ws.cell('L' + str(cnt)).value)
+        # if there is something in the Acquisition code column
+        if isinstance(ws.cell('I' + str(cnt)).value, unicode):
+            subjs[str(ws.cell('I' + str(cnt)).value)] = str(ws.cell('O' + str(cnt)).value)
+
+        cnt = cnt + 1
+
+    return subjs
+
+
+def get_adults(adhd):
+    ''' Returns a list of subject codes, which can be ADHDs or NVs, depending on the argument to the function '''
+    ws = open_spreadsheet()
+
+    subjs = []
+
+    # start from the second row down
+    cnt = 2
+
+    if adhd:
+        look_for = 'ADHD'
+    else:
+        look_for = 'NV'
+
+    # while we still have something written in the first collumn
+    while ws.cell('A' + str(cnt)).value is not None:
+        # if there is something in the Acquisition code column
+        if isinstance(ws.cell('I' + str(cnt)).value, unicode):
+            subj_code = str(ws.cell('I' + str(cnt)).value)
+            adult = (str(ws.cell('Q' + str(cnt)).value) == 'Adult')
+            dx = str(ws.cell('O' + str(cnt)).value)
+            if adult and (dx == look_for):
+                subjs.append(subj_code)
 
         cnt = cnt + 1
 
