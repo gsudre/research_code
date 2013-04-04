@@ -2,6 +2,7 @@ import numpy as np
 import dsp_utils as dsp
 import mne
 import env
+import pdb
 
 
 # import multiprocessing
@@ -93,15 +94,25 @@ def find_best_voxels_epochs(stcs, rois, bands, job_num=1, verbose=True):
             print '\nLooking for best voxel in label ' + str(idr+1) + '/' + str(len(rois))
         # in each label, we sum the power over all epochs
         psd = 0
+        bad_label = False
         for stc in stcs:
-            roi_activity = stc.in_label(roi)
-            tmp, freqs = dsp.compute_psd(roi_activity.data, fs, n_jobs=job_num)
-            psd += tmp
-        # then find the voxel with biggest power in each band
-        for idb, band in enumerate(bands):
-            index = np.logical_and(freqs >= band[0], freqs <= band[1])
-            band_psd = np.mean(psd[:, index], axis=1)
-            best_voxels[idr, idb] = band_psd.argmax()
+            try:
+                roi_activity = stc.in_label(roi)
+                tmp, freqs = dsp.compute_psd(roi_activity.data, fs, n_jobs=job_num)
+                # psd is voxels x freqs
+                psd += tmp
+            except ValueError:
+                print "Oops! No vertices in this label!"
+                bad_label = True
+
+        # then find the voxel with biggest power in each band. If there are no voxels in the label, replace it by NAN
+        if bad_label:
+            best_voxels[idr, :] = np.NaN
+        else:
+            for idb, band in enumerate(bands):
+                index = np.logical_and(freqs >= band[0], freqs <= band[1])
+                band_psd = np.mean(psd[:, index], axis=1)
+                best_voxels[idr, idb] = band_psd.argmax()
     return best_voxels
 
 
@@ -198,12 +209,18 @@ def compute_pli_epochs(stcs, labels, selected_voxels, bands, randomize=False, jo
     sfreq = 1. / (stcs[0].times[1] - stcs[0].times[0])
     label_activity = np.zeros([len(stcs), len(labels), len(stcs[0].times)])
 
-    # The voxels selected in each label change based on the band so we have to put the bands loop outside, instead of sending the same signal to spectral_connectivity and passing in several bands
+    # The voxels selected in each label changes based on the band so we have to put the bands loop outside, instead of sending the same signal to spectral_connectivity and passing in several bands
     for band in np.arange(len(bands)):
         for idl, label in enumerate(labels):
             for s, stc in enumerate(stcs):
-                label_signal = stc.in_label(label)
-                label_ts = label_signal.data[selected_voxels[idl, band], :]
+                voxel = selected_voxels[idl, band]
+                # in the case where there were no voxels in the label, replace the label timecourse by nans
+                if np.isnan(voxel):
+                    label_ts = np.empty((1, len(stc.times)))
+                    label_ts[:] = np.NAN
+                else:
+                    label_signal = stc.in_label(label)
+                    label_ts = label_signal.data[voxel, :]
 
                 # if we're randomizing the phase (whilst preserving power), then we offset the ROI time series by some random value
                 if randomize:
