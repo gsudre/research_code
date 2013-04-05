@@ -20,6 +20,7 @@ good_nvs = [subj for subj, val in good_epochs.iteritems() if val > 13 and subj i
 good_adhds = [subj for subj, val in good_epochs.iteritems() if val > 13 and subj in adhds]
 good_subjects = good_nvs + good_adhds
 plis = {}
+selected_voxels = {}
 
 for subj in good_subjects:
     raw_fname = env.data + '/MEG_data/fifs/' + subj + '_rest_LP100_CP3_DS300_raw.fif'
@@ -39,9 +40,9 @@ for subj in good_subjects:
     print 'Reading subject labels...'
     labels = [mne.read_label(ln) for ln in label_names]
 
-    selected_voxels = ve.find_best_voxels_epochs(stcs, labels, bands, job_num=1)
+    selected_voxels[subj] = ve.find_best_voxels_epochs(stcs, labels, bands, job_num=1)
 
-    pli = ve.compute_pli_epochs(stcs[:5], labels, selected_voxels, bands)
-    plis[subj] = pli
+    plis[subj] = ve.compute_pli_epochs(stcs[:5], labels, selected_voxels[subj], bands)
 
 np.savez(env.results + 'good_plis_chl.5_lp58_hp.5.npz', good_nvs=good_nvs, good_adhds=good_adhds, plis=plis, bands=bands)
+np.savez(env.results + 'selected_voxels_chl.5_lp58_hp.5.npz', good_nvs=good_nvs, good_adhds=good_adhds, selected_voxels=selected_voxels, bands=bands)

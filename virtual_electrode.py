@@ -111,7 +111,9 @@ def find_best_voxels_epochs(stcs, rois, bands, job_num=1, verbose=True):
         else:
             for idb, band in enumerate(bands):
                 index = np.logical_and(freqs >= band[0], freqs <= band[1])
-                band_psd = np.mean(psd[:, index], axis=1)
+                # taking care of the weird case in which there's only one voxel in the label
+                freq_axis = len(psd.shape) - 1
+                band_psd = np.mean(psd[:, index], axis=freq_axis)
                 best_voxels[idr, idb] = band_psd.argmax()
     return best_voxels
 
