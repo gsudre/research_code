@@ -21,6 +21,8 @@ good_adhds = [subj for subj, val in good_epochs.iteritems() if val > 13 and subj
 good_subjects = good_nvs + good_adhds
 plis = {}
 selected_voxels = {}
+# we had to save the labels as well because the order in which the labels are loaded changes between Mac and Linux, and we need the order to be constant for the selected_voxels matrix
+labels = {}
 
 for subj in good_subjects:
     raw_fname = env.data + '/MEG_data/fifs/' + subj + '_rest_LP100_CP3_DS300_raw.fif'
@@ -38,11 +40,11 @@ for subj in good_subjects:
     label_names = glob.glob(labels_folder + '/*.label')
 
     print 'Reading subject labels...'
-    labels = [mne.read_label(ln) for ln in label_names]
+    labels[subj] = [mne.read_label(ln) for ln in label_names]
 
-    selected_voxels[subj] = ve.find_best_voxels_epochs(stcs, labels, bands, job_num=1)
+    selected_voxels[subj] = ve.find_best_voxels_epochs(stcs, labels[subj], bands, job_num=1)
 
-    plis[subj] = ve.compute_pli_epochs(stcs[:5], labels, selected_voxels[subj], bands)
+    plis[subj] = ve.compute_pli_epochs(stcs[:5], labels[subj], selected_voxels[subj], bands)
 
-np.savez(env.results + 'good_plis_chl.5_lp58_hp.5.npz', good_nvs=good_nvs, good_adhds=good_adhds, plis=plis, bands=bands)
-np.savez(env.results + 'selected_voxels_chl.5_lp58_hp.5.npz', good_nvs=good_nvs, good_adhds=good_adhds, selected_voxels=selected_voxels, bands=bands)
+np.savez(env.results + 'good_plis_chl.5_lp58_hp.5.npz', good_nvs=good_nvs, good_adhds=good_adhds, plis=plis, bands=bands, labels=labels)
+np.savez(env.results + 'selected_voxels_chl.5_lp58_hp.5.npz', good_nvs=good_nvs, good_adhds=good_adhds, selected_voxels=selected_voxels, bands=bands, labels=labels)
