@@ -31,7 +31,7 @@ for subj, voxels in selected_voxels.iteritems():
 
     stcs = ve.localize_epochs(epochs, fwd, reg=0)
 
-    rand_plis = np.zeros([num_perms, len(bands), len(labels[subj]), len(labels)])
+    rand_plis = np.zeros([num_perms, len(bands), len(labels[subj]), len(labels[subj])])
     for r in range(num_perms):
         print '==================================='
         print '========  Permutation ' + str(r+1) + ' ==========='
