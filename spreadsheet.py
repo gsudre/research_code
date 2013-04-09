@@ -76,3 +76,18 @@ def get_adults(adhd):
         cnt = cnt + 1
 
     return subjs
+
+
+def get_MRNs(subjs):
+    ''' Returns a list of MRNs for each subject in the list subjs '''
+    ws = open_spreadsheet()
+
+    mrns = []
+
+    for s in subjs:
+        for row_idx in range(ws.get_highest_row()):
+            subj_code = ws.cell(row=row_idx, column=8).value
+            if s == subj_code:
+                mrns.append(ws.cell(row=row_idx, column=12).value)
+
+    return mrns
