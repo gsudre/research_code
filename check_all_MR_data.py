@@ -26,9 +26,21 @@ def check_for_data(dtype, date, folder):
     return -1
 
 
+def check_date(date, folder):
+    mask_ids = glob.glob(folder + '/*')
+    for mask in mask_ids:
+        dirs = glob.glob(mask + '/*')
+        dir_num = [d for d, path in enumerate(dirs) if (path.find(scan_date.strftime('%Y_%m_%d')) > 0) or (path.find(scan_date.strftime('%Y%m%d')) > 0)]
+        if len(dir_num) > 0:
+            # we found a directory with the specific date inside the mask id
+            return True
+    return False
+
+
 path = '/Volumes/neuro/MR_data/'
 
 missing_subjects = []
+has = {}
 missing_mprage = []
 missing_task = []
 missing_rest = []
@@ -50,10 +62,16 @@ for row_idx in range(2, ws.get_highest_row()):
     last_name = ws.cell('E' + str(row_idx)).value
     first_name = ws.cell('F' + str(row_idx)).value
 
-    has_mprage = (ws.cell('W' + str(row_idx)).value == 'Y')
-    has_task = (ws.cell('X' + str(row_idx)).value == 'Y')
-    has_rest = (ws.cell('Z' + str(row_idx)).value == 'Y')
-    has_edti = (ws.cell('AA' + str(row_idx)).value == 'Y')
+    # if names have a - or space, replace by _
+    last_name = last_name.replace('-', '_')
+    first_name = first_name.replace('-', '_')
+    last_name = last_name.replace(' ', '_')
+    first_name = first_name.replace(' ', '_')
+
+    has['rage'] = (ws.cell('W' + str(row_idx)).value == 'Y')
+    has['fmri'] = (ws.cell('X' + str(row_idx)).value == 'Y')
+    has['rest'] = (ws.cell('Z' + str(row_idx)).value == 'Y')
+    has['edti'] = (ws.cell('AA' + str(row_idx)).value == 'Y')
 
     # check whether we have a folder for the subject
     dir_num = [l for l, folder in enumerate(subjs)
@@ -66,32 +84,32 @@ for row_idx in range(2, ws.get_highest_row()):
 
     if len(dir_num) == 0 and scanned:
         # subject not found in the server. Check if we expected fMRI data
-        scanned
-        print('Subject {}, {} ({}) not in the server. Expected:').format(last_name, first_name, mrn)
+        missing = [mode for mode, val in has.iteritems() if val]
+        if len(missing) > 0:
+            print('Subject {}, {} ({}) not in the server. Expected: {}').format(last_name, first_name, mrn, missing)
         missing_subjects.append(mrn)
-        if has_mprage:
-            print '\tMPRAGE'
-        if has_task:
-            print '\tTask fMRI'
-        if has_rest:
-            print '\trest fMRI'
-        if has_edti:
-            print '\teDTI'
-    else:
-        # subject is in the server. Make sure we have the data for everything
+    elif scanned:
+        # subject is in the server. First, check whether we have that particular scan for the subject
         scan_date = ws.cell('I' + str(row_idx)).value
-        if has_mprage:
-            if check_for_data('rage', scan_date, subjs[dir_num[0]]) < 0:
-                missing_mprage.append(mrn + '_' + scan_date.strftime('%Y_%m_%d'))
-        if has_task:
-            if check_for_data('fmri', scan_date, subjs[dir_num[0]]) < 0:
-                missing_task.append(mrn + '_' + scan_date.strftime('%Y_%m_%d'))
-        if has_rest:
-            if check_for_data('rest', scan_date, subjs[dir_num[0]]) < 0:
-                missing_rest.append(mrn + '_' + scan_date.strftime('%Y_%m_%d'))
-        if has_edti:
-            if check_for_data('edti', scan_date, subjs[dir_num[0]]) < 0:
-                missing_edti.append(mrn + '_' + scan_date.strftime('%Y_%m_%d'))
+
+        if check_date(scan_date, subjs[dir_num[0]]):
+            # if we do, then look for the types of data listed in the spreadsheet
+            if has_mprage:
+                if check_for_data('rage', scan_date, subjs[dir_num[0]]) < 0:
+                    missing_mprage.append(mrn + '_' + scan_date.strftime('%Y_%m_%d'))
+            if has_task:
+                if check_for_data('fmri', scan_date, subjs[dir_num[0]]) < 0:
+                    missing_task.append(mrn + '_' + scan_date.strftime('%Y_%m_%d'))
+            if has_rest:
+                if check_for_data('rest', scan_date, subjs[dir_num[0]]) < 0:
+                    missing_rest.append(mrn + '_' + scan_date.strftime('%Y_%m_%d'))
+            if has_edti:
+                if check_for_data('edti', scan_date, subjs[dir_num[0]]) < 0:
+                    missing_edti.append(mrn + '_' + scan_date.strftime('%Y_%m_%d'))
+        else:
+            missing = [mode for mode, val in has.iteritems() if val]
+            if len(missing) > 0:
+                print('No scans on {} for {}, {} ({}). Expected: {}').format(scan_date.strftime('%Y_%m_%d'), last_name, first_name, mrn, missing)
 
 
 
