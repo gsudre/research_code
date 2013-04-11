@@ -39,12 +39,7 @@ def check_date(date, folder):
 
 path = '/Volumes/neuro/MR_data/'
 
-missing_subjects = []
 has = {}
-missing_mprage = []
-missing_task = []
-missing_rest = []
-missing_edti = []
 
 # open spreadsheet
 fname = r'/Users/sudregp/Documents/Aug.2011.M.L.3T.List.xlsx'
@@ -61,12 +56,14 @@ for row_idx in range(2, ws.get_highest_row()):
     mrn = str(ws.cell('A' + str(row_idx)).value)
     last_name = ws.cell('E' + str(row_idx)).value
     first_name = ws.cell('F' + str(row_idx)).value
+    scan_date = ws.cell('I' + str(row_idx)).value
 
     # if names have a - or space, replace by _
     last_name = last_name.replace('-', '_')
     first_name = first_name.replace('-', '_')
     last_name = last_name.replace(' ', '_')
     first_name = first_name.replace(' ', '_')
+    last_name = last_name.replace('\'', '_')
 
     has['rage'] = (ws.cell('W' + str(row_idx)).value == 'Y')
     has['fmri'] = (ws.cell('X' + str(row_idx)).value == 'Y')
@@ -86,11 +83,9 @@ for row_idx in range(2, ws.get_highest_row()):
         # subject not found in the server. Check if we expected fMRI data
         missing = [mode for mode, val in has.iteritems() if val]
         if len(missing) > 0:
-            print('Subject {}, {} ({}) not in the server. Expected: {}').format(last_name, first_name, mrn, missing)
-        missing_subjects.append(mrn)
+            print('Subject {}, {} ({}) not in the server. On {}, expected: {}').format(last_name, first_name, mrn, scan_date.strftime('%Y_%m_%d'), missing)
     elif scanned:
         # subject is in the server. First, check whether we have that particular scan for the subject
-        scan_date = ws.cell('I' + str(row_idx)).value
 
         if check_date(scan_date, subjs[dir_num[0]]):
             # if we do, then look for the types of data listed in the spreadsheet
