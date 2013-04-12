@@ -52,7 +52,8 @@ def calculate_weights(forward, cov, reg=0, norm_weights=True):
             else:
                 optimal_orientation[:, dip] = ori1
     else:
-        optimal_orientation = forward['source_rr']
+        # use the pre-defined source orientations, likely to be fixed to the normal
+        optimal_orientation = forward['source_nn']
 
     weights = np.zeros([forward['nsource'], forward['nchan']])
     for dip in range(forward['nsource']):
@@ -60,15 +61,15 @@ def calculate_weights(forward, cov, reg=0, norm_weights=True):
         ori = L[:num_channels, (3 * dip):(3 * dip + 3)]
         # leadfield for optimal orientation
         gain = np.dot(ori, optimal_orientation[:, dip])
-        num = np.dot(gain.T, inv_Cb)
-        den = np.dot(num, gain)  # this is a scalar
-        weights[dip, :] = num / den
+        nume = np.dot(gain.T, inv_Cb)
+        deno = np.dot(nume, gain)  # this is a scalar
+        weights[dip, :] = nume / deno
 
     if norm_weights:
         normed_weights = np.sum(weights ** 2, axis=-1) ** (1. / 2)
         weights = weights / normed_weights[:, np.newaxis]
 
-    return weights, power
+    return weights
 
 
 def find_best_voxels(stc, rois, bands, job_num=1):
