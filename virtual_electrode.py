@@ -165,7 +165,7 @@ def localize_epochs(epochs, fwd, reg=0):
     ''' Returns a list of Sourceestimates, one per Epoch '''
 
     cov = mne.compute_covariance(epochs)
-    weights, _ = calculate_weights(fwd, cov, reg=reg)
+    weights = calculate_weights(fwd, cov, reg=reg)
     stcs = []
     print 'Multiplying data by beamformer weights...'
     for epoch in epochs:
