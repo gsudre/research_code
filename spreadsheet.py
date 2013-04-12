@@ -5,7 +5,8 @@
 
 
 def open_spreadsheet():
-    fname = r'/Volumes/shaw data/MEG/MEG_Full_Data.xlsx'
+    # make sure to save an updated version of the file without password in the tmp folder first!
+    fname = r'/Users/sudregp/tmp/MEG_Full_Data.xlsx'
 
     from openpyxl.reader.excel import load_workbook
     wb = load_workbook(filename=fname)
@@ -68,8 +69,8 @@ def get_adults(adhd):
         # if there is something in the Acquisition code column
         if isinstance(ws.cell('I' + str(cnt)).value, unicode):
             subj_code = str(ws.cell('I' + str(cnt)).value)
-            adult = (str(ws.cell('Q' + str(cnt)).value) == 'Adult')
-            dx = str(ws.cell('O' + str(cnt)).value)
+            adult = (str(ws.cell('R' + str(cnt)).value) == 'Adult')
+            dx = str(ws.cell('P' + str(cnt)).value)
             if adult and (dx == look_for):
                 subjs.append(subj_code)
 

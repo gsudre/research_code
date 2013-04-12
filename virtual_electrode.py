@@ -12,7 +12,8 @@ import pdb
 def calculate_weights(forward, cov, reg=0, norm_weights=True):
 # Make sure cov only has MEG data in it!
 
-    inv_Cb = np.linalg.pinv(cov.data + reg * np.eye(cov.data.shape[0]))
+    num_channels = cov.data.shape[0]
+    inv_Cb = np.linalg.pinv(cov.data + reg * np.eye(num_channels))
     L = forward['sol']['data']
     nvectors = L.shape[1]
     # If we have more than one orientation per source, find the optimum
@@ -24,7 +25,7 @@ def calculate_weights(forward, cov, reg=0, norm_weights=True):
         optimal_orientation = np.zeros([3, forward['nsource']])
         for dip in range(forward['nsource']):
             # Separate the lead field for 3 orthogonal components
-            ori = L[:306, (3 * dip):(3 * dip + 3)]
+            ori = L[:num_channels, (3 * dip):(3 * dip + 3)]
             U, S, V = np.linalg.svd(np.linalg.pinv(np.dot(ori.T, np.dot(inv_Cb, ori))))
 
             # The optimum orientation is the eigenvector that corresponds to the
@@ -55,10 +56,13 @@ def calculate_weights(forward, cov, reg=0, norm_weights=True):
 
     weights = np.zeros([forward['nsource'], forward['nchan']])
     for dip in range(forward['nsource']):
-        gain = L[:forward['nchan'], dip]
-        power = np.dot(gain.T, inv_Cb)
-        den = np.dot(power, gain)  # this is a scalar
-        weights[dip, :] = power / den
+        # leadfield for 3 orthogonal orientations
+        ori = L[:num_channels, (3 * dip):(3 * dip + 3)]
+        # leadfield for optimal orientation
+        gain = np.dot(ori, optimal_orientation[:, dip])
+        num = np.dot(gain.T, inv_Cb)
+        den = np.dot(num, gain)  # this is a scalar
+        weights[dip, :] = num / den
 
     if norm_weights:
         normed_weights = np.sum(weights ** 2, axis=-1) ** (1. / 2)
