@@ -15,7 +15,7 @@ import tarfile
 import shutil
 from datetime import datetime
 
-fname = '/Volumes/neuro/MR_data/maskIds.xlsx'
+fname = '/Volumes/shaw\ data/fMRI/maskIds.xlsx'
 tmpFolder = '/Users/sudregp/Downloads/'
 mrFolder = '/Volumes/neuro/MR_data/'
 
@@ -91,27 +91,12 @@ for file in dicoms:
 
     # update spreadsheet
     ws.cell('A' + str(curRow)).value = curMaskId
-    ws.cell('B' + str(curRow)).value = 'Y'
-    ws.cell('C' + str(curRow)).value = rtCopied
-
-    allNames = subjectName.split('_')
-    ws.cell('D' + str(curRow)).value = allNames[0]
-    ws.cell('E' + str(curRow)).value = allNames[0]
-    ws.cell('F' + str(curRow)).value = allNames[1]
-    ws.cell('G' + str(curRow)).value = allNames[2]
-    if len(allNames) > 3:
-        ws.cell('H' + str(curRow)).value = allNames[3]
-
-    ws.cell('J' + str(curRow)).value = mrn
-    ws.cell('K' + str(curRow)).value = scanId
+    ws.cell('B' + str(curRow)).value = mrn
 
     tmp = folder2move[0].split('/')
     tmp = tmp[-1].split('-')
     myDate = datetime.strptime(tmp[0], '%Y%m%d')
-    ws.cell('Q' + str(curRow)).value = myDate.strftime('%m/%d/%Y')
-    ws.cell('R' + str(curRow)).value = myDate.year
-    ws.cell('S' + str(curRow)).value = myDate.month
-    ws.cell('T' + str(curRow)).value = myDate.day
+    ws.cell('C' + str(curRow)).value = myDate.strftime('%m/%d/%Y')
 
 wb.save(fname)
 
