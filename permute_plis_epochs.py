@@ -10,7 +10,7 @@ job_num = 1
 num_perms = 5
 
 # Note that the voxels selected should stay the same because the pemrutation doesn't change the power, only the phase, but if we load it now we can speed it up later by forcing the voxels being chosen, and not having to do the power transform all the time
-res = np.load(env.results + 'selected_voxels_chl.5_lp58_hp.5.npz')
+res = np.load(env.results + 'selected_voxels_chl.5_lp58_hp.5_th3500e15.npz')
 selected_voxels = res['selected_voxels'][()]
 labels = res['labels'][()]
 bands = res['bands'][()]
