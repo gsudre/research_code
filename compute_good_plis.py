@@ -11,7 +11,7 @@ import os
 
 bands = ([.5, 4], [4, 8], [8, 13], [13, 30], [30, 58])
 
-res = np.load(env.results + 'good_epochs_chl.5_lp58_hp.5_th4000e15.npz')
+res = np.load(env.results + 'good_epochs_chl.5_lp58_hp.5.npz')
 good_epochs = res['good_epochs'][()]
 adhds = spreadsheet.get_adults(True)
 nvs = spreadsheet.get_adults(False)
@@ -33,7 +33,7 @@ for subj in good_subjects:
     raw = mne.fiff.Raw(raw_fname, preload=True)
     fwd = mne.read_forward_solution(fwd_fname)
 
-    epochs = fgs.crop_good_epochs(raw, threshold=4000e-15, allowed_motion=.5, fmin=.5, fmax=58)
+    epochs = fgs.crop_good_epochs(raw, threshold=3500e-15, allowed_motion=.5, fmin=.5, fmax=58)
 
     stcs = ve.localize_epochs(epochs, fwd, reg=0)
 
@@ -46,5 +46,5 @@ for subj in good_subjects:
 
     plis[subj] = ve.compute_pli_epochs(stcs[:5], labels[subj], selected_voxels[subj], bands)
 
-np.savez(env.results + 'good_plis_chl.5_lp58_hp.5_th4000e15.npz', good_nvs=good_nvs, good_adhds=good_adhds, plis=plis, bands=bands, labels=labels)
-np.savez(env.results + 'selected_voxels_chl.5_lp58_hp.5_th4000e15.npz', good_nvs=good_nvs, good_adhds=good_adhds, selected_voxels=selected_voxels, bands=bands, labels=labels)
+np.savez(env.results + 'good_plis_chl.5_lp58_hp.5_th3500e15.npz', good_nvs=good_nvs, good_adhds=good_adhds, plis=plis, bands=bands, labels=labels)
+np.savez(env.results + 'selected_voxels_chl.5_lp58_hp.5_th3500e15.npz', good_nvs=good_nvs, good_adhds=good_adhds, selected_voxels=selected_voxels, bands=bands, labels=labels)
