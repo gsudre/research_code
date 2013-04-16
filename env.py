@@ -4,6 +4,16 @@ Simple module to return some path variables that are computer-dependent
 Gustavo Sudre, 03/2013
 '''
 
+
+def load(file):
+    import numpy
+    fid = numpy.load(file)
+    res = {}
+    for key, val in fid.iteritems():
+        res[key] = val[()]
+    return res
+
+
 import sys
 
 if sys.platform.find('linux') == 0:
