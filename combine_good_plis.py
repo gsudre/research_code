@@ -9,7 +9,15 @@ import spreadsheet
 import os
 
 
+def mirror(A):
+    # makes A a mirror matrix (mirrowing the lower triangle)
+    n = A.shape[0]
+    A[np.triu_indices(n)] = A.T[np.triu_indices(n)]
+    return A
+
+
 def combine_data(subjs, labels, pli):
+    # combines the data into a big subj x band x roi x roi mirrored matrix
     num_bands = len(pli[pli.keys()[0]])
     num_labels = len(labels[labels.keys()[0]])
     comb_pli = np.empty([len(subjs), num_bands, num_labels, num_labels])
@@ -18,9 +26,11 @@ def combine_data(subjs, labels, pli):
         # for each subject, sort the labels by name and copy the data in the sorted order
         lnames = [l.name for l in labels[subj]]
         lorder = np.argsort(lnames)
-        for l, label in enumerate(lorder):
-            for b in range(num_bands):
-                comb_pli[s, b, l, :] = pli[subj][b][label, :]
+        for b in range(num_bands):
+            M = mirror(pli[subj][b][:, :])
+            for l, label in enumerate(lorder):
+                for l2, label2 in enumerate(lorder):
+                    comb_pli[s, b, l, l2] = M[label, label2]
     lnames.sort()
     return comb_pli, lnames
 

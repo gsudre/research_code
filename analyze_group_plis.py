@@ -11,21 +11,13 @@ from scipy import stats
 import pdb
 
 
-def mirror(A):
-    # makes A a mirror matrix (mirrowing the lower triangle)
-    n = A.shape[0]
-    A[np.triu_indices(n)] = A.T[np.triu_indices(n)]
-    return A
-
-
 def conn_profile(pli):
     # calculating connectivity profile
     conn_pf = []
     for b in range(pli.shape[1]):
         pf = np.zeros([pli.shape[0], pli.shape[2]])  # subjs x labels
         for s in range(pli.shape[0]):
-            m = mirror(pli[s, b, :, :])
-            pf[s, :] = stats.nanmean(m, axis=-1)
+            pf[s, :] = stats.nanmean(pli[s, b, :, :], axis=-1)
         conn_pf.append(pf)
     return conn_pf
 
@@ -52,6 +44,8 @@ def get_net_conn(pli, lidx):
     for p, pair in enumerate(pairs):
         conn[:, p] = pli[:, pair[0], pair[1]]
     conn = stats.nanmean(conn, axis=-1)
+    # make sure to not return nan values
+    conn = np.delete(conn, np.nonzero(np.isnan(conn) == True))
     return conn
 
 
@@ -106,7 +100,8 @@ for n, net in enumerate(nets):
         lidx.append(l)
     nv_conn = get_net_conn(nv[:, b, :, :], lidx)
     adhd_conn = get_net_conn(adhd[:, b, :, :], lidx)
-    pdb.set_trace()
     t, p = stats.ttest_ind(nv_conn, adhd_conn)
+    if np.isnan(p):
+        pdb.set_trace()
     pvals2.append(p)
 
