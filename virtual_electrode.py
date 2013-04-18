@@ -93,7 +93,8 @@ def find_best_voxels_epochs(stcs, rois, bands, job_num=1, verbose=True):
 
     fs = 1. / (stcs[0].times[1] - stcs[0].times[0])
 
-    best_voxels = np.zeros([len(rois), len(bands)])
+    best_voxels = np.empty([len(rois), len(bands)])
+    best_voxels[:] = np.NaN
     for idr, roi in enumerate(rois):
         if verbose:
             print '\nLooking for best voxel in label ' + str(idr+1) + '/' + str(len(rois))
@@ -121,6 +122,41 @@ def find_best_voxels_epochs(stcs, rois, bands, job_num=1, verbose=True):
                 band_psd = np.mean(psd[:, index], axis=freq_axis)
                 best_voxels[idr, idb] = band_psd.argmax()
     return best_voxels
+
+
+def compute_roi_power(stcs, rois, bands, job_num=1, verbose=True):
+    # Returns the mean power (over epochs) for the voxel with maximal power per band in each ROI, in the format roi x band. stc is SourceEstimate, rois is a list of Labels, and bands is a list of length 2 vectors
+
+    fs = 1. / (stcs[0].times[1] - stcs[0].times[0])
+
+    power = np.zeros([len(rois), len(bands)])
+    for idr, roi in enumerate(rois):
+        if verbose:
+            print '\nCalculating power in label ' + str(idr+1) + '/' + str(len(rois))
+        # in each label, we sum the power over all epochs
+        psd = 0
+        bad_label = False
+        for stc in stcs:
+            try:
+                roi_activity = stc.in_label(roi)
+                tmp, freqs = dsp.compute_psd(roi_activity.data, fs, n_jobs=job_num)
+                # psd is voxels x freqs
+                psd += tmp
+            except ValueError:
+                print "Oops! No vertices in this label!"
+                bad_label = True
+
+        # then store the biggest power in each band. If there are no voxels in the label, replace it by NAN
+        if bad_label:
+            power[idr, :] = np.NaN
+        else:
+            for idb, band in enumerate(bands):
+                index = np.logical_and(freqs >= band[0], freqs <= band[1])
+                # taking care of the weird case in which there's only one voxel in the label
+                freq_axis = len(psd.shape) - 1
+                band_psd = np.mean(psd[:, index], axis=freq_axis)
+                power[idr, idb] = band_psd.max()
+    return power
 
 
 def localize_activity(subj, tmax=np.Inf, clean_only=True, reg=0):

@@ -12,7 +12,8 @@ import os
 def combine_data(subjs, labels, pli):
     num_bands = len(pli[pli.keys()[0]])
     num_labels = len(labels[labels.keys()[0]])
-    comb_pli = np.zeros([len(subjs), num_bands, num_labels, num_labels])
+    comb_pli = np.empty([len(subjs), num_bands, num_labels, num_labels])
+    comb_pli[:] = np.NaN
     for s, subj in enumerate(subjs):
         # for each subject, sort the labels by name and copy the data in the sorted order
         lnames = [l.name for l in labels[subj]]

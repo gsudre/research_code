@@ -11,7 +11,7 @@ import os
 
 bands = ([.5, 4], [4, 8], [8, 13], [13, 30], [30, 58])
 
-res = np.load(env.results + 'good_epochs_chl.5_lp58_hp.5.npz')
+res = np.load(env.results + 'good_epochs_chl.5_lp58_hp.5_th3500e15.npz')
 good_epochs = res['good_epochs'][()]
 adhds = spreadsheet.get_adults(True)
 nvs = spreadsheet.get_adults(False)

@@ -8,6 +8,7 @@ import glob
 import spreadsheet
 import os
 from scipy import stats
+import pdb
 
 
 def mirror(A):
@@ -37,11 +38,21 @@ def dmn_vs_rest(pf):
     nondmn = np.setdiff1d(nondmn, dmn)
     pvals = []
     for b in range(5):
-        A = pf[b][:, nondmn].flatten()
-        B = pf[b][:, dmn].flatten()
+        A = np.mean(pf[b][:, nondmn], axis=-1)
+        B = np.mean(pf[b][:, dmn], axis=-1)
         t, p = stats.ttest_ind(A, B)
         pvals.append(p)
     return pvals
+
+
+def get_net_conn(pli, lidx):
+    import itertools
+    pairs = list(itertools.combinations(lidx, 2))
+    conn = np.zeros([pli.shape[0], len(pairs)])
+    for p, pair in enumerate(pairs):
+        conn[:, p] = pli[:, pair[0], pair[1]]
+    conn = stats.nanmean(conn, axis=-1)
+    return conn
 
 
 execfile('/Users/sudregp/research_code/combine_good_plis.py')
@@ -61,8 +72,8 @@ adhd_pvals = dmn_vs_rest(adhd_pf)
 
 pvals = []
 for b in range(5):
-    A = nv_pf[b][:, :].flatten()
-    B = adhd_pf[b][:, :].flatten()
+    A = np.mean(nv_pf[b][:, dmn], axis=-1)
+    B = np.mean(adhd_pf[b][:, dmn], axis=-1)
     t, p = stats.ttest_ind(A, B)
     pvals.append(p)
 
@@ -71,4 +82,31 @@ print "DMN (showing only L)"
 for l in dmnl:
     print labels[l]
 
+# here we test the 7 networks in the Brookes 2011 paper (no cerebellum)
+# nets is a list of networks, and bands is the band in each network
+band_names = ['delta', 'theta', 'alpha', 'beta', 'gamma']
+nets = [['medialorbitofrontal-lh', 'medialorbitofrontal-rh', 'rostralanteriorcingulate-lh', 'rostralanteriorcingulate-rh', 'inferiorparietal-lh', 'inferiorparietal-rh'],
+        ['inferiorparietal-lh', 'superiorparietal-lh', 'supramarginal-lh', 'medialorbitofrontal-lh', 'rostralanteriorcingulate-lh'],
+        ['inferiorparietal-rh', 'superiorparietal-rh', 'supramarginal-rh', 'medialorbitofrontal-rh', 'rostralanteriorcingulate-rh'],
+        ['precentral-lh', 'precentral-rh', 'postcentral-lh', 'postcentral-rh'],
+        ['supramarginal-lh', 'supramarginal-rh'],
+        ['lateraloccipital-lh', 'lateraloccipital-rh'],
+        ['medialorbitofrontal-lh', 'medialorbitofrontal-rh', 'rostralanteriorcingulate-lh', 'rostralanteriorcingulate-rh']]
+
+bands = ['alpha', 'beta', 'beta', 'beta', 'beta', 'beta', 'beta', 'beta']
+
+pvals2 = []
+for n, net in enumerate(nets):
+    # find index corresponding to band
+    b = [b for b, band in enumerate(band_names) if band == bands[n]][0]
+    # find index corresponding to labels
+    lidx = []
+    for net_label in net:
+        l = [l for l, label in enumerate(labels) if label == net_label][0]
+        lidx.append(l)
+    nv_conn = get_net_conn(nv[:, b, :, :], lidx)
+    adhd_conn = get_net_conn(adhd[:, b, :, :], lidx)
+    pdb.set_trace()
+    t, p = stats.ttest_ind(nv_conn, adhd_conn)
+    pvals2.append(p)
 
