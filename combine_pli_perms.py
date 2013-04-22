@@ -14,7 +14,7 @@ subj_voxels = res['selected_voxels'][()]
 subjs = subj_voxels.keys()
 
 num_subj = len(subjs)
-rand_plis = []
+rand_plis = {}
 for s, subj in enumerate(subjs):
     print('Subject {}/{}').format(s + 1, num_subj)
     subj_rand_pli = np.empty([num_perm, num_bands, num_labels, num_labels])
