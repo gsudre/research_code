@@ -14,7 +14,8 @@ subj_voxels = res['selected_voxels'][()]
 subjs = subj_voxels.keys()
 
 num_subj = len(subjs)
-rand_plis = np.zeros([num_perm, num_subj, num_bands, num_labels, num_labels])
+rand_plis = np.empty([num_perm, num_subj, num_bands, num_labels, num_labels])
+rand_plis[:] = np.NaN
 for s, subj in enumerate(subjs):
     print('Subject {}/{}').format(s + 1, num_subj)
     rand_files = glob.glob(env.results + 'rand_' + str(perm_blocks) + '_plis_' + subj + '_*.npz')
