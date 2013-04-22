@@ -4,8 +4,8 @@ import numpy as np
 import glob
 import env
 
-num_perm = 100
-perm_blocks = 10
+num_perm = 200
+perm_blocks = 5
 num_bands = 5
 num_labels = 68
 

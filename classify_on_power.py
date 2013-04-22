@@ -6,40 +6,44 @@ Classifies between ADHD and NV based on band power
 # Authors: Gustavo Sudre, 01/2013
 
 import numpy as np
-from mne import fiff
 from sklearn.ensemble import RandomForestClassifier
+from sklearn import cross_validation
+from scipy import stats
+import env
 
+res = env.load(env.results + 'roi_power_chl.5_lp58_hp.5_th3500e15.npz')
 
-filename = '/Users/sudregp/MEG_data/analysis/rest/good_PSDS.npz'
-limits = [[1, 4], [4, 7], [8, 14], [14, 30], [30, 56], [64, 82], [82, 106], [124, 150]]
+subjs = list(res['good_nvs']) + list(res['good_adhds'])
+num_roi = 68
+num_band = 5
 
-npzfile = np.load(filename)
-psds = npzfile['psds']
-adhd = npzfile['adhd']
-freqs = npzfile['freqs']
+band_psd = np.empty([len(subjs), num_roi * num_band])
+labels = np.empty([len(subjs)])
+rm = []
+for s, subj in enumerate(subjs):
+    subj_data = res['power'][subj].ravel()
+    if not any(np.isnan(subj_data)):
+        band_psd[s, :] = subj_data
+        if any(subj in i for i in res['good_adhds']):
+            labels[s] = -1
+        else:
+            labels[s] = 1
+    else:
+        rm.append(s)
+band_psd = np.delete(band_psd, rm, axis=0)
+labels = np.delete(labels, rm, axis=0)
 
-ch_names = npzfile['info'][()]['ch_names']
-picks = npzfile['picks'][()]
-psd_channels = []
-p = picks[::-1]
-for i in p:
-    psd_channels.append(ch_names.pop(i))
-# now, select only the ones we want
-look_for = ['M.F']
-for sel in look_for:
-    picks = fiff.pick_channels_regexp(psd_channels, sel)
+band_psd = stats.mstats.zscore(band_psd, axis=0)
 
-band_psd = np.zeros([len(adhd), len(limits)])
-for idx, bar in enumerate(limits):
-    index = np.logical_and(freqs >= bar[0], freqs <= bar[1])
-    band_psd[:, idx] = np.mean(np.mean(psds[:, :, index], axis=2), axis=1)
+loo = cross_validation.LeaveOneOut(len(labels))
+clf = RandomForestClassifier(n_estimators=100, max_features=19, max_depth=None, min_samples_split=1)
+scores = []
+for r in range(10):
+    s = cross_validation.cross_val_score(clf, band_psd, labels, cv=loo)
+    scores.append(s.mean())
+print 'Accuracy in LOOCV: ' + str(np.mean(scores)) + ' +- ' + str(np.std(scores))
 
-clf = RandomForestClassifier(n_estimators=10)
-clf = clf.fit(band_psd, adhd.astype(int))
-clf.predict(band_psd)
+clf = clf.fit(band_psd, labels)
+tmp = clf.predict(band_psd)
+print 'Accuracy in training: ' + str(np.sum(tmp == labels)/float(len(labels))
 
-
-from sklearn import cross_validation, svm
-svc = svm.SVC(C=1, kernel='linear')
-kfold = cross_validation.KFold(len(adhd), n_folds=3)
-cross_validation.cross_val_score(svc, band_psd, adhd, cv=kfold, n_jobs=-1)
