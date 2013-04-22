@@ -15,7 +15,7 @@ import tarfile
 import shutil
 from datetime import datetime
 
-fname = '/Volumes/shaw\ data/fMRI/maskIds.xlsx'
+fname = '/Volumes/shaw data/fMRI/maskIds.xlsx'
 tmpFolder = '/Users/sudregp/Downloads/'
 mrFolder = '/Volumes/neuro/MR_data/'
 
