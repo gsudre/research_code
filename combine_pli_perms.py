@@ -20,7 +20,7 @@ for s, subj in enumerate(subjs):
     rand_files = glob.glob(env.results + 'rand_' + str(perm_blocks) + '_plis_' + subj + '_*.npz')
     cnt = 0
     for file in rand_files:
-        if cnt <= num_perm:
+        if cnt < num_perm:
             res = np.load(file)
             tmp = res['rand_plis'][()]
             rand_plis[cnt:(cnt + perm_blocks), s, :, :, :] = tmp
