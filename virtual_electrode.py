@@ -231,7 +231,8 @@ def compute_pli(src, labels, selected_voxels, bands, randomize=False, job_num=1)
             # if we're randomizing the phase (whilst preserving power), then we offset the ROI time series by some random value
             if randomize:
                 # we are randomizing the phase, so the shift should be within one complete cycle of the fastest frequency in the band
-                cycle = 1. / bands[band][1] * sfreq
+                # cycle = 1. / bands[band][1] * sfreq
+                cycle = len(label_ts)
                 offset = np.random.randint(0, cycle)
                 label_ts = np.roll(label_ts, offset)
 

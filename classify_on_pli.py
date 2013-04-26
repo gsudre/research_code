@@ -24,8 +24,10 @@ data = stats.mstats.zscore(data, axis=0)
 # removing any features with NaNs
 data = data[:, ~np.isnan(data).any(0)]
 
+data = stats.mstats.zscore(data, axis=0)
+
 loo = cross_validation.LeaveOneOut(len(labels))
-clf = RandomForestClassifier(n_estimators=10, max_features=np.sqrt(data.shape[1]), max_depth=None, min_samples_split=1)
+clf = RandomForestClassifier(n_estimators=500, max_features=np.sqrt(data.shape[1]), max_depth=None, min_samples_split=1)
 scores = []
 for r in range(0):
     s = cross_validation.cross_val_score(clf, data, labels, cv=loo)

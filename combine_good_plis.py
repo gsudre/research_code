@@ -35,6 +35,38 @@ def combine_data(subjs, labels, pli):
     return comb_pli, lnames
 
 
+def organize_random(plis, labels):
+    # Mirrors a set of random plis
+    num_bands = plis[plis.keys()[0]].shape[1]
+    num_perms = plis[plis.keys()[0]].shape[0]
+    sorted_plis = {}
+    for subj, pli in plis.iteritems():
+        # for each subject, sort the labels by name and copy the data in the sorted order
+        lnames = [l.name for l in labels[subj]]
+        lorder = np.argsort(lnames)
+
+        comb_pli = np.empty_like(plis[subj])
+        comb_pli[:] = np.NaN
+        for b in range(num_bands):
+            for p in range(num_perms):
+                M = mirror(plis[subj][p, b, :, :])
+                for l, label in enumerate(lorder):
+                    for l2, label2 in enumerate(lorder):
+                        comb_pli[p, b, l, l2] = M[label, label2]
+        sorted_plis[subj] = comb_pli
+    lnames.sort()
+    return sorted_plis, lnames
+
+
+def get_null_distributions(plis):
+    # returns a null distribution per subject x band that is computed taking the mean over ROIs. Format is dict['subj'][perms x bands]
+
+    rplis = {}
+    for subj, data in plis.iteritems():
+        rplis[subj] = np.nanmax(stats.nanmean(data, axis=-1), axis=-1)
+    return rplis
+
+
 res = env.load(env.results + 'good_plis_chl.5_lp58_hp.5_th3500e15_allsegs.npz')
 adhd, labels = combine_data(list(res['good_adhds']), res['labels'], res['plis'])
 nv, labels = combine_data(list(res['good_nvs']), res['labels'], res['plis'])
