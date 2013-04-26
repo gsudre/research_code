@@ -78,8 +78,8 @@ def find_good_segments(subj, data_path=env.data+'/MEG_data/fifs/',
             time_window_start[best_seq[-1]] + window, num_good_channels)
 
 
-def crop_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, allowed_motion=.5, verbose=1, fmin=0, fmax=np.Inf):
-    ''' Returns an Epochs structure with what time periods to use. window_length and step_length are in seconds'''
+def crop_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, allowed_motion=-1, verbose=1, fmin=0, fmax=np.Inf):
+    ''' Returns an Epochs structure with what time periods to use. window_length and step_length are in seconds. Set allowed_motion to < 0 to avoid checking head position. '''
 
     picks = mne.fiff.pick_channels_regexp(raw.info['ch_names'], 'M..-*')
     # pdb.set_trace()
@@ -97,9 +97,9 @@ def crop_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, a
 
     ''' We search for windows of the given length. If a good window is found, add it to the list and check the next window (non-overlapping). If the current window is no good, step to the next available window. '''
 
-    # if there's no CHL, discard the subject right away
-    if hm.get_head_motion(raw) is None:
-        return None
+    # # if there's no CHL, discard the subject right away
+    # if hm.get_head_motion(raw) is None:
+    #     return None
 
     events = []
     cur = 0
@@ -109,7 +109,15 @@ def crop_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, a
         chunk = raw[picks, cur:(cur + window_size)][0]
         peak2peak = abs(np.amax(chunk, axis=1) - np.amin(chunk, axis=1))
         num_good_channels = np.sum(peak2peak < threshold, axis=0)
-        max_motion = hm.get_max_motion(raw, smin=cur, smax=(cur + window_size))
+        # We can either completely disregard head position markers
+        if allowed_motion < 0:
+            max_motion = -np.Inf
+        # if we're using them, check if the subject actually has them first
+        elif hm.get_head_motion(raw) is not None:
+            max_motion = hm.get_max_motion(raw, smin=cur, smax=(cur + window_size))
+        # if the subject doesn't have them, return right away
+        else:
+            return None
         # print str(max_motion)
         # if all channels have p2p smaller than threshold, check head movement
         if num_good_channels == len(picks) and max_motion < allowed_motion:
@@ -127,3 +135,74 @@ def crop_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, a
         epochs = None
 
     return epochs
+
+
+def read_marker_files(dataDir='/Volumes/neuro/MEG_data/raw/'):
+    ''' Reads in all the markers form the ds raw data '''
+
+    import glob
+    import os
+
+    dates = glob.glob(dataDir + '/*')
+    markers = {}
+    for date in dates:
+        # figure out the datasets with resting markers
+        restF = glob.glob(date + '/*rest*-f.ds')
+        # we assume that we only have one -f file per subject!
+        for dsname in restF:
+            # figuring out subject code
+            ds_name = dsname.split('/')[-1]
+            subj_code = ds_name.split('_')[0]
+
+            # open Marker file if it exists
+            if os.path.isfile(dsname + '/MarkerFile.mrk'):
+                fid = open(dsname + '/MarkerFile.mrk')
+                lines_list = fid.readlines()
+                # finding the lines with markers
+                mrk_lines = [line for line in lines_list if line.find('+0') > 0]
+
+                # figure out what to do based on how many markers were found for subject!
+                if len(mrk_lines) == 1:
+                    print dsname + ' only has 1 marker: old -f?'
+                elif len(mrk_lines) % 2 == 1:
+                    print dsname + ' has odd number of markers!'
+                else:
+                    # if we have an even number of events, collect them
+                    markers[subj_code] = [float(line.split()[-1]) for line in mrk_lines]
+
+
+def get_good_events(markers, time, seg_len):
+    ''' Returns a matrix of events in MNE style marking the segments of good data. Receives markers (list with markers for artifacts), time (array with time vector), and seg_len (how many seconds in each block). '''
+
+    sfreq = 1. / (time[1] - time[0])
+    sample_size = seg_len * sfreq
+
+    # first, we remove from the time vector all the bad segments
+    cur_event = 0
+    while cur_event < len(markers):
+        index = (time < markers[cur_event]) | (time > markers[cur_event + 1])
+        time = time[index]
+        cur_event += 2
+
+    # stores the event in the MNE format ([sample, 0, 0])
+    good_samples = []
+
+    # now we traverse the array of good times and accumulate blocks of length sample_size
+    heap = []
+    for t in time:
+        # initial condition
+        if len(heap) == 0:
+            heap.append(t)
+        # if not sequential, empty the heap and initialize it
+        elif (t - heap[-1]) > sfreq:
+            heap = [t]
+        # otherwise, it's a sequence. Check if we're done to dump the entire heap
+        else:
+            heap.append(t)
+            if len(heap) == sample_size:
+                good_samples.append([heap[0], 0, 0])
+                heap = []
+
+    events = np.array(good_samples)
+
+    return events
