@@ -206,3 +206,36 @@ def get_good_events(markers, time, seg_len):
     events = np.array(good_samples)
 
     return events
+
+
+def read_chl_events(raw, threshold=.5):
+    ''' Returns a list of events with the time points where there was crossing of the head movement threshold. raw is the raw structure. '''
+
+    # just like the marker files, the goal here is to create events any time the CHL signal goes bad and then becomes good again (i.e. marking the bad segment)
+    markers = []
+    cur = 0
+    motion = hm.get_head_motion(raw)
+
+    bad_seg = False
+    while cur < len(motion):
+        movement = np.sqrt(np.sum(motion[:, cur]**2, axis=0))
+        # if we just started or finished a bad segment
+        if (not bad_seg and movement >= threshold) or (bad_seg and movement[cur] < threshold):
+            markers.append(raw.times[cur])
+            bad_seg = not bad_seg
+        cur += 1
+
+    if len(markers) % 2 == 1:
+        print 'Error: odd number of markers!'
+        return None
+    else:
+        return markers
+
+
+def crop_clean_epochs(raw, events, seg_len=13):
+    ''' Returns an Epochs structure with what epochs to use. raw is the usual structure, events is the MNE-like events array, and window_length is in seconds. '''
+
+    picks = mne.fiff.pick_channels_regexp(raw.info['ch_names'], 'M..-*')
+    epochs = mne.Epochs(raw, events, None, 0, seg_len, keep_comp=True, preload=True, baseline=None, detrend=0, picks=picks)
+
+    return epochs
