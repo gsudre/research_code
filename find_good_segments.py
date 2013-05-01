@@ -169,6 +169,8 @@ def read_marker_files(dataDir='/Volumes/neuro/MEG_data/raw/'):
                 else:
                     # if we have an even number of events, collect them
                     markers[subj_code] = [float(line.split()[-1]) for line in mrk_lines]
+                    print dsname + ': ' + str(len(markers[subj_code])) + ' markers'
+    return markers
 
 
 def get_good_events(markers, time, seg_len):
@@ -216,14 +218,22 @@ def read_chl_events(raw, threshold=.5):
     cur = 0
     motion = hm.get_head_motion(raw)
 
-    bad_seg = False
-    while cur < len(motion):
-        movement = np.sqrt(np.sum(motion[:, cur]**2, axis=0))
-        # if we just started or finished a bad segment
-        if (not bad_seg and movement >= threshold) or (bad_seg and movement[cur] < threshold):
-            markers.append(raw.times[cur])
-            bad_seg = not bad_seg
-        cur += 1
+    # # this works, but I want to find a faster way
+    # bad_seg = False
+    # while cur < len(motion):
+    #     movement = np.sqrt(np.sum(motion[:, cur]**2, axis=0))
+    #     # if we just started or finished a bad segment
+    #     if (not bad_seg and movement >= threshold) or (bad_seg and movement[cur] < threshold):
+    #         markers.append(raw.times[cur])
+    #         bad_seg = not bad_seg
+    #     cur += 1
+
+    movement = np.sqrt(np.sum(motion**2, axis=0))
+    bad_segs = np.nonzero(movement >= threshold)
+    # finding non-consecutive bad segments
+    start_bad_segs = np.nonzero(np.diff(bad_segs) > 1)[0] + np.ones(1)
+    start_bad_segs = np.concatenate(([0], start_bad_segs))
+    # diffs stores the positions when the bad segments started
 
     if len(markers) % 2 == 1:
         print 'Error: odd number of markers!'

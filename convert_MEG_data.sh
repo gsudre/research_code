@@ -20,6 +20,6 @@ subjectCode=${splitDash[${lastP}]}
 
 mne_ctf2fiff --ds $dsDir --fif tmp.fif
 mne_rename_channels --fif tmp.fif --alias ~/.mne/renameUPT001toSTI104.txt
-mne_process_raw --raw tmp.fif --projoff --lowpass 100 --decim 2 --grad 3 \
-				--save "$outDir"/"$subjectCode"_"$task"_LP100_CP3_DS300_raw.fif
+mne_process_raw --raw tmp.fif --projoff --lowpass 58 --highpass 0.5 --decim 2 --grad 3 \
+				--save "$outDir"/"$subjectCode"_"$task"_LP58_HP.5_CP3_DS300_raw.fif
 rm tmp.fif
