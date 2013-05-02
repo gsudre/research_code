@@ -176,7 +176,8 @@ def read_marker_files(dataDir='/Volumes/neuro/MEG_data/raw/'):
 def get_good_events(markers, time, seg_len):
     ''' Returns a matrix of events in MNE style marking the segments of good data. Receives markers (list with markers for artifacts), time (array with time vector), and seg_len (how many seconds in each block). '''
 
-    sfreq = 1. / (time[1] - time[0])
+    time_step = time[1] - time[0]
+    sfreq = 1. / time_step
     sample_size = seg_len * sfreq
 
     # first, we remove from the time vector all the bad segments
@@ -195,8 +196,8 @@ def get_good_events(markers, time, seg_len):
         # initial condition
         if len(heap) == 0:
             heap.append(t)
-        # if not sequential, empty the heap and initialize it
-        elif (t - heap[-1]) > sfreq:
+        # if not sequential, empty the heap and initialize it. Take twice sampling rate to avoid rounding errors
+        elif (t - heap[-1]) > (2 * time_step):
             heap = [t]
         # otherwise, it's a sequence. Check if we're done to dump the entire heap
         else:
