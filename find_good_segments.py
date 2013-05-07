@@ -138,7 +138,7 @@ def crop_good_epochs(raw, window_length=13, step_length=1, threshold=4000e-13, a
 
 
 def read_marker_files(dataDir='/Volumes/neuro/MEG_data/raw/'):
-    ''' Reads in all the markers form the ds raw data '''
+    ''' Reads in all the markers form the ds raw data. Returns a list with markers for each subject in a dictionary. Each item in the dict is a list of timepoints, where odd items mark the time point where the bad segment started, and even numbers where they ended. '''
 
     import glob
     import os
@@ -211,36 +211,33 @@ def get_good_events(markers, time, seg_len):
     return events
 
 
-def read_chl_events(raw, threshold=.5):
-    ''' Returns a list of events with the time points where there was crossing of the head movement threshold. raw is the raw structure. '''
+def read_chl_events(raw, times, threshold=.5):
+    ''' Returns a list of events with the time points where there was crossing of the head movement threshold (begin and end). raw is the raw structure, times is a time vector '''
 
     # just like the marker files, the goal here is to create events any time the CHL signal goes bad and then becomes good again (i.e. marking the bad segment)
     markers = []
-    cur = 0
     motion = hm.get_head_motion(raw)
 
-    # # this works, but I want to find a faster way
-    # bad_seg = False
-    # while cur < len(motion):
-    #     movement = np.sqrt(np.sum(motion[:, cur]**2, axis=0))
-    #     # if we just started or finished a bad segment
-    #     if (not bad_seg and movement >= threshold) or (bad_seg and movement[cur] < threshold):
-    #         markers.append(raw.times[cur])
-    #         bad_seg = not bad_seg
-    #     cur += 1
-
     movement = np.sqrt(np.sum(motion**2, axis=0))
-    bad_segs = np.nonzero(movement >= threshold)
-    # finding non-consecutive bad segments
-    start_bad_segs = np.nonzero(np.diff(bad_segs) > 1)[0] + np.ones(1)
-    start_bad_segs = np.concatenate(([0], start_bad_segs))
-    # diffs stores the positions when the bad segments started
 
-    if len(markers) % 2 == 1:
-        print 'Error: odd number of markers!'
-        return None
-    else:
-        return markers
+    # smooth the movement
+    movement = mne.filter.low_pass_filter(movement, 300, 1)
+    # store the sample locations where movement crosses threshold
+    bad_segs = np.nonzero(movement >= threshold)[0]
+
+    if len(bad_segs) > 0:
+        # finding non-consecutive bad segments. We need to add one because we used diff() before
+        start_bad_segs = np.nonzero(np.diff(bad_segs) > 1)[0] + np.ones(1)
+        # add back the first bad segment
+        start_bad_segs = np.concatenate(([0], start_bad_segs))
+        # now start_bad_segs stores the positions when the bad segments started. Following the same logic, we compute the end of each segment
+        end_bad_segs = np.nonzero(np.diff(bad_segs) > 1)[0]
+        end_bad_segs = np.concatenate((end_bad_segs, [len(bad_segs) - 1]))
+        start_end = np.sort(np.concatenate((start_bad_segs, end_bad_segs)))
+
+        markers = [times[bad_segs[int(i)]] for i in start_end]
+
+    return markers
 
 
 def crop_clean_epochs(raw, events, seg_len=13):
