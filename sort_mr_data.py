@@ -81,7 +81,7 @@ for file in dicoms:
             print '\tDifferent numbers of respiration and ECG data!'
         elif len(ecgData) == 1:
             print '\tOnly found one set of physiological data: check that it is a child!'
-        elif len(ecgData) != 4:
+        elif len(ecgData) != 5:  # adults should have 4 + 1 physiological files
             print '\tFound unexpected number of physiological files (%d)!' % len(ecgData)
 
     # moving extracted files inside maskId folder
