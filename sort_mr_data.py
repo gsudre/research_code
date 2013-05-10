@@ -13,17 +13,13 @@ import os
 import glob
 import tarfile
 import shutil
-from datetime import datetime
 
-fname = '/Volumes/shaw data/fMRI/maskIds.xlsx'
+fname = '/Users/sudregp/tmp/MR_records.xlsx'
 tmpFolder = '/Users/sudregp/Downloads/'
 mrFolder = '/Volumes/neuro/MR_data/'
 
 wb = load_workbook(filename=fname)
 ws = wb.worksheets[0]
-
-curRow = ws.get_highest_row()
-curMaskId = ws.cell('A' + str(curRow)).value
 
 dicoms = glob.glob(tmpFolder + '/*-DICOM*')
 print 'Found these DICOM files in ' + tmpFolder + ':\n'
@@ -41,9 +37,17 @@ for file in dicoms:
     mrn = bar[1]
     scanId = bar[3]
 
-    # create a new maskId and jump to the next line
-    curRow += 1
-    curMaskId += 1
+    # search backwards for the subject's mask ID. Here, we assume it's the latest mask ID a subject was assigned, so that we don't have to search based on the date too
+    curRow = ws.get_highest_row()
+    curMaskId = None
+    while curRow > 0 and curMaskId is None:
+        if int(mrn) == int(ws.cell('A' + str(curRow)).value):
+            curMaskId = int(ws.cell('L' + str(curRow)).value)
+            print 'Found mask ID ' + str(curMaskId)
+        else:
+            curRow -= 1
+    if curRow == 0:
+        print 'Error: ' + subjectName + ' not found in spreadsheet!'
 
     subjFolder = mrFolder + '/' + subjectName + '-' + mrn + '/'
     targetFolder = subjFolder + '/' + str(curMaskId)
@@ -88,15 +92,3 @@ for file in dicoms:
     folder2move = glob.glob(targetFolder + '/*' + mrn + '/*')
     shutil.move(folder2move[0], targetFolder)
     os.rmdir(targetFolder + '/' + subjectName + '-' + mrn + '/')
-
-    # update spreadsheet
-    ws.cell('A' + str(curRow)).value = curMaskId
-    ws.cell('B' + str(curRow)).value = mrn
-
-    tmp = folder2move[0].split('/')
-    tmp = tmp[-1].split('-')
-    myDate = datetime.strptime(tmp[0], '%Y%m%d')
-    ws.cell('C' + str(curRow)).value = myDate.strftime('%m/%d/%Y')
-
-wb.save(fname)
-
