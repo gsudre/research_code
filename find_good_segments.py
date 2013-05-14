@@ -181,6 +181,7 @@ def get_good_events(markers, time, seg_len):
     sample_size = seg_len * sfreq
 
     # first, we remove from the time vector all the bad segments
+    original_time = time
     cur_event = 0
     while cur_event < len(markers):
         index = (time < markers[cur_event]) | (time > markers[cur_event + 1])
@@ -203,7 +204,9 @@ def get_good_events(markers, time, seg_len):
         else:
             heap.append(t)
             if len(heap) == sample_size:
-                good_samples.append([heap[0], 0, 0])
+                # convert from time point to sample
+                sample = np.nonzero(original_time == heap[0])[0][0]
+                good_samples.append([sample, 0, 0])
                 heap = []
 
     events = np.array(good_samples)
