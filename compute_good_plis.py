@@ -5,15 +5,12 @@ import numpy as np
 import virtual_electrode as ve
 import env
 import find_good_segments as fgs
-import glob
-import spreadsheet
-import os
 
-seg_len = 13
 
 res = np.load(env.results + 'num_clean_epochs_chl.5_lp58_hp.5_visual.npz')
 data_mrks = res['markers'][()]
 chl_mrks = res['chl_mrks'][()]
+seg_len = res['seg_len'][()]
 
 res = env.load(env.results + 'selected_voxels_all_chl.5_lp58_hp.5_visual.npz')
 labels = res['labels']

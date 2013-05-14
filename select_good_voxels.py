@@ -10,17 +10,17 @@ import spreadsheet
 import os
 
 bands = ([.5, 4], [4, 8], [8, 13], [13, 30], [30, 58])
-seg_len = 13
 res = np.load(env.results + 'num_clean_epochs_chl.5_lp58_hp.5_visual.npz')
 
 good_epochs = res['num_clean_epochs'][()]
 data_mrks = res['markers'][()]
 chl_mrks = res['chl_mrks'][()]
+seg_len = res['seg_len'][()]
 adhds = spreadsheet.get_adults(True)
 nvs = spreadsheet.get_adults(False)
 
-good_nvs = [subj for subj, val in good_epochs.iteritems() if val > 13 and subj in nvs]
-good_adhds = [subj for subj, val in good_epochs.iteritems() if val > 13 and subj in adhds]
+good_nvs = [subj for subj, val in good_epochs.iteritems() if val > seg_len and subj in nvs]
+good_adhds = [subj for subj, val in good_epochs.iteritems() if val > seg_len and subj in adhds]
 good_subjects = good_nvs + good_adhds
 selected_voxels = {}
 # we had to save the labels as well because the order in which the labels are loaded changes between Mac and Linux, and we need the order to be constant for the selected_voxels matrix
@@ -50,4 +50,4 @@ for subj in good_subjects:
     selected_voxels[subj] = ve.find_best_voxels_epochs(stcs, labels[subj], bands, job_num=1)
 
 
-np.savez(env.results + 'selected_voxels_all_chl.5_lp58_hp.5_visual.npz', good_nvs=good_nvs, good_adhds=good_adhds, selected_voxels=selected_voxels, bands=bands, labels=labels)
+np.savez(env.results + 'selected_voxels_all_chl.5_lp58_hp.5_visual.npz', good_nvs=good_nvs, good_adhds=good_adhds, selected_voxels=selected_voxels, bands=bands, labels=labels, seg_len=seg_len)

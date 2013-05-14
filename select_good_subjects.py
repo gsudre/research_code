@@ -5,7 +5,7 @@ import mne
 import env
 import numpy as np
 
-seg_len = 13
+seg_len = 13.65  # corresponds to 4096 samples in our sampling rate of 300Hz
 
 # subjects for which to get the data, but don't check for CHL
 no_chl_subjs = ['GYURGRWX', 'INSJTGTJ', 'BPPPDMXT', 'ILUVLFGJ',
@@ -37,4 +37,4 @@ for subj, mrks in markers.iteritems():
         epochs = fgs.crop_clean_epochs(raw, events, seg_len=seg_len)
         num_clean_epochs[subj] = epochs.get_data().shape[0]
 
-np.savez(env.results + 'num_clean_epochs_chl.5_lp58_hp.5_visual', num_clean_epochs=num_clean_epochs, markers=markers, chl_mrks=chl_mrks)
+np.savez(env.results + 'num_clean_epochs_chl.5_lp58_hp.5_visual', num_clean_epochs=num_clean_epochs, markers=markers, chl_mrks=chl_mrks, seg_len=seg_len)
