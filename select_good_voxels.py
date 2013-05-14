@@ -6,7 +6,6 @@ import virtual_electrode as ve
 import env
 import find_good_segments as fgs
 import glob
-import spreadsheet
 import os
 
 bands = ([.5, 4], [4, 8], [8, 13], [13, 30], [30, 58])
@@ -16,8 +15,8 @@ good_epochs = res['num_clean_epochs'][()]
 data_mrks = res['markers'][()]
 chl_mrks = res['chl_mrks'][()]
 seg_len = res['seg_len'][()]
-adhds = spreadsheet.get_adults(True)
-nvs = spreadsheet.get_adults(False)
+adhds = [line.strip() for line in open(env.tmp + 'adult_adhd.txt', 'r')]
+nvs = [line.strip() for line in open(env.tmp + 'adult_nv.txt', 'r')]
 
 good_nvs = [subj for subj, val in good_epochs.iteritems() if val > seg_len and subj in nvs]
 good_adhds = [subj for subj, val in good_epochs.iteritems() if val > seg_len and subj in adhds]

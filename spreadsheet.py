@@ -50,7 +50,7 @@ def get_all_subjects():
     return subjs
 
 
-def get_adults(adhd):
+def get_adults(adhd, verbose=False):
     ''' Returns a list of subject codes, which can be ADHDs or NVs, depending on the argument to the function '''
     ws = open_spreadsheet()
 
@@ -73,6 +73,8 @@ def get_adults(adhd):
             dx = str(ws.cell('P' + str(cnt)).value)
             if adult and (dx == look_for):
                 subjs.append(subj_code)
+                if verbose:
+                    print subj_code
 
         cnt = cnt + 1
 

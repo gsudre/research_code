@@ -13,14 +13,13 @@ def load(file):
         res[key] = val[()]
     return res
 
-
 import sys
 
 if sys.platform.find('linux') == 0:
     data = '/data/sudregp/'
     maps = '/home/sudregp/research_code/maps/'
     results = '/data/sudregp/results/'
-    tmp = '/scratch/'
+    tmp = '/data/sudregp/tmp/'
 else:
     data = '/Volumes/neuro/'
     maps = '/Users/sudregp/research_code/maps/'
