@@ -5,7 +5,7 @@ import mne
 import env
 import numpy as np
 
-seg_len = 13.654  # corresponds to 4096 samples in our sampling rate of 300Hz
+seg_len = 13.66  # corresponds to 4096 samples in our sampling rate of 300Hz
 
 # subjects for which to get the data, but don't check for CHL
 no_chl_subjs = ['GYURGRWX', 'INSJTGTJ', 'BPPPDMXT', 'ILUVLFGJ',
