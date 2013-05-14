@@ -9,30 +9,24 @@ import glob
 import spreadsheet
 import os
 
-bands = ([.5, 4], [4, 8], [8, 13], [13, 30], [30, 58])
 seg_len = 13
-res = np.load(env.results + 'num_clean_epochs_chl.5_lp58_hp.5_visual.npz')
 
-good_epochs = res['num_clean_epochs'][()]
+res = np.load(env.results + 'num_clean_epochs_chl.5_lp58_hp.5_visual.npz')
 data_mrks = res['markers'][()]
 chl_mrks = res['chl_mrks'][()]
-adhds = spreadsheet.get_adults(True)
-nvs = spreadsheet.get_adults(False)
 
-good_nvs = [subj for subj, val in good_epochs.iteritems() if val > 13 and subj in nvs]
-good_adhds = [subj for subj, val in good_epochs.iteritems() if val > 13 and subj in adhds]
-good_subjects = good_nvs + good_adhds
+res = env.load(env.results + 'selected_voxels_all_chl.5_lp58_hp.5_visual.npz')
+labels = res['labels']
+selected_voxels = res['selected_voxels']
+good_subjects = list(res['good_nvs']) + list(res['good_adhds'])
+
 plis = {}
-selected_voxels = {}
-# we had to save the labels as well because the order in which the labels are loaded changes between Mac and Linux, and we need the order to be constant for the selected_voxels matrix
-labels = {}
 
 for subj in good_subjects:
     raw_fname = env.data + '/MEG_data/fifs/' + subj + '_rest_LP58_HP.5_CP3_DS300_raw.fif'
     fwd_fname = env.data + '/MEG_data/analysis/rest/' + subj + '_rest_LP100_CP3_DS300_raw-5-fwd.fif'
-    labels_folder = os.environ['SUBJECTS_DIR'] + '/' + subj + '/labels/'
 
-    # preloading makes computing the covariance a lot faster
+   # preloading makes computing the covariance a lot faster
     raw = mne.fiff.Raw(raw_fname, preload=True)
     fwd = mne.read_forward_solution(fwd_fname)
     _, times = raw[:, :]
@@ -43,14 +37,6 @@ for subj in good_subjects:
 
     stcs = ve.localize_epochs(epochs, fwd, reg=0)
 
-    label_names = glob.glob(labels_folder + '/*.label')
+    plis[subj] = ve.compute_pli_epochs(stcs, labels[subj], selected_voxels[subj], res['bands'])
 
-    print 'Reading subject labels...'
-    labels[subj] = [mne.read_label(ln) for ln in label_names]
-
-    selected_voxels[subj] = ve.find_best_voxels_epochs(stcs, labels[subj], bands, job_num=1)
-
-    plis[subj] = ve.compute_pli_epochs(stcs, labels[subj], selected_voxels[subj], bands)
-
-np.savez(env.results + 'good_plis_all_chl.5_lp58_hp.5_visual.npz', good_nvs=good_nvs, good_adhds=good_adhds, plis=plis, bands=bands, labels=labels)
-np.savez(env.results + 'selected_voxels_all_chl.5_lp58_hp.5_visual.npz', good_nvs=good_nvs, good_adhds=good_adhds, selected_voxels=selected_voxels, bands=bands, labels=labels)
+np.savez(env.results + 'good_plis_all_chl.5_lp58_hp.5_visual.npz', plis=plis)

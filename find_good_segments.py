@@ -247,6 +247,6 @@ def crop_clean_epochs(raw, events, seg_len=13):
     ''' Returns an Epochs structure with what epochs to use. raw is the usual structure, events is the MNE-like events array, and window_length is in seconds. '''
 
     picks = mne.fiff.pick_channels_regexp(raw.info['ch_names'], 'M..-*')
-    epochs = mne.Epochs(raw, events, None, 0, seg_len, keep_comp=True, preload=True, baseline=None, detrend=0, picks=picks)
+    epochs = mne.Epochs(raw, events, None, 0, seg_len, keep_comp=True, preload=True, baseline=(None, None), picks=picks)
 
     return epochs
