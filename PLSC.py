@@ -12,15 +12,49 @@ from openpyxl.reader.excel import load_workbook
 import datetime
 import pdb
 
-from sklearn.pls import PLSCanonical, PLSRegression, CCA
-X = [[0., 0., 1.], [1.,0.,0.], [2.,2.,2.], [2.,5.,4.]]
-Y = [[0.1, -0.2], [0.9, 1.1], [6.2, 5.9], [11.9, 12.3]]
-plsca = PLSCanonical(n_components=2)
-plsca.fit(X, Y)
- 
-PLSCanonical(algorithm='nipals', copy=True, max_iter=500, n_components=2,
-             scale=True, tol=1e-06)
-X_c, Y_c = plsca.transform(X, Y)
+
+def PLSC(X, Y, groups, num_comps=2):
+    ''' Returns results of Partial Least Squares Correlation. groups is a list of 2-index lists, such as [[0, 10]] '''
+
+    # first, center and normalize matrices within groups. We remove the mean of each column, and then normalize it so that the sum squared of a column equals to 1.
+    Xn = np.empty_like(X)
+    Yn = np.empty_like(Y)
+    for g in groups:
+        Xg = X[g[0]:g[1], :]
+        Yg = Y[g[0]:g[1], :]
+
+        Xc = Xg - np.mean(Xg, axis=0)
+        SSx = np.sum(Xc ** 2, axis=0)
+        # make sure we don't divide by 0
+        SSx[SSx == 0] = 1e-16
+        # returning to the same sign as centered version, which gets lost after squaring
+        signs = np.sign(Xc)
+        signs[signs == 0] = 1
+        Xn[g[0]:g[1], :] = signs * np.sqrt(Xc ** 2 / SSx)
+
+        Yc = Yg - np.mean(Yg, axis=0)
+        SSy = np.sum(Yc ** 2, axis=0)
+        SSy[SSy == 0] = 1e-16
+        signs = np.sign(Yc)
+        signs[signs == 0] = 1
+        Yn[g[0]:g[1], :] = signs * np.sqrt(Yc ** 2 / SSy)
+
+    # now, compute the correlation matrix within groups
+    R = np.zeros([num_seeds * num_groups, Xn.shape[1]])
+    cnt = 0
+    for g in groups:
+        Xg = Xn[g[0]:g[1], :]
+        Yg = Yn[g[0]:g[1], :]
+
+        R[cnt:(cnt + num_seeds), :] = np.dot(Yg.T, Xg)
+        cnt += num_seeds
+
+    # now we run SVD on the correlation matrix
+    U, S, Vh = np.linalg.svd(R)
+    V = Vh.T
+
+    return S[:num_comps], V[:, :num_comps]
+
 
 X = [[2, 5, 6, 1, 9, 1, 7, 6, 2, 1, 7, 3],
     [4, 1, 5, 8, 8, 7, 2, 8, 6, 4, 8, 2],
@@ -54,43 +88,10 @@ Y = np.array(
     [8, 8],
     [7, 8]])
 
-groups = [[0, 3], [3, 6], [6, 10]]
 num_groups = len(groups)
 num_seeds = Y.shape[1]
 
-# first, center and normalize matrices within groups. We remove the mean of each column, and then normalize it so that the sum squared of a column equals to 1.
-Xn = np.empty_like(X)
-Yn = np.empty_like(Y)
-for g in groups:
-    Xg = X[g[0]:g[1], :]
-    Yg = Y[g[0]:g[1], :]
-
-    Xc = Xg - np.mean(Xg, axis=0)
-    SSx = np.sum(Xc ** 2, axis=0)
-    # make sure we don't divide by 0
-    SSx[SSx == 0] = 1e-16
-    # returning to the same sign as centered version, which gets lost after squaring
-    signs = np.sign(Xc)
-    signs[signs == 0] = 1
-    Xn[g[0]:g[1], :] = signs * np.sqrt(Xc ** 2 / SSx)
-
-    Yc = Yg - np.mean(Yg, axis=0)
-    SSy = np.sum(Yc ** 2, axis=0)
-    SSy[SSy == 0] = 1e-16
-    signs = np.sign(Yc)
-    signs[signs == 0] = 1
-    Yn[g[0]:g[1], :] = signs * np.sqrt(Yc ** 2 / SSy)
-
-# now, compute the correlation matrix within groups
-R = np.zeros([num_seeds * num_groups, Xn.shape[1]])
-cnt = 0
-for g in groups:
-    Xg = Xn[g[0]:g[1], :]
-    Yg = Yn[g[0]:g[1], :]
-
-    R[cnt:(cnt + num_seeds), :] = np.dot(Yg.T, Xg)
-    cnt += num_seeds
-
-# now we run SVD on the correlation matrix
-U, S, Vh = np.linalg.svd(R)
-V = Vh.T
+cortex = X
+subcortex = Y
+groups = [[0, 3], [3, 6], [6, 9]]
+sv, saliences = PLSC(X, Y, groups)
