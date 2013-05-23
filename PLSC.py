@@ -66,7 +66,7 @@ def PLSC(X, Y, groups, num_comps=2):
         cnt += num_seeds
 
     # now we run SVD on the correlation matrix
-    U, S, Vh = np.linalg.svd(R)
+    U, S, Vh = np.linalg.svd(R, full_matrices=False)
     V = Vh.T
 
     return S[:num_comps], V[:, :num_comps]
@@ -114,12 +114,15 @@ subcortex = scipy.delete(subcortex, 0, 0)
 # format it to be subjects x variables
 subcortex = subcortex.T
 
+# selecting only a few vertices in the thalamus
+my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
+
 X = cortex
 groups = [[0, X.shape[0]]]
-num_thalamus = subcortex.shape[1]
+num_thalamus = len(my_sub_vertices)
 sv = np.empty([num_thalamus, max_comps])
 saliences = np.empty([num_thalamus, cortex.shape[1], max_comps])
-for i in range(num_thalamus):
-    print str(i) + '/' + str(subcortex.shape[1])
-    Y = subcortex[:, i]
+for i, v in enumerate(my_sub_vertices):
+    print str(i+1) + '/' + str(num_thalamus)
+    Y = subcortex[:, v]
     sv[i, :], saliences[i, :, :] = PLSC(X, Y, groups, num_comps=max_comps)
