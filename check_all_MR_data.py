@@ -13,13 +13,14 @@ def check_for_data(dtype, date, folder):
         dir_num = [d for d, path in enumerate(dirs) if (path.find(date.strftime('%Y_%m_%d')) > 0) or (path.find(date.strftime('%Y%m%d')) > 0)]
         if len(dir_num) > 0:
             # we found a directory with the specific date inside the mask id
-            # now, get the name of the text file
-            txtfile = glob.glob(dirs[dir_num[0]] + '/README*.txt')
-            fid = open(txtfile[0])
-            text = fid.read()
-            pos = text.lower().find(dtype)
-            if pos > 0:
-                return 1
+            for d in dir_num:
+                # now, get the name of the text file
+                txtfile = glob.glob(dirs[d] + '/README*.txt')
+                fid = open(txtfile[0])
+                text = fid.read()
+                pos = text.lower().find(dtype)
+                if pos > 0:
+                    return 1
 
     # if we get to here, we didn't find the type fo data in any of the matching folders
     print('Data {} not found on {} in {}').format(dtype, date.strftime('%Y_%m_%d'), folder)
@@ -42,7 +43,7 @@ path = '/Volumes/neuro/MR_data/'
 has = {}
 
 # open spreadsheet
-fname = r'/Users/sudregp/Documents/Aug.2011.M.L.3T.List.xlsx'
+fname = r'/Users/sudregp/tmp/MR_records.xlsx'
 
 from openpyxl.reader.excel import load_workbook
 wb = load_workbook(filename=fname)
@@ -77,7 +78,7 @@ for row_idx in range(2, ws.get_highest_row()):
                    folder.find(first_name) > 0)]
 
     # check whether the subject scanned
-    scanned = ws.cell('V' + str(row_idx)).value != 'DID NOT SCAN'
+    scanned = ws.cell('L' + str(row_idx)).value != -1
 
     if len(dir_num) == 0 and scanned:
         # subject not found in the server. Check if we expected fMRI data
@@ -89,22 +90,15 @@ for row_idx in range(2, ws.get_highest_row()):
 
         if check_date(scan_date, subjs[dir_num[0]]):
             # if we do, then look for the types of data listed in the spreadsheet
-            if has_mprage:
-                if check_for_data('rage', scan_date, subjs[dir_num[0]]) < 0:
-                    missing_mprage.append(mrn + '_' + scan_date.strftime('%Y_%m_%d'))
-            if has_task:
-                if check_for_data('fmri', scan_date, subjs[dir_num[0]]) < 0:
-                    missing_task.append(mrn + '_' + scan_date.strftime('%Y_%m_%d'))
-            if has_rest:
-                if check_for_data('rest', scan_date, subjs[dir_num[0]]) < 0:
-                    missing_rest.append(mrn + '_' + scan_date.strftime('%Y_%m_%d'))
-            if has_edti:
-                if check_for_data('edti', scan_date, subjs[dir_num[0]]) < 0:
-                    missing_edti.append(mrn + '_' + scan_date.strftime('%Y_%m_%d'))
+            if has['rage']:
+                check_for_data('rage', scan_date, subjs[dir_num[0]])
+            if has['fmri']:
+                check_for_data('fmri', scan_date, subjs[dir_num[0]])
+            if has['rest']:
+                check_for_data('rest', scan_date, subjs[dir_num[0]])
+            if has['edti']:
+                check_for_data('edti', scan_date, subjs[dir_num[0]])
         else:
             missing = [mode for mode, val in has.iteritems() if val]
             if len(missing) > 0:
                 print('No scans on {} for {}, {} ({}). Expected: {}').format(scan_date.strftime('%Y_%m_%d'), last_name, first_name, mrn, missing)
-
-
-
