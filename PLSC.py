@@ -94,7 +94,7 @@ max_comps = 1
 # selecting only a few vertices in the thalamus
 my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
 # number of permutations/bootstraps to run
-num_perms = 1000
+num_perms = 10
 
 cortex = np.genfromtxt(env.data + '/structural/slopes_nv_284.csv', delimiter=',')
 # removing first 2 columns and first row, because they're headers
@@ -110,7 +110,7 @@ subcortex = scipy.delete(subcortex, 0, 0)
 # format it to be subjects x variables
 subcortex = subcortex.T
 
-my_sub_vertices = range(subcortex.shape[1])
+# my_sub_vertices = range(subcortex.shape[1])
 num_subjects = cortex.shape[0]
 
 X = cortex
@@ -143,4 +143,4 @@ for p in range(num_perms):
         Y = subcortex[:, v]
         _, saliences_boot[i, :, :, p] = PLSC(Xp, Y, groups, num_comps=max_comps)
 
-np.savez(env.results + 'structurals_all_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, sv=sv, saliences=saliences)
+# np.savez(env.results + 'structurals_all_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, sv=sv, saliences=saliences)
