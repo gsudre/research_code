@@ -15,6 +15,17 @@ def open_spreadsheet():
     return ws
 
 
+def open_dx_spreadsheet():
+    # make sure to save an updated version of the file without password in the tmp folder first!
+    fname = r'/Users/sudregp/Documents/dx.xlsx'
+
+    from openpyxl.reader.excel import load_workbook
+    wb = load_workbook(filename=fname)
+    ws = wb.worksheets[0]
+
+    return ws
+
+
 def get_subjects_from_excel():
     ws = open_spreadsheet()
 
@@ -50,7 +61,7 @@ def get_all_subjects():
     return subjs
 
 
-def get_adults(adhd, verbose=False):
+def get_adults(adhd):
     ''' Returns a list of subject codes, which can be ADHDs or NVs, depending on the argument to the function '''
     ws = open_spreadsheet()
 
@@ -73,8 +84,6 @@ def get_adults(adhd, verbose=False):
             dx = str(ws.cell('P' + str(cnt)).value)
             if adult and (dx == look_for):
                 subjs.append(subj_code)
-                if verbose:
-                    print subj_code
 
         cnt = cnt + 1
 
@@ -114,3 +123,33 @@ def get_ages(subjs):
         ages.append(age)
 
     return ages
+
+
+def get_remitted_subjects():
+    ws = open_dx_spreadsheet()
+
+    subjs = []
+    cnt = 1
+
+    # while we still have something written in the first collumn
+    while ws.cell('A' + str(cnt)).value is not None:
+        # check if we should use the data or not
+        if ws.cell('E' + str(cnt)).value == 'remitted':
+            subjs.append(ws.cell('A' + str(cnt)).value)
+        cnt = cnt + 1
+    return subjs
+
+
+def get_affected_subjects():
+    ws = open_dx_spreadsheet()
+
+    subjs = []
+    cnt = 1
+
+    # while we still have something written in the first collumn
+    while ws.cell('A' + str(cnt)).value is not None:
+        # check if we should use the data or not
+        if ws.cell('E' + str(cnt)).value != 'remitted':
+            subjs.append(ws.cell('A' + str(cnt)).value)
+        cnt = cnt + 1
+    return subjs
