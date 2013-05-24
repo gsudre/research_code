@@ -99,26 +99,31 @@ Y = np.array(
 groups = [[0, 3], [3, 6], [6, 9]]
 '''
 
-max_comps = 1
-cortex = np.genfromtxt('/Users/sudregp/Documents/surfaces/slopes_nv_284.csv', delimiter=',')
+# number of components to extract
+max_comps = 3
+# selecting only a few vertices in the thalamus
+my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
+# number of permutations/bootstraps to run
+num_perms = 1000
+
+cortex = np.genfromtxt(env.data + '/structural/slopes_nv_284.csv', delimiter=',')
 # removing first 2 columns and first row, because they're headers
 cortex = scipy.delete(cortex, [0, 1], 1)
 cortex = scipy.delete(cortex, 0, 0)
 # format it to be subjects x variables
 cortex = cortex.T
 
-subcortex = np.genfromtxt('/Users/sudregp/Documents/surfaces/THALAMUS_284_slopes.csv', delimiter=',')
+subcortex = np.genfromtxt(env.data + '/structural/THALAMUS_284_slopes.csv', delimiter=',')
 # removing first 2 columns and first row, because they're headers
 subcortex = scipy.delete(subcortex, [0, 1], 1)
 subcortex = scipy.delete(subcortex, 0, 0)
 # format it to be subjects x variables
 subcortex = subcortex.T
 
-# selecting only a few vertices in the thalamus
-my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
+num_subjects = cortex.shape[0]
 
 X = cortex
-groups = [[0, X.shape[0]]]
+groups = [[0, num_subjects]]
 num_thalamus = len(my_sub_vertices)
 sv = np.empty([num_thalamus, max_comps])
 saliences = np.empty([num_thalamus, cortex.shape[1], max_comps])
@@ -126,3 +131,23 @@ for i, v in enumerate(my_sub_vertices):
     print str(i+1) + '/' + str(num_thalamus)
     Y = subcortex[:, v]
     sv[i, :], saliences[i, :, :] = PLSC(X, Y, groups, num_comps=max_comps)
+
+# calculating permutations to assess significance of SVs
+sv_perm = np.empty([num_thalamus, max_comps, num_perms])
+for p in range(num_perms):
+    print 'Permutation: ' + str(p+1) + '/' + str(num_perms)
+    rand_indexes = np.random.permutation(num_subjects)
+    Xp = X[rand_indexes]
+    for i, v in enumerate(my_sub_vertices):
+        Y = subcortex[:, v]
+        sv_perm[i, :, p], _ = PLSC(X, Y, groups, num_comps=max_comps)
+
+# calculating bootstraps to assess reliability of SVs
+saliences_perm = np.empty([num_thalamus, cortex.shape[1], max_comps, num_perms])
+for p in range(num_perms):
+    print 'Bootstrap: ' + str(p+1) + '/' + str(num_perms)
+    rand_indexes = np.random.permutation(num_subjects)
+    Xp = X[rand_indexes]
+    for i, v in enumerate(my_sub_vertices):
+        Y = subcortex[:, v]
+        _, saliences_perm[i, :, :, p] = PLSC(X, Y, groups, num_comps=max_comps)
