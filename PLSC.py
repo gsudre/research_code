@@ -139,4 +139,4 @@ for p in range(num_perms):
     Xp = X[rand_indexes]
     for i, v in enumerate(my_sub_vertices):
         Y = subcortex[:, v]
-        _, saliences_perm[i, :, :, p] = PLSC(X, Y, groups, num_comps=max_comps)
+        _, saliences_perm[i, :, :, p] = PLSC(Xp, Y, groups, num_comps=max_comps)
