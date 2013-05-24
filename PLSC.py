@@ -1,6 +1,7 @@
 import numpy as np
 import env
 import scipy
+import pdb
 
 
 def PLSC(X, Y, groups, num_comps=2):
@@ -88,8 +89,8 @@ Y = np.array(
 groups = [[0, 3], [3, 6], [6, 9]]
 '''
 
-# number of components to extract
-max_comps = 3
+# number of components to extract. Because we're only using seeds with one dimension, the econ version of svd only outputs one component!
+max_comps = 1
 # selecting only a few vertices in the thalamus
 my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
 # number of permutations/bootstraps to run
@@ -126,7 +127,7 @@ sv_perm = np.empty([num_thalamus, max_comps, num_perms])
 for p in range(num_perms):
     print 'Permutation: ' + str(p+1) + '/' + str(num_perms)
     rand_indexes = np.random.permutation(num_subjects)
-    Xp = X[rand_indexes]
+    Xp = X[rand_indexes, :]
     for i, v in enumerate(my_sub_vertices):
         Y = subcortex[:, v]
         sv_perm[i, :, p], _ = PLSC(Xp, Y, groups, num_comps=max_comps)
@@ -135,8 +136,8 @@ for p in range(num_perms):
 saliences_boot = np.empty([num_thalamus, cortex.shape[1], max_comps, num_perms])
 for p in range(num_perms):
     print 'Bootstrap: ' + str(p+1) + '/' + str(num_perms)
-    rand_indexes = np.random.permutation(num_subjects)
-    Xp = X[rand_indexes]
+    rand_indexes = np.random.randint(num_subjects, size=num_subjects)
+    Xp = X[rand_indexes, :]
     for i, v in enumerate(my_sub_vertices):
         Y = subcortex[:, v]
         _, saliences_boot[i, :, :, p] = PLSC(Xp, Y, groups, num_comps=max_comps)
