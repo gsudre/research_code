@@ -110,6 +110,7 @@ subcortex = scipy.delete(subcortex, 0, 0)
 # format it to be subjects x variables
 subcortex = subcortex.T
 
+my_sub_vertices = range(subcortex.shape[1])
 num_subjects = cortex.shape[0]
 
 X = cortex
@@ -141,3 +142,5 @@ for p in range(num_perms):
     for i, v in enumerate(my_sub_vertices):
         Y = subcortex[:, v]
         _, saliences_boot[i, :, :, p] = PLSC(Xp, Y, groups, num_comps=max_comps)
+
+np.savez(env.results + 'structurals_all_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, sv=sv, saliences=saliences)
