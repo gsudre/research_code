@@ -67,6 +67,9 @@ def get_null_distributions(plis):
     return rplis
 
 
-res = env.load(env.results + 'good_plis_chl.5_lp58_hp.5_th3500e15_allsegs.npz')
-adhd, labels = combine_data(list(res['good_adhds']), res['labels'], res['plis'])
-nv, labels = combine_data(list(res['good_nvs']), res['labels'], res['plis'])
+res = env.load(env.results + 'good_plis_all_chl.5_lp58_hp.5_visual.npz')
+plis = res['plis']
+
+res = env.load(env.results + 'selected_voxels_all_chl.5_lp58_hp.5_visual.npz')
+adhd, labels = combine_data(list(res['good_adhds']), res['labels'], plis)
+nv, labels = combine_data(list(res['good_nvs']), res['labels'], plis)

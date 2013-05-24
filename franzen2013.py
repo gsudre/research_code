@@ -27,12 +27,12 @@ def compare_regions(nv, adhd, band, roi1, roi2):
     return p
 
 
-# execfile('/Users/sudregp/research_code/combine_good_plis.py')
-res = env.load(env.results + 'good_plis_all_chl.5_lp58_hp.5_visual.npz')
+execfile('/Users/sudregp/research_code/combine_good_plis.py')
+
 all_adhd = list(res['good_adhds'])
 affected = spreadsheet.get_affected_subjects()
 affected = set(affected).intersection(set(all_adhd))
-adhd, labels = combine_data(list(affected), res['labels'], res['plis'])
+adhd, labels = combine_data(list(affected), res['labels'], plis)
 
 pcc = [50, 46, 51, 47]
 ripl = [15, 63]
