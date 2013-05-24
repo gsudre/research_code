@@ -129,14 +129,14 @@ for p in range(num_perms):
     Xp = X[rand_indexes]
     for i, v in enumerate(my_sub_vertices):
         Y = subcortex[:, v]
-        sv_perm[i, :, p], _ = PLSC(X, Y, groups, num_comps=max_comps)
+        sv_perm[i, :, p], _ = PLSC(Xp, Y, groups, num_comps=max_comps)
 
 # calculating bootstraps to assess reliability of SVs
-saliences_perm = np.empty([num_thalamus, cortex.shape[1], max_comps, num_perms])
+saliences_boot = np.empty([num_thalamus, cortex.shape[1], max_comps, num_perms])
 for p in range(num_perms):
     print 'Bootstrap: ' + str(p+1) + '/' + str(num_perms)
     rand_indexes = np.random.permutation(num_subjects)
     Xp = X[rand_indexes]
     for i, v in enumerate(my_sub_vertices):
         Y = subcortex[:, v]
-        _, saliences_perm[i, :, :, p] = PLSC(Xp, Y, groups, num_comps=max_comps)
+        _, saliences_boot[i, :, :, p] = PLSC(Xp, Y, groups, num_comps=max_comps)
