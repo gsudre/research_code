@@ -1,16 +1,5 @@
-import mne
-import pylab as pl
 import numpy as np
-import virtual_electrode as ve
 import env
-import find_good_segments as fgs
-import glob
-import spreadsheet
-import os
-from scipy import stats
-from openpyxl.reader.excel import load_workbook
-import datetime
-import pdb
 import scipy
 
 
