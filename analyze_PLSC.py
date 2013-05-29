@@ -4,25 +4,10 @@ import scipy
 import pdb
 import matplotlib.pyplot as plt
 from scipy import stats
+import procrustes
 
 
-def procrustes(Vorig, Vresamp, Sresamp, Uresamp):
-    ''' Following the algorithm in McIntosh and Lobaugh, 2004 ''' 
-    N, O, Ph = np.linalg.svd(np.dot(Vorig.T, Vresamp), full_matrices=False)
-    P = Ph.T
-
-    Q = np.dot(N, P.T)
-    if Sresamp.ndim == 1:
-        Sresamp = Sresamp * np.eye(len(Sresamp))
-
-    Vhat = np.dot(Vresamp, np.dot(Sresamp, Q))
-    Uhat = np.dot(Uresamp, np.dot(Sresamp, Q))
-    Shat = np.sqrt(np.sum(Vhat ** 2, axis=0))
-
-    return Vhat, Shat, Uhat
-
-
-ind = np.arange(max_comps)    # the x locations for the groups
+ind = np.arange(num_comps)    # the x locations for the groups
 width = 0.15       # the width of the bars: can also be len(x) sequence
 
 fig = plt.figure()
@@ -34,7 +19,7 @@ for c, color in enumerate(colors):
 
 plt.ylabel('Saliences')
 plt.title('Saliences by seed-voxel')
-plt.xticks(ind + width / 2., ['LV' + str(i + 1) for i in range(max_comps)])
+plt.xticks(ind + width / 2., ['LV' + str(i + 1) for i in range(num_comps)])
 plt.plot(plt.xlim(), [0, 0], 'k')
 plt.legend(rects, [str(i + 1) for i in my_sub_vertices], loc=0)
 
@@ -62,10 +47,6 @@ for p in range(num_perms):
     Uresamp = np.squeeze(patterns_boot[:, :, p])
     saliences_boot_rot[:, :, p] = procrustes.procrustes(saliences, Vresamp)[0]
     patterns_boot_rot[:, :, p] = procrustes.procrustes(patterns, Uresamp)[0]
-
-
-tmp = sv_perm_rot >= sv2
-pvals_rot = np.sum(tmp, axis=-1) / float(num_perms)
 
 sem = scipy.stats.sem(saliences_boot_rot, axis=-1)
 stable_saliences_rot = saliences / sem

@@ -4,7 +4,7 @@ import scipy
 import pdb
 
 
-def PLSC(X, Y, groups, num_comps=2):
+def PLSC(X, Y, groups, num_comps=0):
     ''' Returns results of Partial Least Squares Correlation. groups is a list of 2-index lists, such as [[0, 10]] '''
 
     num_groups = len(groups)
@@ -59,10 +59,13 @@ def PLSC(X, Y, groups, num_comps=2):
     U, S, Vh = np.linalg.svd(R, full_matrices=False)
     V = Vh.T
 
-    return S[:num_comps], V[:, :num_comps], U[:, :num_comps]
+    if num_comps <= 0:
+        return S, V, U
+    else:
+        return S[:num_comps], V[:, :num_comps], U[:, :num_comps]
 
 
-''' # Toy examples 
+''' # Toy examples
 
 X = np.array(
     [[5., 6, 1, 9, 1, 7, 6, 2, 1, 7],
@@ -90,9 +93,9 @@ groups = [[0, 3], [3, 6], [6, 9]]
 '''
 
 # number of components to extract. Because we're only using seeds with one dimension, the econ version of svd only outputs one component!
-max_comps = 5
+# max_comps = 100
 # selecting only a few vertices in the thalamus
-my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
+# my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
 # number of permutations/bootstraps to run
 num_perms = 1000
 
@@ -110,32 +113,39 @@ subcortex = scipy.delete(subcortex, 0, 0)
 # format it to be subjects x variables
 subcortex = subcortex.T
 
-# my_sub_vertices = range(subcortex.shape[1])
+my_sub_vertices = range(0, subcortex.shape[1], 100)
 num_subjects = cortex.shape[0]
 
 X = cortex
 groups = [[0, num_subjects]]
 Y = subcortex[:, my_sub_vertices]
-sv, saliences, patterns = PLSC(X, Y, groups, num_comps=max_comps)
+
+sv, saliences, patterns = PLSC(X, Y, groups)
+
+
+'''
+
+num_comps = len(sv)
 
 
 # calculating permutations to assess significance of SVs
-sv_perm = np.empty([max_comps, num_perms])
+sv_perm = np.empty([num_comps, num_perms])
 for p in range(num_perms):
     print 'Permutation: ' + str(p+1) + '/' + str(num_perms)
     rand_indexes = np.random.permutation(num_subjects)
     Xp = X[rand_indexes, :]
     Y = subcortex[:, my_sub_vertices]
-    sv_perm[:, p], _, _ = PLSC(Xp, Y, groups, num_comps=max_comps)
+    sv_perm[:, p], _, _ = PLSC(Xp, Y, groups, num_comps=num_comps)
 
 # calculating bootstraps to assess reliability of SVs
-saliences_boot = np.empty([X.shape[1], max_comps, num_perms])
-patterns_boot = np.empty([Y.shape[1], max_comps, num_perms])
+saliences_boot = np.empty([X.shape[1], num_comps, num_perms])
+patterns_boot = np.empty([Y.shape[1], num_comps, num_perms])
 for p in range(num_perms):
     print 'Bootstrap: ' + str(p+1) + '/' + str(num_perms)
     rand_indexes = np.random.randint(num_subjects, size=num_subjects)
     Xp = X[rand_indexes, :]
     Y = subcortex[:, my_sub_vertices]
-    _, saliences_boot[:, :, p], patterns_boot[:, :, p] = PLSC(Xp, Y, groups, num_comps=max_comps)
+    _, saliences_boot[:, :, p], patterns_boot[:, :, p] = PLSC(Xp, Y, groups, num_comps=num_comps)
 
-np.savez(env.results + 'structurals_seedPLS_5_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, patterns_boot=patterns_boot, sv=sv, saliences=saliences, patterns=patterns)
+np.savez(env.results + 'structurals_seedPLS_ev100_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, patterns_boot=patterns_boot, sv=sv, saliences=saliences, patterns=patterns, my_sub_vertices=my_sub_vertices)
+'''
