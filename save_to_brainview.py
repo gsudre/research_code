@@ -12,4 +12,4 @@ def write_bv(X, filename):
         header = header + 'var' + str(v + 1) + ' '
 
     # write the matrix with the headr from above
-    np.savetxt(filename, X, delimiter=" ", header=header, comments='')
+    np.savetxt(filename, X, delimiter=" ", header=header.rstrip(), comments='', fmt='%.4f')
