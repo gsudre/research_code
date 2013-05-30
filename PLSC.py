@@ -133,7 +133,6 @@ for p in range(num_perms):
     print 'Permutation: ' + str(p+1) + '/' + str(num_perms)
     rand_indexes = np.random.permutation(num_subjects)
     Xp = X[rand_indexes, :]
-    Y = subcortex[:, my_sub_vertices]
     sv_perm[:, p], _, _ = PLSC(Xp, Y, groups, num_comps=num_comps)
 
 # calculating bootstraps to assess reliability of SVs
@@ -144,7 +143,7 @@ for p in range(num_perms):
     rand_indexes = np.random.randint(num_subjects, size=num_subjects)
     # now we need to shuffle both X and Y, because we need to keep the relationships between observations
     Xb = X[rand_indexes, :]
-    Yb = Y[rand_indexes, my_sub_vertices]
+    Yb = Y[rand_indexes, :]
     _, saliences_boot[:, :, p], patterns_boot[:, :, p] = PLSC(Xb, Yb, groups, num_comps=num_comps)
 
 np.savez(env.results + 'structurals_seedPLS_5_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, patterns_boot=patterns_boot, sv=sv, saliences=saliences, patterns=patterns, my_sub_vertices=my_sub_vertices)

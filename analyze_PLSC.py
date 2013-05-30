@@ -37,8 +37,8 @@ stable_saliences = saliences / sem
 sem = scipy.stats.sem(patterns_boot, axis=-1)
 stable_patterns = patterns / sem
 
+''' This is running quite slow...
 # doing the same as above, but rotating the results first
-sv_perm_rot = np.empty_like(sv_perm)
 saliences_boot_rot = np.empty_like(saliences_boot)
 patterns_boot_rot = np.empty_like(patterns_boot)
 for p in range(num_perms):
@@ -52,3 +52,4 @@ sem = scipy.stats.sem(saliences_boot_rot, axis=-1)
 stable_saliences_rot = saliences / sem
 sem = scipy.stats.sem(patterns_boot_rot, axis=-1)
 stable_patterns_rot = patterns / sem
+'''
