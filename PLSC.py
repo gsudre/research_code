@@ -94,8 +94,7 @@ groups = [[0, 3], [3, 6], [6, 9]]
 
 # number of components to extract. Because we're only using seeds with one dimension, the econ version of svd only outputs one component!
 # max_comps = 100
-# selecting only a few vertices in the thalamus
-# my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
+
 # number of permutations/bootstraps to run
 num_perms = 1000
 
@@ -113,7 +112,10 @@ subcortex = scipy.delete(subcortex, 0, 0)
 # format it to be subjects x variables
 subcortex = subcortex.T
 
-my_sub_vertices = range(0, subcortex.shape[1], 100)
+# selecting only a few vertices in the thalamus
+my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
+# my_sub_vertices = range(0, subcortex.shape[1], 100)
+
 num_subjects = cortex.shape[0]
 
 X = cortex
@@ -123,10 +125,7 @@ Y = subcortex[:, my_sub_vertices]
 sv, saliences, patterns = PLSC(X, Y, groups)
 
 
-'''
-
 num_comps = len(sv)
-
 
 # calculating permutations to assess significance of SVs
 sv_perm = np.empty([num_comps, num_perms])
@@ -143,9 +142,9 @@ patterns_boot = np.empty([Y.shape[1], num_comps, num_perms])
 for p in range(num_perms):
     print 'Bootstrap: ' + str(p+1) + '/' + str(num_perms)
     rand_indexes = np.random.randint(num_subjects, size=num_subjects)
-    Xp = X[rand_indexes, :]
-    Y = subcortex[:, my_sub_vertices]
-    _, saliences_boot[:, :, p], patterns_boot[:, :, p] = PLSC(Xp, Y, groups, num_comps=num_comps)
+    # now we need to shuffle both X and Y, because we need to keep the relationships between observations
+    Xb = X[rand_indexes, :]
+    Yb = Y[rand_indexes, my_sub_vertices]
+    _, saliences_boot[:, :, p], patterns_boot[:, :, p] = PLSC(Xb, Yb, groups, num_comps=num_comps)
 
-np.savez(env.results + 'structurals_seedPLS_ev100_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, patterns_boot=patterns_boot, sv=sv, saliences=saliences, patterns=patterns, my_sub_vertices=my_sub_vertices)
-'''
+np.savez(env.results + 'structurals_seedPLS_5_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, patterns_boot=patterns_boot, sv=sv, saliences=saliences, patterns=patterns, my_sub_vertices=my_sub_vertices)
