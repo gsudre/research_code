@@ -112,8 +112,8 @@ subcortex = scipy.delete(subcortex, 0, 0)
 subcortex = subcortex.T
 
 # selecting only a few vertices in the thalamus
-# my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
-my_sub_vertices = range(0, subcortex.shape[1], 100)
+my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
+# my_sub_vertices = range(0, subcortex.shape[1], 100)
 # my_sub_vertices = range(subcortex.shape[1])
 
 num_subjects = cortex.shape[0]
@@ -145,4 +145,4 @@ for p in range(num_perms):
     Yb = Y[rand_indexes, :]
     _, saliences_boot[:, :, p], patterns_boot[:, :, p] = PLSC(Xb, Yb, groups, num_comps=num_comps)
 
-np.savez(env.results + 'structurals_seedPLS_5_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, patterns_boot=patterns_boot, sv=sv, saliences=saliences, patterns=patterns, my_sub_vertices=my_sub_vertices)
+# np.savez(env.results + 'structurals_seedPLS_5_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, patterns_boot=patterns_boot, sv=sv, saliences=saliences, patterns=patterns, my_sub_vertices=my_sub_vertices)
