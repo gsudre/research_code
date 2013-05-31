@@ -1,7 +1,6 @@
 import numpy as np
 import env
 import scipy
-import pdb
 
 
 def PLSC(X, Y, groups, num_comps=0):
@@ -124,7 +123,7 @@ Y = subcortex[:, my_sub_vertices]
 
 sv, saliences, patterns = PLSC(X, Y, groups)
 
-
+'''
 num_comps = len(sv)
 
 # calculating permutations to assess significance of SVs
@@ -147,3 +146,4 @@ for p in range(num_perms):
     _, saliences_boot[:, :, p], patterns_boot[:, :, p] = PLSC(Xb, Yb, groups, num_comps=num_comps)
 
 np.savez(env.results + 'structurals_seedPLS_5_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, patterns_boot=patterns_boot, sv=sv, saliences=saliences, patterns=patterns, my_sub_vertices=my_sub_vertices)
+'''
