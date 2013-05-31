@@ -147,5 +147,3 @@ for p in range(num_perms):
     Xb = X[rand_indexes, :]
     Yb = Y[rand_indexes, :]
     sv_boot[:, p], saliences_boot[:, :, p], patterns_boot[:, :, p] = PLSC(Xb, Yb, groups, num_comps=num_comps)
-
-# np.savez(env.results + 'structurals_seedPLS_5_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, patterns_boot=patterns_boot, sv=sv, saliences=saliences, patterns=patterns, my_sub_vertices=my_sub_vertices)

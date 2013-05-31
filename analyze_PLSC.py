@@ -72,3 +72,5 @@ stable_saliences = saliences.copy()
 stable_saliences[np.abs(stability_saliences) <= 2.33] = 0
 stable_patterns = patterns.copy()
 stable_patterns[np.abs(stability_patterns) <= 2.33] = 0
+
+np.savez(env.results + 'structurals_seedPLS_5_thalamus_all_cortex', pvals=pvals, stable_saliences=stable_saliences, stable_patterns=stable_patterns, sv=sv, saliences=saliences, patterns=patterns, my_sub_vertices=my_sub_vertices)
