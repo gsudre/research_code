@@ -27,7 +27,7 @@ plt.show(block=False)
 '''
 
 
-def procrustes(Vorig, Vresamp, Sresamp):
+def procrustes(Vorig, Vresamp, Uresamp, Sresamp):
     ''' Following the algorithm in McIntosh and Lobaugh, 2004 ''' 
     N, O, Ph = np.linalg.svd(np.dot(Vorig.T, Vresamp), full_matrices=False)
     P = Ph.T
@@ -38,20 +38,30 @@ def procrustes(Vorig, Vresamp, Sresamp):
 
     Vhat = np.dot(Vresamp, np.dot(Sresamp, Q))
     Uhat = np.dot(Uresamp, np.dot(Sresamp, Q))
-    Shat = np.sqrt(np.sum(Vhat ** 2, axis=0))
+    # Shat = np.sqrt(np.sum(Vhat ** 2, axis=0))
+    _, Shat, _= np.linalg.svd(Vhat, full_matrices=False)
 
-    return Vhat, Uhat
+    return Vhat, Uhat, Shat
 
 
-num_perms = sv_perm.shape[-1]
+num_perms = saliences_boot.shape[-1]
+sv2 = np.tile(sv, [num_perms, 1]).T
 
-# start by rotating the matrices so we can compare permutted/bootstrap data and the original SVD space
+# rotate the matrices so we can compare permutted/bootstrap data and the original SVD space
 for p in range(num_perms):
     print str(p+1) + '/' + str(num_perms)
     Vresamp = np.squeeze(saliences_boot[:, :, p])
     Uresamp = np.squeeze(patterns_boot[:, :, p])
-    saliences_boot[:, :, p], patterns_boot[:, :, p] = procrustes(saliences, Vresamp, Uresamp)
+    Sresamp = np.squeeze(sv_boot[:, p])
+    saliences_boot[:, :, p], patterns_boot[:, :, p], _ = procrustes(saliences, Vresamp, Uresamp, Sresamp)
 
+    Vresamp = np.squeeze(saliences_perm[:, :, p])
+    Uresamp = np.squeeze(patterns_perm[:, :, p])
+    Sresamp = np.squeeze(sv_perm[:, p])
+    _, _, sv_perm[:, p] = procrustes(saliences, Vresamp, Uresamp, Sresamp)
+
+
+pvals = np.sum(sv_perm >= sv2, axis=-1) / float(num_perms)
 sem = scipy.stats.sem(saliences_boot, axis=-1)
 stability_saliences = saliences / sem
 sem = scipy.stats.sem(patterns_boot, axis=-1)

@@ -95,7 +95,7 @@ groups = [[0, 3], [3, 6], [6, 9]]
 # max_comps = 100
 
 # number of permutations/bootstraps to run
-num_perms = 10
+num_perms = 1000
 
 cortex = np.genfromtxt(env.data + '/structural/slopes_nv_284.csv', delimiter=',')
 # removing first 2 columns and first row, because they're headers
@@ -127,22 +127,25 @@ sv, saliences, patterns = PLSC(X, Y, groups)
 num_comps = len(sv)
 
 # calculating permutations to assess significance of SVs
+saliences_perm = np.empty([X.shape[1], num_comps, num_perms])
+patterns_perm = np.empty([Y.shape[1], num_comps, num_perms])
 sv_perm = np.empty([num_comps, num_perms])
 for p in range(num_perms):
     print 'Permutation: ' + str(p+1) + '/' + str(num_perms)
     rand_indexes = np.random.permutation(num_subjects)
     Xp = X[rand_indexes, :]
-    sv_perm[:, p], _, _ = PLSC(Xp, Y, groups, num_comps=num_comps)
+    sv_perm[:, p], saliences_perm[:, :, p], patterns_perm[:, :, p] = PLSC(Xp, Y, groups, num_comps=num_comps)
 
 # calculating bootstraps to assess reliability of SVs
 saliences_boot = np.empty([X.shape[1], num_comps, num_perms])
 patterns_boot = np.empty([Y.shape[1], num_comps, num_perms])
+sv_boot = np.empty([num_comps, num_perms])
 for p in range(num_perms):
     print 'Bootstrap: ' + str(p+1) + '/' + str(num_perms)
     rand_indexes = np.random.randint(num_subjects, size=num_subjects)
     # now we need to shuffle both X and Y, because we need to keep the relationships between observations
     Xb = X[rand_indexes, :]
     Yb = Y[rand_indexes, :]
-    _, saliences_boot[:, :, p], patterns_boot[:, :, p] = PLSC(Xb, Yb, groups, num_comps=num_comps)
+    sv_boot[:, p], saliences_boot[:, :, p], patterns_boot[:, :, p] = PLSC(Xb, Yb, groups, num_comps=num_comps)
 
 # np.savez(env.results + 'structurals_seedPLS_5_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, patterns_boot=patterns_boot, sv=sv, saliences=saliences, patterns=patterns, my_sub_vertices=my_sub_vertices)
