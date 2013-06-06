@@ -1,6 +1,7 @@
 import numpy as np
 import env
 import scipy
+import mne
 
 
 def PLSC(X, Y, groups, num_comps=0):
@@ -112,13 +113,17 @@ subcortex = scipy.delete(subcortex, 0, 0)
 subcortex = subcortex.T
 
 # selecting only a few vertices in the thalamus
-my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
-# my_sub_vertices = range(0, subcortex.shape[1], 100)
+# my_sub_vertices = [2310, 1574, 1692, 1262, 1350]  # Philip's
+# my_sub_vertices = range(0, subcortex.shape[1], 100)  # every 100
 # my_sub_vertices = range(subcortex.shape[1])
+w = mne.read_w(env.fsl + '/mni/bem/cortex-3-rh.w')
+my_cor_vertices = w['vertices']
+w = mne.read_w(env.fsl + '/mni/bem/thalamus-10-rh.w')
+my_sub_vertices = w['vertices']
 
 num_subjects = cortex.shape[0]
 
-X = cortex
+X = cortex[:, my_cor_vertices]
 groups = [[0, num_subjects]]
 Y = subcortex[:, my_sub_vertices]
 

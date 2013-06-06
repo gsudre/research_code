@@ -25,3 +25,4 @@ else:
     maps = '/Users/sudregp/research_code/maps/'
     results = '/Users/sudregp/results/'
     tmp = '/Users/sudregp/tmp/'
+    fsl = '/Volumes/neuro/MEG_structural/freesurfer/'
