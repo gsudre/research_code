@@ -1,7 +1,9 @@
 import numpy as np
 import math
 
-filename = '/Volumes/PIETRO/1030.txt'
+filename = '/Volumes/PIETRO/1048.txt'
+
+#### DEFINING VARIABLES AND COLUMN NAMES FROM E-PRIME EXPORTED FILE ####
 
 # Stores the offset of the period after getting the trigger from the scanner (i.e. the "Get Ready" window)
 blockStartCol = 'GetRdy.FinishTime'
@@ -26,10 +28,13 @@ trialBlockCol = 'Block'
 stgCorrectCol = 'Go.ACC'
 stgRTCol = 'Go.RT'
 
-# Stores bpossible Inhibit trial responses and inhibition time
+# Stores possible Inhibit trial responses and inhibition time
 stiResponseCol = ['Go1s.RESP', 'Go2s.RESP', 'Inhs.RESP']
 stiInhCol = 'GoDur'
 
+# Stores the onset time of each condition and their names
+condNames = ['STG-correct', 'STG-incorrect', 'STI-correct', 'STI-incorrect', 'STB']
+condOnsetCol = ['Go.OnsetTime', 'Go.OnsetTime', 'Go1s.OnsetTime', 'Go1s.OnsetTime', 'Go.OnsetTime']
 #### STARTING SCRIPT ####
 
 # Open data
@@ -61,6 +66,11 @@ for blockIdx, blockRow in enumerate(blockStartRows):
     else:
         rowsPerBlock.append(blockTrials)
 
+# Let's create one stim_file per condition
+stim_fids = []
+for cond in condNames:
+    stim_fids.append(open(filename[:-4] + '_' + cond + '.txt', 'w'))
+
 # Calculating the behavioral variables per block
 idjTrialType = np.nonzero(data[0, :] == trialTypeCol)[0]
 idjGoAcc = np.nonzero(data[0, :] == stgCorrectCol)[0]
@@ -75,7 +85,7 @@ stiAcc = []
 stiMeanDur = []
 stiStdDur = []
 stiDur = []
-for trials in rowsPerBlock:
+for bidx, trials in enumerate(rowsPerBlock):
     # identify go trials. Note that the indices refer to the variable trials, and NOT to the direct data matrix indexes!
     correctGoTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StGTrial' and data[trials[i], idjGoAcc] == '1']
     incorrectGoTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StGTrial' and data[trials[i], idjGoAcc] == '0']
@@ -110,6 +120,30 @@ for trials in rowsPerBlock:
     stgRT.append(stgBlockRTs)
     stiDur.append(stiBlockDur)
 
+    # Finally, compute onset times for each condition
+    blockOnset = int(data[blockStartRows[bidx], idjBlockStart][0])
+    for c, cond in enumerate(condNames):
+        idjOnset = np.nonzero(data[0, :] == condOnsetCol[c])[0]
+        if cond == 'STG-correct':
+            onsets = [int(i) for i in data[correctGoTrials, idjOnset]]
+        elif cond == 'STG-incorrect':
+            onsets = [int(i) for i in data[incorrectGoTrials, idjOnset]]
+        elif cond == 'STI-correct':
+            onsets = [int(i) for i in data[correctInhTrials, idjOnset]]
+        elif cond == 'STI-incorrect':
+            onsets = [int(i) for i in data[incorrectInhTrials, idjOnset]]
+        else:
+            # this is for blank trials, which we haven't found yet
+            blankTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StBTrial']
+            onsets = [int(i) for i in data[blankTrials, idjOnset]]
+
+        # remove offset and delay, and convert to seconds
+        onsets = (np.array(onsets) - blockOnset + delay) / float(1000)
+        for t in onsets:
+            stim_fids[c].write('%.2f ' % t)
+        stim_fids[c].write('\n')
+
+
 # Now we interpolate to get SSRT. First, order correctGoTrials based on RT, then choose the number relative to the STI accuracy
 
 # just flattening the lists first
@@ -135,3 +169,7 @@ print 'STI accuracy:', subjStiAcc
 print 'STI duration:', subjStiMeanDur, '+-', subjStiStdDur
 print 'xth percentile STG RT:', subjXthPercentile
 print 'Corrected SSRT:', subjSSRT
+
+# closing all open files
+for c in range(len(condNames)):
+    stim_fids[c].close()
