@@ -6,6 +6,9 @@ import glob
 
 #### DEFINING VARIABLES AND COLUMN NAMES FROM E-PRIME EXPORTED FILE ####
 
+# QC criteria for STG accuracy (in pct)
+qcSTGAcc = 55
+
 # CSV file to export behavioral scores
 csv_filename = 'summary_behavioral_scores.csv'
 
@@ -52,7 +55,7 @@ else:
 
 # Creating the CSV file
 csv_fid = open(csv_filename, 'w')
-csv_fid.write('Mask ID,STG accuracy,STG mean RT,STG std RT,STI accuracy,STI mean duration,STI std duration,xth percentile STG RT,Corrected SSRT\n')
+csv_fid.write('Mask ID,STG accuracy,STG mean RT,STG std RT,STI accuracy,STI mean duration,STI std duration,xth percentile STG RT,Corrected SSRT,Lowest block STG Acc,Lowest block STI accuracy,How many blocks under ' + str(qcSTGAcc) + '% STG accuracy\n')
 
 for txtFile in files:
     subj = txtFile[:-4]
@@ -70,8 +73,7 @@ for txtFile in files:
     # we add one because the matrix we loop through removes the headers
     blockStartRows = [i + 1 for i, s in enumerate(data[1:, idjBlockStart]) if len(s[0]) > 1]
     if len(blockStartRows) != 4:
-        err = 'Found ' + str(len(blockStartRows)) + ' blocks'
-        raise NameError(err)
+        print 'WARNING: FOUND', len(blockStartRows), 'BLOCKS!!!'
 
     # Make sure we have all the trials we are expecting
     idjBlockNum = np.nonzero(data[0, :] == trialBlockCol)[0]
@@ -79,10 +81,13 @@ for txtFile in files:
     for blockIdx, blockRow in enumerate(blockStartRows):
         # Get the number of the block and all the rows that correspond to that block. They start on the row right after where the block started
         blockNum = data[blockRow + 1, idjBlockNum]
-        blockTrials = [i for i, s in enumerate(data[:, idjBlockNum]) if s[0] == blockNum]
+        blockTrials = [(blockRow + i) for i, s in enumerate(data[blockRow:, idjBlockNum]) if s[0] == blockNum]
+        # For merged files, it can happen that the same block number is used in two different blocks, so let's only take the consectuive indexes as the trials for this particular block
+        nonConsec = np.nonzero(np.diff(blockTrials) > 1)[0]
+        if len(nonConsec) > 0:
+            blockTrials = blockTrials[:(nonConsec + 1)]
         if len(blockTrials) != expectedTrialNum:
-            err = 'Found ' + str(len(blockTrials)) + 'trials in block ' + str(blockIdx + 1)
-            raise NameError(err)
+            print 'WARNING!!! Found', len(blockTrials), 'trials in block', (blockIdx + 1)
         else:
             rowsPerBlock.append(blockTrials)
 
@@ -183,7 +188,7 @@ for txtFile in files:
 
     # Spit out columns to CSV file
     csv_fid.write(subj + ',')
-    csv_fid.write(','.join([str(i) for i in [subjStgAcc, subjStgMeanRT, subjStgStdRT, subjStiAcc, subjStiMeanDur, subjStiStdDur, subjXthPercentile, subjSSRT]]))
+    csv_fid.write(','.join([str(i) for i in [subjStgAcc, subjStgMeanRT, subjStgStdRT, subjStiAcc, subjStiMeanDur, subjStiStdDur, subjXthPercentile, subjSSRT, np.min(stgAcc), np.min(stiAcc), np.sum(np.array(stgAcc) < qcSTGAcc)]]))
     csv_fid.write('\n')
 
     # Output to the screen if we only ran it for one subject
@@ -194,6 +199,11 @@ for txtFile in files:
         print 'STI duration:', subjStiMeanDur, '+-', subjStiStdDur
         print 'xth percentile STG RT:', subjXthPercentile
         print 'Corrected SSRT:', subjSSRT
+        for b in range(len(stgAcc)):
+            print '=== BLOCK', b + 1, '==='
+            print 'STG accuracy:', stgAcc[b]
+            print 'STG RT:', stgMeanRT[b], '+-', stgStdRT[b]
+            print 'STI accuracy:', stiAcc[b]
 
     # closing all open files
     for c in range(len(condNames)):
