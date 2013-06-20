@@ -3,7 +3,6 @@ import math
 import sys
 import glob
 
-
 #### DEFINING VARIABLES AND COLUMN NAMES FROM E-PRIME EXPORTED FILE ####
 
 # QC criteria for STG accuracy (in pct)
@@ -85,11 +84,10 @@ for txtFile in files:
         # For merged files, it can happen that the same block number is used in two different blocks, so let's only take the consectuive indexes as the trials for this particular block
         nonConsec = np.nonzero(np.diff(blockTrials) > 1)[0]
         if len(nonConsec) > 0:
-            blockTrials = blockTrials[:(nonConsec + 1)]
+            blockTrials = blockTrials[:(nonConsec[0] + 1)]
         if len(blockTrials) != expectedTrialNum:
             print 'WARNING!!! Found', len(blockTrials), 'trials in block', (blockIdx + 1)
-        else:
-            rowsPerBlock.append(blockTrials)
+        rowsPerBlock.append(blockTrials)
 
     # Let's create one stim_file per condition
     stim_fids = []
@@ -111,62 +109,64 @@ for txtFile in files:
     stiStdDur = []
     stiDur = []
     for bidx, trials in enumerate(rowsPerBlock):
-        # identify go trials. Note that the indices refer to the variable trials, and NOT to the direct data matrix indexes!
-        correctGoTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StGTrial' and data[trials[i], idjGoAcc] == '1']
-        incorrectGoTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StGTrial' and data[trials[i], idjGoAcc] == '0']
+        # We only analyze blocks for which we have all expected trials
+        if len(trials) == expectedTrialNum:
+            # identify go trials. Note that the indices refer to the variable trials, and NOT to the direct data matrix indexes!
+            correctGoTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StGTrial' and data[trials[i], idjGoAcc] == '1']
+            incorrectGoTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StGTrial' and data[trials[i], idjGoAcc] == '0']
 
-        # compute percent accuracy. Again, here the indices correspond to GoTrials!
-        stgAcc.append(100 * float(len(correctGoTrials)) / (len(correctGoTrials) + len(incorrectGoTrials)))
+            # compute percent accuracy. Again, here the indices correspond to GoTrials!
+            stgAcc.append(100 * float(len(correctGoTrials)) / (len(correctGoTrials) + len(incorrectGoTrials)))
 
-        # compute mean and std RT over the accurate trials
-        stgBlockRTs = [int(i) for i in data[correctGoTrials, idjRTAcc]]
-        stgMeanRT.append(np.mean(stgBlockRTs))
-        stgStdRT.append(np.std(stgBlockRTs))
+            # compute mean and std RT over the accurate trials
+            stgBlockRTs = [int(i) for i in data[correctGoTrials, idjRTAcc]]
+            stgMeanRT.append(np.mean(stgBlockRTs))
+            stgStdRT.append(np.std(stgBlockRTs))
 
-        # identify inhibit trials
-        incorrectInhTrials = []
-        correctInhTrials = []
-        for i, s in enumerate(data[trials, idjTrialType]):
-            if s == 'StITrial':
-                if data[trials[i], idjStiResp[0]] == '' and data[trials[i], idjStiResp[1]] == '' and data[trials[i], idjStiResp[2]] == '':
-                    correctInhTrials.append(trials[i])
+            # identify inhibit trials
+            incorrectInhTrials = []
+            correctInhTrials = []
+            for i, s in enumerate(data[trials, idjTrialType]):
+                if s == 'StITrial':
+                    if data[trials[i], idjStiResp[0]] == '' and data[trials[i], idjStiResp[1]] == '' and data[trials[i], idjStiResp[2]] == '':
+                        correctInhTrials.append(trials[i])
+                    else:
+                        incorrectInhTrials.append(trials[i])
+
+            # compute percent accuracy
+            stiAcc.append(100 * float(len(correctInhTrials)) / (len(correctInhTrials) + len(incorrectInhTrials)))
+
+            # compute mean and std inhitbit delay over accurate trials
+            stiBlockDur = [int(i) for i in data[correctInhTrials, idjStiDur]]
+            stiMeanDur.append(np.mean(stiBlockDur))
+            stiStdDur.append(np.std(stiBlockDur))
+
+            # concatenate Go RTs for correct trials so we can later interpolate SSRT. Let's concatenate duration as well so we can have a better std later
+            stgRT.append(stgBlockRTs)
+            stiDur.append(stiBlockDur)
+
+            # Finally, compute onset times for each condition
+            blockOnset = int(data[blockStartRows[bidx], idjBlockStart][0])
+            for c, cond in enumerate(condNames):
+                idjOnset = np.nonzero(data[0, :] == condOnsetCol[c])[0]
+                if cond == 'STG-correct':
+                    onsets = [int(i) for i in data[correctGoTrials, idjOnset]]
+                elif cond == 'STG-incorrect':
+                    onsets = [int(i) for i in data[incorrectGoTrials, idjOnset]]
+                elif cond == 'STI-correct':
+                    onsets = [int(i) for i in data[correctInhTrials, idjOnset]]
+                elif cond == 'STI-incorrect':
+                    onsets = [int(i) for i in data[incorrectInhTrials, idjOnset]]
                 else:
-                    incorrectInhTrials.append(trials[i])
+                    # this is for blank trials, which we haven't found yet
+                    blankTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StBTrial']
+                    onsets = [int(i) for i in data[blankTrials, idjOnset]]
 
-        # compute percent accuracy
-        stiAcc.append(100 * float(len(correctInhTrials)) / (len(correctInhTrials) + len(incorrectInhTrials)))
-
-        # compute mean and std inhitbit delay over accurate trials
-        stiBlockDur = [int(i) for i in data[correctInhTrials, idjStiDur]]
-        stiMeanDur.append(np.mean(stiBlockDur))
-        stiStdDur.append(np.std(stiBlockDur))
-
-        # concatenate Go RTs for correct trials so we can later interpolate SSRT. Let's concatenate duration as well so we can have a better std later
-        stgRT.append(stgBlockRTs)
-        stiDur.append(stiBlockDur)
-
-        # Finally, compute onset times for each condition
-        blockOnset = int(data[blockStartRows[bidx], idjBlockStart][0])
-        for c, cond in enumerate(condNames):
-            idjOnset = np.nonzero(data[0, :] == condOnsetCol[c])[0]
-            if cond == 'STG-correct':
-                onsets = [int(i) for i in data[correctGoTrials, idjOnset]]
-            elif cond == 'STG-incorrect':
-                onsets = [int(i) for i in data[incorrectGoTrials, idjOnset]]
-            elif cond == 'STI-correct':
-                onsets = [int(i) for i in data[correctInhTrials, idjOnset]]
-            elif cond == 'STI-incorrect':
-                onsets = [int(i) for i in data[incorrectInhTrials, idjOnset]]
-            else:
-                # this is for blank trials, which we haven't found yet
-                blankTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StBTrial']
-                onsets = [int(i) for i in data[blankTrials, idjOnset]]
-
-            # remove offset and delay, and convert to seconds
-            onsets = (np.array(onsets) - blockOnset + delay) / float(1000)
-            for t in onsets:
-                stim_fids[c].write('%.2f ' % t)
-            stim_fids[c].write('\n')
+                # remove offset and delay, and convert to seconds
+                onsets = (np.array(onsets) - blockOnset + delay) / float(1000)
+                for t in onsets:
+                    stim_fids[c].write('%.2f ' % t)
+                stim_fids[c].write('\n')
 
     # Now we interpolate to get SSRT. First, order correctGoTrials based on RT, then choose the number relative to the STI accuracy
     # just flattening the lists first
@@ -193,17 +193,21 @@ for txtFile in files:
 
     # Output to the screen if we only ran it for one subject
     if len(files) == 1:
+        print '=== Mean over good blocks ==='
         print 'STG accuracy:', subjStgAcc
         print 'STG RT:', subjStgMeanRT, '+-', subjStgStdRT
         print 'STI accuracy:', subjStiAcc
         print 'STI duration:', subjStiMeanDur, '+-', subjStiStdDur
         print 'xth percentile STG RT:', subjXthPercentile
         print 'Corrected SSRT:', subjSSRT
-        for b in range(len(stgAcc)):
-            print '=== BLOCK', b + 1, '==='
-            print 'STG accuracy:', stgAcc[b]
-            print 'STG RT:', stgMeanRT[b], '+-', stgStdRT[b]
-            print 'STI accuracy:', stiAcc[b]
+        b = 0
+        for bidx, trials in enumerate(rowsPerBlock):
+            if len(trials) == expectedTrialNum:
+                print '=== BLOCK', bidx + 1, '==='
+                print 'STG accuracy:', stgAcc[b]
+                print 'STG RT:', stgMeanRT[b], '+-', stgStdRT[b]
+                print 'STI accuracy:', stiAcc[b]
+                b += 1
 
     # closing all open files
     for c in range(len(condNames)):
