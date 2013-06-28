@@ -1,25 +1,25 @@
 '''
 
-Given a temporary folder and a destination folder, organizes the files downloaded form the DICOM server and creates new mask ids in the Excel spreadsheet.
+Given a temporary folder and a destination folder, organizes the files downloaded from the DICOM server using the mask IDS queried from LabMatrix.
 
 Note that this script assumes the data has been collected properly. In the cases when the study is incomplete, and there are more than one scan session per maskID, upload the incomplete files manually to the directory structure!
 
 Gustavo Sudre, 02/2013
+updated in 06/2013
 
 '''
 
-from openpyxl.reader.excel import load_workbook
 import os
 import glob
 import tarfile
 import shutil
+import numpy as np
 
-fname = '/Users/sudregp/tmp/MR_records.xlsx'
+fname = '/Users/sudregp/Downloads/Results.txt'
 tmpFolder = '/Users/sudregp/Downloads/'
 mrFolder = '/Volumes/neuro/MR_data/'
 
-wb = load_workbook(filename=fname)
-ws = wb.worksheets[0]
+ws = np.recfromtxt(fname, delimiter='\t', skip_header=1)
 
 dicoms = glob.glob(tmpFolder + '/*-DICOM*')
 print 'Found these DICOM files in ' + tmpFolder + ':\n'
@@ -37,17 +37,14 @@ for file in dicoms:
     mrn = bar[1]
     scanId = bar[3]
 
-    # search backwards for the subject's mask ID. Here, we assume it's the latest mask ID a subject was assigned, so that we don't have to search based on the date too
-    curRow = ws.get_highest_row()
-    curMaskId = None
-    while curRow > 0 and curMaskId is None:
-        if int(mrn) == int(ws.cell('A' + str(curRow)).value):
-            curMaskId = int(ws.cell('L' + str(curRow)).value)
-            print 'Found mask ID ' + str(curMaskId)
-        else:
-            curRow -= 1
-    if curRow == 0:
-        print 'Error: ' + subjectName + ' not found in spreadsheet!'
+    # search for the subject's mask ID in the labmatrix output
+    # sometimes the MRNs have dashes, so we account for that
+    mrns = [int(i[0].replace('-', '')) for i in ws]
+    if int(mrn) in mrns:
+        curMaskId = int(ws[mrns.index(int(mrn))][-1])
+        print 'Found mask ID %d' % curMaskId
+    else:
+        print 'Error: ' + subjectName + ' not found in the Labmatrix output!'
 
     subjFolder = mrFolder + '/' + subjectName + '-' + mrn + '/'
     targetFolder = subjFolder + '/' + str(curMaskId)
