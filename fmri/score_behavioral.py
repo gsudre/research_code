@@ -64,7 +64,12 @@ for txtFile in files:
 
     # Computes the delay (in ms) to augment the trial onset. If the time entered at the beginning of the task is the same as the length of the TR (e.g. 2000), then blockStartCol should happen 4 times the time entered according to the E-prime script. Since we have 4 dummy TRs, and assuming we crop out the first 4 TRs in fMRI preprocessing, then this delay equals to 0. However, we've been conservative and have been using 2300 in the begining, even though our TR is 2000. That means that when we crop the fMRI data after the first 4 TRs (8000 ms), our task only actually began at 4 * 2300 = 9200. The delay below corresponds to that difference.
     idjEnteredTR = np.nonzero(data[0, :] == trLengthCol)[0]
-    enteredTRLength = int(data[2, idjEnteredTR][0])
+    idiEnteredTR = np.nonzero(data[1:, idjEnteredTR] != '')[0]
+    if len(idiEnteredTR) == 0:
+        print 'WARNING!!! Could not find entered TR length. Assuming 2300. Check original files!'
+        enteredTRLength = 2300
+    else:
+        enteredTRLength = int(data[idiEnteredTR + 1, idjEnteredTR][0])
     delay = numDummyTRs * (enteredTRLength - actualTRLength)
 
     # Figure out how many blocks we have, based on the variable that stores the offset of the waiting period
@@ -181,15 +186,22 @@ for txtFile in files:
     subjStgAcc = np.mean(stgAcc)
     subjStiAcc = np.mean(stiAcc)
 
-    ll = int(math.floor(subjStiAcc / 100 * len(stgRT)))
-    ul = int(math.ceil(subjStiAcc / 100 * len(stgRT)))
-    subjXthPercentile = (stgRT[ul] + stgRT[ll]) / float(2)
-    subjSSRT = subjXthPercentile - subjStiMeanDur
+    if len(stgRT) > 0:
+        ll = int(math.floor(subjStiAcc / 100 * len(stgRT)))
+        ul = int(math.ceil(subjStiAcc / 100 * len(stgRT)))
+        # if this is the case, then something clearly went wrong and the subject will be thrown away because of something else. This if statement is here just so the script doesn't break.
+        if ul == len(stgRT):
+            print 'WARNING: Subject upper accuracy limit is is out of range!'
+            ul = ul - 1
+        subjXthPercentile = (stgRT[ul] + stgRT[ll]) / float(2)
+        subjSSRT = subjXthPercentile - subjStiMeanDur
 
-    # Spit out columns to CSV file
-    csv_fid.write(subj + ',')
-    csv_fid.write(','.join([str(i) for i in [subjStgAcc, subjStgMeanRT, subjStgStdRT, subjStiAcc, subjStiMeanDur, subjStiStdDur, subjXthPercentile, subjSSRT, np.min(stgAcc), np.min(stiAcc), np.sum(np.array(stgAcc) < qcSTGAcc)]]))
-    csv_fid.write('\n')
+        # Spit out columns to CSV file
+        csv_fid.write(subj + ',')
+        csv_fid.write(','.join([str(i) for i in [subjStgAcc, subjStgMeanRT, subjStgStdRT, subjStiAcc, subjStiMeanDur, subjStiStdDur, subjXthPercentile, subjSSRT, np.min(stgAcc), np.min(stiAcc), np.sum(np.array(stgAcc) < qcSTGAcc)]]))
+        csv_fid.write('\n')
+    else:
+        print 'WARNING!!! Did not find any trials for STG. Check for errors!'
 
     # Output to the screen if we only ran it for one subject
     if len(files) == 1:
