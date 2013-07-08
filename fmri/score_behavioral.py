@@ -52,6 +52,8 @@ elif len(sys.argv) == 1:
 else:
     raise('Wrong number of arguments to script!')
 
+# files = ['/Users/sudregp/tmp/cleaned_data/0687.txt']
+
 # Creating the CSV file
 csv_fid = open(csv_filename, 'w')
 csv_fid.write('Mask ID,STG accuracy,STG mean RT,STG std RT,STI accuracy,STI mean duration,STI std duration,xth percentile STG RT,Corrected SSRT,Lowest block STG Acc,Lowest block STI accuracy,How many blocks under ' + str(qcSTGAcc) + '% STG accuracy\n')
@@ -119,6 +121,9 @@ for txtFile in files:
             # identify go trials. Note that the indices refer to the variable trials, and NOT to the direct data matrix indexes!
             correctGoTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StGTrial' and data[trials[i], idjGoAcc] == '1']
             incorrectGoTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StGTrial' and data[trials[i], idjGoAcc] == '0']
+            totalSTG = len([s for s in data[trials, idjTrialType] if s == 'StGTrial'])
+            if len(correctGoTrials + incorrectGoTrials) != totalSTG:
+                print 'WARNING!!! Number of correct + incorrect STG trials differs from total!'
 
             # compute percent accuracy. Again, here the indices correspond to GoTrials!
             stgAcc.append(100 * float(len(correctGoTrials)) / (len(correctGoTrials) + len(incorrectGoTrials)))
