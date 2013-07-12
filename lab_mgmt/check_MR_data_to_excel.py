@@ -36,7 +36,7 @@ vedti = 10
 vt2 = 11
 
 list_mod = ['rage', 'fmri', 'rest', 'edti', 'clinical', 'fat_sat']  # note that these names need to be found in the README file!
-scan_headers = ['MRN', 'Type', 'Scanner', 'Mask ID', 'Task / MEG ID', 'Notes', 'MPRAGE Quality']
+scan_headers = ['MRN', 'Date', 'Type', 'Scanner', 'Mask ID', 'Task / MEG ID', 'MPRAGE Quality', 'Notes']
 scan_table = []
 scan_table.append(scan_headers)
 
@@ -79,7 +79,7 @@ for subj_dir in subjs:
 
             # check what kinds of data this subject has in this mask id. Create a new Scan table entry for each data type found
             if check_for_data('clinical', date_dirs):
-                scan_table.append([mrn, 'clinical', '3TA', mask_id, '', '', ''])
+                scan_table.append([mrn, date.strftime('%m/%d/%Y'), 'clinical', '3TA', mask_id, '', '', ''])
                 new_visit.append('Y')
             else:
                 new_visit.append('N')
@@ -89,7 +89,7 @@ for subj_dir in subjs:
                 visits[vrow[0]][vclinical] = new_visit[-1]
 
             if check_for_data('rage', date_dirs):
-                scan_table.append([mrn, 'MPRAGE', '3TA', mask_id, '', '', ''])
+                scan_table.append([mrn, date.strftime('%m/%d/%Y'), 'MPRAGE', '3TA', mask_id, '', '', ''])
                 new_visit.append('Y')
             else:
                 new_visit.append('N')
@@ -98,7 +98,7 @@ for subj_dir in subjs:
                 visits[vrow[0]][vmprage] = new_visit[-1]
 
             if check_for_data('fmri', date_dirs):
-                scan_table.append([mrn, 'stop task', '3TA', mask_id, '', '', ''])
+                scan_table.append([mrn, date.strftime('%m/%d/%Y'), 'stop task', '3TA', mask_id, '', '', ''])
                 new_visit.append('Y')
             else:
                 new_visit.append('N')
@@ -107,7 +107,7 @@ for subj_dir in subjs:
                 visits[vrow[0]][vtask] = new_visit[-1]
 
             if check_for_data('rest', date_dirs):
-                scan_table.append([mrn, 'rest', '3TA', mask_id, '', '', ''])
+                scan_table.append([mrn, date.strftime('%m/%d/%Y'), 'rest', '3TA', mask_id, '', '', ''])
                 new_visit.append('Y')
             else:
                 new_visit.append('N')
@@ -116,7 +116,7 @@ for subj_dir in subjs:
                 visits[vrow[0]][vrest] = new_visit[-1]
 
             if check_for_data('edti', date_dirs):
-                scan_table.append([mrn, 'eDTI', '3TA', mask_id, '', '', ''])
+                scan_table.append([mrn, date.strftime('%m/%d/%Y'), 'eDTI', '3TA', mask_id, '', '', ''])
                 new_visit.append('Y')
             else:
                 new_visit.append('N')
@@ -125,7 +125,7 @@ for subj_dir in subjs:
                 visits[vrow[0]][vedti] = new_visit[-1]
 
             if check_for_data('fat_sat', date_dirs):
-                scan_table.append([mrn, 'T2', '3TA', mask_id, '', '', ''])
+                scan_table.append([mrn, date.strftime('%m/%d/%Y'), 'T2', '3TA', mask_id, '', '', ''])
                 new_visit.append('Y')
             else:
                 new_visit.append('N')
