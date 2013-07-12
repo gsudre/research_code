@@ -84,16 +84,18 @@ for subj_dir in subjs:
             else:
                 new_visit.append('N')
             # # if it's not a new entry in visits spreasheet, but the value in the specific column for this modality is different than what we get by looking at the directory, give out an error
-            # if not add_new and visits[vrow[0]][vclinical] != new_visit[-1]:
-            #     errors.append('%d on %s should be %c for clinical' % (mrn, str(date.strftime('%m/%d/%y')), new_visit[-1]))
+            if not add_new and visits[vrow[0]][vclinical] != new_visit[-1]:
+                errors.append('%d on %s should be %c for clinical instead of %s' % (mrn, str(date.strftime('%m/%d/%y')), new_visit[-1], visits[vrow[0]][vclinical]))
+                visits[vrow[0]][vclinical] = new_visit[-1]
 
             if check_for_data('rage', date_dirs):
                 scan_table.append([mrn, 'MPRAGE', '3TA', mask_id, '', '', ''])
                 new_visit.append('Y')
             else:
                 new_visit.append('N')
-            # if not add_new and visits[vrow[0]][vmprage] != new_visit[-1]:
-            #     errors.append('%d on %s should be %c for MPRAGE' % (mrn, str(date.strftime('%m/%d/%y')), new_visit[-1]))
+            if not add_new and visits[vrow[0]][vmprage] != new_visit[-1]:
+                errors.append('%d on %s should be %c for MPRAGE instead of %s' % (mrn, str(date.strftime('%m/%d/%y')), new_visit[-1],  visits[vrow[0]][vmprage]))
+                visits[vrow[0]][vmprage] = new_visit[-1]
 
             if check_for_data('fmri', date_dirs):
                 scan_table.append([mrn, 'stop task', '3TA', mask_id, '', '', ''])
@@ -101,7 +103,7 @@ for subj_dir in subjs:
             else:
                 new_visit.append('N')
             if not add_new and visits[vrow[0]][vtask] != new_visit[-1]:
-                errors.append('%d on %s should be %c for task' % (mrn, str(date.strftime('%m/%d/%y')), new_visit[-1]))
+                errors.append('%d on %s should be %c for task instead of %s' % (mrn, str(date.strftime('%m/%d/%y')), new_visit[-1], visits[vrow[0]][vtask]))
                 visits[vrow[0]][vtask] = new_visit[-1]
 
             if check_for_data('rest', date_dirs):
@@ -109,24 +111,27 @@ for subj_dir in subjs:
                 new_visit.append('Y')
             else:
                 new_visit.append('N')
-            # if not add_new and visits[vrow[0]][vrest] != new_visit[-1]:
-            #     errors.append('%d on %s should be %c for rest' % (mrn, str(date.strftime('%m/%d/%y')), new_visit[-1]))
+            if not add_new and visits[vrow[0]][vrest] != new_visit[-1]:
+                errors.append('%d on %s should be %c for rest instead of %s' % (mrn, str(date.strftime('%m/%d/%y')), new_visit[-1], visits[vrow[0]][vrest]))
+                visits[vrow[0]][vrest] = new_visit[-1]
 
             if check_for_data('edti', date_dirs):
                 scan_table.append([mrn, 'eDTI', '3TA', mask_id, '', '', ''])
                 new_visit.append('Y')
             else:
                 new_visit.append('N')
-            # if not add_new and visits[vrow[0]][vedti] != new_visit[-1]:
-            #     errors.append('%d on %s should be %c for eDTI' % (mrn, str(date.strftime('%m/%d/%y')), new_visit[-1]))
+            if not add_new and visits[vrow[0]][vedti] != new_visit[-1]:
+                errors.append('%d on %s should be %c for eDTI instead of %s' % (mrn, str(date.strftime('%m/%d/%y')), new_visit[-1], visits[vrow[0]][vedti]))
+                visits[vrow[0]][vedti] = new_visit[-1]
 
             if check_for_data('fat_sat', date_dirs):
                 scan_table.append([mrn, 'T2', '3TA', mask_id, '', '', ''])
                 new_visit.append('Y')
             else:
                 new_visit.append('N')
-            # if not add_new and visits[vrow[0]][vt2] != new_visit[-1]:
-            #     errors.append('%d on %s should be %c for T2' % (mrn, str(date.strftime('%m/%d/%y')), new_visit[-1]))
+            if not add_new and visits[vrow[0]][vt2] != new_visit[-1]:
+                errors.append('%d on %s should be %c for T2 instead of %s' % (mrn, str(date.strftime('%m/%d/%y')), new_visit[-1], visits[vrow[0]][vt2]))
+                visits[vrow[0]][vt2] = new_visit[-1]
 
             if add_new:
                 print "\t".join(new_visit)
@@ -137,6 +142,7 @@ wr.writerows(scan_table)
 fid.close()
 
 print '\nThese assignments are incorrect in the Excel matrix:'
-print errors
+for er in errors:
+    print er
 
 np.savetxt(fname[:-4] + '_corrected.txt', visits, fmt='%s', delimiter='\t')
