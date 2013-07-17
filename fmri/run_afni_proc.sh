@@ -3,19 +3,18 @@ echo "Enter the subject mask ID (4 digits), followed by [ENTER]:"
 read subj
 
 subj_dir=/mnt/neuro/data_by_maskID/$subj/afni
-stim_dir=/mnt/neuro/MR_baheavioral/clean_data/ 
+stim_dir=/mnt/neuro/MR_behavioral/cleaned_data/ 
 
 afni_proc.py -dsets ${subj_dir}/stop_run1+orig.BRIK           \
     ${subj_dir}/stop_run2+orig.BRIK                   \
     ${subj_dir}/stop_run3+orig.BRIK                   \
     ${subj_dir}/stop_run4+orig.BRIK                   \
     -scr_overwrite                              \
-    -script stop.proc.$subj                 \
+    -script $subj_dir/stop.proc.$subj                 \
     -subj_id $subj                                                          \
-    -out_dir $subj.stop.results                     \
+    -out_dir $subj_dir/$subj.stop.results                     \
     -copy_anat $subj_dir/mprage+orig                   \
     -blocks tshift align tlrc volreg blur mask scale regress        \
-    -tcat_remove_first_trs 4                       \
     -tshift_align_to -tzero 0                       \
     -volreg_align_e2a                           \
         -volreg_tlrc_warp                           \
@@ -47,3 +46,6 @@ afni_proc.py -dsets ${subj_dir}/stop_run1+orig.BRIK           \
                 -noFDR                                          \
     -regress_opts_reml  -GOFORIT 99                 \
     -regress_reml_exec   
+
+tcsh -xef $subj_dir/stop.proc.$subj | tee $subj_dir/output.stop.proc.$subj
+# -tcat_remove_first_trs 4                       \
