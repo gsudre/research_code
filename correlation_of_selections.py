@@ -4,8 +4,15 @@ import env
 import scipy
 from scipy import stats
 
-fname1 = '/Users/sudregp/tmp/cortexR_SA_NV_10to21_3orMore.csv'
-fname2 = '/Users/sudregp/tmp/cortex_SA_NV_10to21.csv'
+
+def p(m):
+    fig = ml.figure()
+    brain  = surfer.Brain('mni','rh','cortex', curv=False, figure=fig)
+    brain.add_data(m[:,v])
+
+
+fname1 = '/Users/sudregp/tmp/thalamusR_SA_NV_10to21_3orMore.csv'
+fname2 = '/Users/sudregp/tmp/thalamus_SA_NV_10to21.csv'
 
 cortex = np.genfromtxt(fname1, delimiter=',')
 # removing first column and first row, because they're headers
