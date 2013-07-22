@@ -3,14 +3,14 @@ import env
 import scipy
 from scipy import stats
 
-cortex = np.genfromtxt(env.data + '/structural/cortexR_SA_NV_10to21_2closestTo16.csv', delimiter=',')
+cortex = np.genfromtxt(env.data + '/structural/cortexR_SA_NV_10to21_3orMore.csv', delimiter=',')
 # removing first column and first row, because they're headers
 cortex = scipy.delete(cortex, 0, 1)
 cortex = scipy.delete(cortex, 0, 0)
 # format it to be subjects x variables
 cortex = cortex.T
 
-subcortex = np.genfromtxt(env.data + '/structural/thalamusR_SA_NV_10to21_2closestTo16.csv', delimiter=',')
+subcortex = np.genfromtxt(env.data + '/structural/thalamusR_SA_NV_10to21_3orMore.csv', delimiter=',')
 # removing first column and first row, because they're headers
 subcortex = scipy.delete(subcortex, 0, 1)
 subcortex = scipy.delete(subcortex, 0, 0)
@@ -34,4 +34,4 @@ for x in range(X.shape[1]):
         corr[x, y], pvals[x, y] = stats.pearsonr(X[:, x], Y[:, y])
 
 
-np.savez(env.results + 'structurals_pearson_all_thalamus_all_cortex_2closestTo16', corr=corr, pvals=pvals, my_sub_vertices=my_sub_vertices)
+np.savez(env.results + 'structurals_pearson_all_thalamus_all_cortex_3orMore', corr=corr, pvals=pvals, my_sub_vertices=my_sub_vertices)

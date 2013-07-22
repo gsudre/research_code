@@ -11,8 +11,8 @@ def p(m):
     brain.add_data(m[:,v])
 
 
-fname1 = '/Users/sudregp/tmp/thalamusR_SA_NV_10to21_3orMore.csv'
-fname2 = '/Users/sudregp/tmp/thalamus_SA_NV_10to21.csv'
+fname1 = env.data + '/structural/thalamusR_SA_NV_10to21_2closestTo16.csv'
+fname2 = env.data + '/structural/thalamusR_SA_NV_10to21.csv'
 
 cortex = np.genfromtxt(fname1, delimiter=',')
 # removing first column and first row, because they're headers
