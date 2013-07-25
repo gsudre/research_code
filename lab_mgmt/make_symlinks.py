@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 ''' Generates symlinks for every mask ID. Should probably run it once in a while to generate the links for the new data, since the sort_data script DOES NOT do this! '''
 import glob
 import os
@@ -15,7 +16,6 @@ for subj_dir in subjects:
         subj_name = mask_dir.split('/')[-2]
         link_name = target_dir + ('%04.0d' % int(mask_id))
         source = '../MR_data/' + subj_name + '/' + mask_id
-        if os.path.exists(link_name):
-            print 'Error:', link_name, 'already exists!'
-        else:
+        if not os.path.exists(link_name):
+            print 'Creating ', link_name
             os.symlink(source, link_name)
