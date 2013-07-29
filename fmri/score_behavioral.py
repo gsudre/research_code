@@ -2,6 +2,7 @@ import numpy as np
 import math
 import sys
 import glob
+import matplotlib.pyplot as plt
 
 #### DEFINING VARIABLES AND COLUMN NAMES FROM E-PRIME EXPORTED FILE ####
 
@@ -52,11 +53,10 @@ elif len(sys.argv) == 1:
 else:
     raise('Wrong number of arguments to script!')
 
-# files = ['/Users/sudregp/tmp/cleaned_data/0687.txt']
-
+# files = ['/Volumes/neuro/MR_behavioral/cleaned_data/0440.txt']
 # Creating the CSV file
 csv_fid = open(csv_filename, 'w')
-csv_fid.write('Mask ID,STG accuracy,STG mean RT,STG std RT,STI accuracy,STI mean duration,STI std duration,xth percentile STG RT,Corrected SSRT,Lowest block STG Acc,Lowest block STI accuracy,How many blocks under ' + str(qcSTGAcc) + '% STG accuracy\n')
+csv_fid.write('Mask ID,STG accuracy,STG mean RT,STG std RT,STI accuracy,STI mean duration,STI std duration,xth percentile STG RT,Corrected SSRT,Lowest block STG Acc,Lowest block STI accuracy,How many blocks under ' + str(qcSTGAcc) + '% STG accuracy,slope,B1 STG accuracy,B1 STG mean RT,B1 STG std RT,B1 STI accuracy,B2 STG accuracy,B2 STG mean RT,B2 STG std RT,B2 STI accuracy,B3 STG accuracy,B3 STG mean RT,B3 STG std RT,B3 STI accuracy,B4 STG accuracy,B4 STG mean RT,B4 STG std RT,B4 STI accuracy\n')
 
 for txtFile in files:
     subj = txtFile[:-4]
@@ -115,15 +115,14 @@ for txtFile in files:
     stiMeanDur = []
     stiStdDur = []
     stiDur = []
+    slopeX = []
+    slopeY = []
     for bidx, trials in enumerate(rowsPerBlock):
         # We only analyze blocks for which we have all expected trials
         if len(trials) == expectedTrialNum:
             # identify go trials. Note that the indices refer to the variable trials, and NOT to the direct data matrix indexes!
             correctGoTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StGTrial' and data[trials[i], idjGoAcc] == '1']
             incorrectGoTrials = [trials[i] for i, s in enumerate(data[trials, idjTrialType]) if s == 'StGTrial' and data[trials[i], idjGoAcc] == '0']
-            totalSTG = len([s for s in data[trials, idjTrialType] if s == 'StGTrial'])
-            if len(correctGoTrials + incorrectGoTrials) != totalSTG:
-                print 'WARNING!!! Number of correct + incorrect STG trials differs from total!'
 
             # compute percent accuracy. Again, here the indices correspond to GoTrials!
             stgAcc.append(100 * float(len(correctGoTrials)) / (len(correctGoTrials) + len(incorrectGoTrials)))
@@ -150,6 +149,12 @@ for txtFile in files:
             stiBlockDur = [int(i) for i in data[correctInhTrials, idjStiDur]]
             stiMeanDur.append(np.mean(stiBlockDur))
             stiStdDur.append(np.std(stiBlockDur))
+            for i in correctInhTrials:
+                slopeX.append(int(data[i, idjStiDur][0]))
+                slopeY.append(1)
+            for i in incorrectInhTrials:
+                slopeX.append(int(data[i, idjStiDur][0]))
+                slopeY.append(0)
 
             # concatenate Go RTs for correct trials so we can later interpolate SSRT. Let's concatenate duration as well so we can have a better std later
             stgRT.append(stgBlockRTs)
@@ -180,6 +185,7 @@ for txtFile in files:
 
     # Now we interpolate to get SSRT. First, order correctGoTrials based on RT, then choose the number relative to the STI accuracy
     # just flattening the lists first
+    oldStiDur = stiDur
     stgRT = np.sort([i for j in stgRT for i in j])
     stiDur = np.sort([i for j in stiDur for i in j])
 
@@ -202,8 +208,35 @@ for txtFile in files:
         subjSSRT = subjXthPercentile - subjStiMeanDur
 
         # Spit out columns to CSV file
+        block_stats = []
+        b = 0
+        for bidx, trials in enumerate(rowsPerBlock):
+            if len(trials) == expectedTrialNum:
+                block_stats.append(stgAcc[b])
+                block_stats.append(stgMeanRT[b])
+                block_stats.append(stgStdRT[b])
+                block_stats.append(stiAcc[b])
+                b += 1
+
+        # Calculating slope of stiDur vs accuracy plot
+        Xaxis = range(210, 800, 16)
+        Yaxis = np.empty([len(Xaxis)])
+        for ix, x in enumerate(Xaxis):
+            Yaxis[ix] = np.sum(np.all([[np.array(slopeX) == x], [np.array(slopeY) == 1]], axis=0))
+        fig = plt.figure()
+        xp = np.linspace(210, 800, 100)
+        z = np.polyfit(Xaxis, Yaxis, 1)
+        slope = z[0]
+        pn = np.poly1d(z)
+        plt.plot(Xaxis, Yaxis, 'o', Xaxis, pn(Xaxis), '--')
+        plt.ylabel('Num correct trials')
+        plt.xlabel('STI Duration')
+        plt.title(subj)
+        fig.savefig(subj + '.png', format='png')
+
         csv_fid.write(subj + ',')
-        csv_fid.write(','.join([str(i) for i in [subjStgAcc, subjStgMeanRT, subjStgStdRT, subjStiAcc, subjStiMeanDur, subjStiStdDur, subjXthPercentile, subjSSRT, np.min(stgAcc), np.min(stiAcc), np.sum(np.array(stgAcc) < qcSTGAcc)]]))
+        csv_fid.write(','.join([str(i) for i in [subjStgAcc, subjStgMeanRT, subjStgStdRT, subjStiAcc, subjStiMeanDur, subjStiStdDur, subjXthPercentile, subjSSRT, np.min(stgAcc), np.min(stiAcc), np.sum(np.array(stgAcc) < qcSTGAcc), slope, block_stats]]))
+
         csv_fid.write('\n')
     else:
         print 'WARNING!!! Did not find any trials for STG. Check for errors!'
