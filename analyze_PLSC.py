@@ -1,10 +1,10 @@
 import numpy as np
 import env
 import scipy
-import pdb
 import matplotlib.pyplot as plt
 from scipy import stats
-import procrustes
+import procrustes as pc
+import pdb
 
 '''
 ind = np.arange(num_comps)    # the x locations for the groups
@@ -27,21 +27,21 @@ plt.show(block=False)
 '''
 
 
-def procrustes(Vorig, Vresamp, Uresamp, Sresamp):
-    ''' Following the algorithm in McIntosh and Lobaugh, 2004 ''' 
-    N, O, Ph = np.linalg.svd(np.dot(Vorig.T, Vresamp), full_matrices=False)
-    P = Ph.T
+# def procrustes(Vorig, Vresamp, Uresamp, Sresamp):
+#     ''' Following the algorithm in McIntosh and Lobaugh, 2004 ''' 
+#     N, O, Ph = np.linalg.svd(np.dot(Vorig.T, Vresamp), full_matrices=False)
+#     P = Ph.T
 
-    Q = np.dot(N, P)
-    if Sresamp.ndim == 1:
-        Sresamp = Sresamp * np.eye(len(Sresamp))
+#     Q = np.dot(N, P)
+#     if Sresamp.ndim == 1:
+#         Sresamp = Sresamp * np.eye(len(Sresamp))
 
-    Vhat = np.dot(Vresamp, np.dot(Sresamp, Q))
-    Uhat = np.dot(Uresamp, np.dot(Sresamp, Q))
-    # Shat = np.sqrt(np.sum(Vhat ** 2, axis=0))
-    _, Shat, _= np.linalg.svd(Vhat, full_matrices=False)
+#     Vhat = np.dot(Vresamp, np.dot(Sresamp, Q))
+#     Uhat = np.dot(Uresamp, np.dot(Sresamp, Q))
+#     # Shat = np.sqrt(np.sum(Vhat ** 2, axis=0))
+#     _, Shat, _= np.linalg.svd(Vhat, full_matrices=False)
 
-    return Vhat, Uhat, Shat
+#     return Vhat, Uhat, Shat
 
 
 num_perms = saliences_boot.shape[-1]
@@ -50,22 +50,22 @@ sv2 = np.tile(sv, [num_perms, 1]).T
 # rotate the matrices so we can compare permutted/bootstrap data and the original SVD space
 for p in range(num_perms):
     print str(p+1) + '/' + str(num_perms)
-    Vresamp = np.squeeze(saliences_boot[:, :, p])
-    Uresamp = np.squeeze(patterns_boot[:, :, p])
-    Sresamp = np.squeeze(sv_boot[:, p])
-    saliences_boot[:, :, p], patterns_boot[:, :, p], _ = procrustes(saliences, Vresamp, Uresamp, Sresamp)
 
-    Vresamp = np.squeeze(saliences_perm[:, :, p])
-    Uresamp = np.squeeze(patterns_perm[:, :, p])
-    Sresamp = np.squeeze(sv_perm[:, p])
-    _, _, sv_perm[:, p] = procrustes(saliences, Vresamp, Uresamp, Sresamp)
+    tmps = pc.procrustes(saliences.T, np.squeeze(saliences_boot[:, :, p]).T)
+    std_salience = tmps[0].T
+    saliences_boot[:, :, p] = tmps[1].T.copy()
 
+    tmpp = pc.procrustes(patterns.T, np.squeeze(patterns_boot[:, :, p]).T)
+    std_pattern = tmpp[0].T
+    patterns_perm[:, :, p] = tmpp[1].T.copy()
+std_saliences = tmps[0].T
+std_patterns = tmpp[0].T
 
 pvals = np.sum(sv_perm >= sv2, axis=-1) / float(num_perms)
 sem = scipy.stats.sem(saliences_boot, axis=-1)
-stability_saliences = saliences / sem
+stability_saliences = std_saliences / sem
 sem = scipy.stats.sem(patterns_boot, axis=-1)
-stability_patterns = patterns / sem
+stability_patterns = std_patterns / sem
 
 # saliences and patterns with absolute value > 2.32 give p-value < .01, so we should only keep those. This is a way to do it:
 stable_saliences = saliences.copy()

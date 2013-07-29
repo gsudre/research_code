@@ -69,8 +69,8 @@ def procrustes(data1, data2):
     SMALL_NUM = 1e-6 # used to check for zero values in added dimension
     
     # make local copies
-#     mtx1 = array(data1.copy(),'d')
-#     mtx2 = array(data2.copy(),'d')
+    mtx1 = array(data1.copy(),'d')
+    mtx2 = array(data2.copy(),'d')
     num_rows, num_cols = shape(data1)
     if (num_rows, num_cols) != shape(data2):
         raise ValueError("input matrices must be of same shape")
@@ -143,7 +143,7 @@ def match_points(mtx1, mtx2):
     a copy of mtx 2.  See procrustes docs for details.
     """
     # Change by Gustavo Sudre so it would run faster
-    u,s,vh = svd(dot(transpose(mtx1), mtx2), full_matrices=False)
+    u,s,vh = svd(dot(transpose(mtx1), mtx2))
     q = dot(transpose(vh), transpose(u))
     new_mtx2 = dot(mtx2, q)
     new_mtx2 *= sum(s)
