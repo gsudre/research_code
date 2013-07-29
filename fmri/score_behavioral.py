@@ -56,7 +56,7 @@ else:
 # files = ['/Volumes/neuro/MR_behavioral/cleaned_data/0440.txt']
 # Creating the CSV file
 csv_fid = open(csv_filename, 'w')
-csv_fid.write('Mask ID,STG accuracy,STG mean RT,STG std RT,STI accuracy,STI mean duration,STI std duration,xth percentile STG RT,Corrected SSRT,Lowest block STG Acc,Lowest block STI accuracy,How many blocks under ' + str(qcSTGAcc) + '% STG accuracy,slope,B1 STG accuracy,B1 STG mean RT,B1 STG std RT,B1 STI accuracy,B2 STG accuracy,B2 STG mean RT,B2 STG std RT,B2 STI accuracy,B3 STG accuracy,B3 STG mean RT,B3 STG std RT,B3 STI accuracy,B4 STG accuracy,B4 STG mean RT,B4 STG std RT,B4 STI accuracy\n')
+csv_fid.write('Mask ID,STG accuracy,STG mean RT,STG std RT,STI accuracy,STI mean duration,STI std duration,xth percentile STG RT,Corrected SSRT,Lowest block STG Acc,Lowest block STI accuracy,How many blocks under ' + str(qcSTGAcc) + '% STG accuracy,slope,B1 STG accuracy,B1 STG mean RT,B1 STG std RT,B1 STI accuracy,B1 STI mean dur,B1 STI std dur,B2 STG accuracy,B2 STG mean RT,B2 STG std RT,B2 STI accuracy,B2 STI mean dur,B2 STI std dur,B3 STG accuracy,B3 STG mean RT,B3 STG std RT,B3 STI accuracy,B3 STI mean dur,B3 STI std dur,B4 STG accuracy,B4 STG mean RT,B4 STG std RT,B4 STI accuracy,B4 STI mean dur,B4 STI std dur\n')
 
 for txtFile in files:
     subj = txtFile[:-4]
@@ -216,6 +216,8 @@ for txtFile in files:
                 block_stats.append(stgMeanRT[b])
                 block_stats.append(stgStdRT[b])
                 block_stats.append(stiAcc[b])
+                block_stats.append(np.mean(oldStiDur[b]))
+                block_stats.append(np.std(oldStiDur[b]))
                 b += 1
 
         # Calculating slope of stiDur vs accuracy plot
