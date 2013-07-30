@@ -57,7 +57,7 @@ for p in range(num_perms):
 
     tmpp = pc.procrustes(patterns.T, np.squeeze(patterns_boot[:, :, p]).T)
     std_pattern = tmpp[0].T
-    patterns_perm[:, :, p] = tmpp[1].T.copy()
+    patterns_boot[:, :, p] = tmpp[1].T.copy()
 std_saliences = tmps[0].T
 std_patterns = tmpp[0].T
 

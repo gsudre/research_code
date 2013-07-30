@@ -102,14 +102,14 @@ groups = [[0, 3], [3, 6], [6, 9]]
 num_perms = 200
 
 
-cortex = np.genfromtxt(env.data + '/structural/cortexR_SA_NV_10to21_MATCH3.csv', delimiter=',')
+cortex = np.genfromtxt(env.data + '/structural/cortexR_SA_NV_10to21_MATCHscript.csv', delimiter=',')
 # removing first column and first row, because they're headers
 cortex = scipy.delete(cortex, 0, 1)
 cortex = scipy.delete(cortex, 0, 0)
 # format it to be subjects x variables
 cortex = cortex.T
 
-subcortex = np.genfromtxt(env.data + '/structural/thalamusR_SA_NV_10to21_MATCH3.csv', delimiter=',')
+subcortex = np.genfromtxt(env.data + '/structural/thalamusR_SA_NV_10to21_MATCHscript.csv', delimiter=',')
 # removing first column and first row, because they're headers
 subcortex = scipy.delete(subcortex, 0, 1)
 subcortex = scipy.delete(subcortex, 0, 0)
@@ -117,14 +117,14 @@ subcortex = scipy.delete(subcortex, 0, 0)
 subcortex = subcortex.T
 
 # ADHD data
-cortex2 = np.genfromtxt(env.data + '/structural/cortexR_SA_ADHD_10to21_MATCH3.csv', delimiter=',')
+cortex2 = np.genfromtxt(env.data + '/structural/cortexR_SA_ADHD_10to21_MATCHscript.csv', delimiter=',')
 # removing first column and first row, because they're headers
 cortex2 = scipy.delete(cortex2, 0, 1)
 cortex2 = scipy.delete(cortex2, 0, 0)
 # format it to be subjects x variables
 cortex2 = cortex2.T
 
-subcortex2 = np.genfromtxt(env.data + '/structural/thalamusR_SA_ADHD_10to21_MATCH3.csv', delimiter=',')
+subcortex2 = np.genfromtxt(env.data + '/structural/thalamusR_SA_ADHD_10to21_MATCHscript.csv', delimiter=',')
 # removing first column and first row, because they're headers
 subcortex2 = scipy.delete(subcortex2, 0, 1)
 subcortex2 = scipy.delete(subcortex2, 0, 0)
@@ -223,6 +223,7 @@ def plot_lv(lv):
     # colors = [(1,1,1)] + [(random(),random(),random()) for i in xrange(patterns.shape[0])]
     rects = [plt.bar(i, patterns[i, lv], color=colors[i], label=label_names[i]) for i in range(patterns.shape[0]/2)]
     rects = rects + [plt.bar(i+1, patterns[i, lv], color=colors[i-len(label_names)]) for i in range(len(label_names), patterns.shape[0])]
+    plt.ylim([-1, 1])
     # rects = []
     # for c, color in enumerate(colors):
     #     rects.append(pl.bar(ind + c * width, patterns[c, lv], width, color=color))
