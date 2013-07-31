@@ -136,11 +136,11 @@ subcortex2 = subcortex2.T
 # my_sub_vertices = range(0, subcortex.shape[1], 100)  # every 100
 # my_sub_vertices = range(subcortex.shape[1])
 
-# w = mne.read_w(env.fsl + '/mni/bem/cortex-3-rh.w')
-# my_cor_vertices = w['vertices']
+w = mne.read_w(env.fsl + '/mni/bem/cortex-3-rh.w')
+my_cor_vertices = w['vertices']
 
-w = mne.read_w(env.fsl + '/mni/bem/thalamus-10-rh.w')
-my_sub_vertices = w['vertices']
+# w = mne.read_w(env.fsl + '/mni/bem/thalamus-10-rh.w')
+# my_sub_vertices = w['vertices']
 # my_cor_vertices = range(0, cortex.shape[1], 20)
 # my_sub_vertices = [2034,  950,  216,   52, 2276, 2893, 1386, 1922, 2187, 1831, 1828]  # GS made it up by looking at anamoty, refer to Evernote for details. WRONG!
 # my_sub_vertices = [1533, 1106, 225, 163, 2420, 2966, 1393, 1666, 1681, 1834, 2067]  # GS made it up by looking at anamoty, refer to Evernote for details
