@@ -102,34 +102,34 @@ groups = [[0, 3], [3, 6], [6, 9]]
 num_perms = 200
 
 
-# cortex = np.genfromtxt(env.data + '/structural/cortexR_SA_NV_10to21_MATCHscript.csv', delimiter=',')
-# # removing first column and first row, because they're headers
-# cortex = scipy.delete(cortex, 0, 1)
-# cortex = scipy.delete(cortex, 0, 0)
-# # format it to be subjects x variables
-# cortex = cortex.T
+cortex = np.genfromtxt(env.data + '/structural/cortexR_SA_NV_10to21_MATCHscript.csv', delimiter=',')
+# removing first column and first row, because they're headers
+cortex = scipy.delete(cortex, 0, 1)
+cortex = scipy.delete(cortex, 0, 0)
+# format it to be subjects x variables
+cortex = cortex.T
 
-# subcortex = np.genfromtxt(env.data + '/structural/thalamusR_SA_NV_10to21_MATCHscript.csv', delimiter=',')
-# # removing first column and first row, because they're headers
-# subcortex = scipy.delete(subcortex, 0, 1)
-# subcortex = scipy.delete(subcortex, 0, 0)
-# # format it to be subjects x variables
-# subcortex = subcortex.T
+subcortex = np.genfromtxt(env.data + '/structural/thalamusR_SA_NV_10to21_MATCHscript.csv', delimiter=',')
+# removing first column and first row, because they're headers
+subcortex = scipy.delete(subcortex, 0, 1)
+subcortex = scipy.delete(subcortex, 0, 0)
+# format it to be subjects x variables
+subcortex = subcortex.T
 
-# # ADHD data
-# cortex2 = np.genfromtxt(env.data + '/structural/cortexR_SA_ADHD_10to21_MATCHscript.csv', delimiter=',')
-# # removing first column and first row, because they're headers
-# cortex2 = scipy.delete(cortex2, 0, 1)
-# cortex2 = scipy.delete(cortex2, 0, 0)
-# # format it to be subjects x variables
-# cortex2 = cortex2.T
+# ADHD data
+cortex2 = np.genfromtxt(env.data + '/structural/cortexR_SA_ADHD_10to21_MATCHscript.csv', delimiter=',')
+# removing first column and first row, because they're headers
+cortex2 = scipy.delete(cortex2, 0, 1)
+cortex2 = scipy.delete(cortex2, 0, 0)
+# format it to be subjects x variables
+cortex2 = cortex2.T
 
-# subcortex2 = np.genfromtxt(env.data + '/structural/thalamusR_SA_ADHD_10to21_MATCHscript.csv', delimiter=',')
-# # removing first column and first row, because they're headers
-# subcortex2 = scipy.delete(subcortex2, 0, 1)
-# subcortex2 = scipy.delete(subcortex2, 0, 0)
-# # format it to be subjects x variables
-# subcortex2 = subcortex2.T
+subcortex2 = np.genfromtxt(env.data + '/structural/thalamusR_SA_ADHD_10to21_MATCHscript.csv', delimiter=',')
+# removing first column and first row, because they're headers
+subcortex2 = scipy.delete(subcortex2, 0, 1)
+subcortex2 = scipy.delete(subcortex2, 0, 0)
+# format it to be subjects x variables
+subcortex2 = subcortex2.T
 
 # selecting only a few vertices in the thalamus
 # my_sub_vertices = [2310, 1574, 1692, 1262, 1350]  # Philip's
@@ -139,36 +139,36 @@ num_perms = 200
 # w = mne.read_w(env.fsl + '/mni/bem/cortex-3-rh.w')
 # my_cor_vertices = w['vertices']
 
-# w = mne.read_w(env.fsl + '/mni/bem/thalamus-10-rh.w')
-# my_sub_vertices = w['vertices']
-my_cor_vertices = range(0, cortex.shape[1], 20)
+w = mne.read_w(env.fsl + '/mni/bem/thalamus-10-rh.w')
+my_sub_vertices = w['vertices']
+# my_cor_vertices = range(0, cortex.shape[1], 20)
 # my_sub_vertices = [2034,  950,  216,   52, 2276, 2893, 1386, 1922, 2187, 1831, 1828]  # GS made it up by looking at anamoty, refer to Evernote for details. WRONG!
-my_sub_vertices = [1533, 1106, 225, 163, 2420, 2966, 1393, 1666, 1681, 1834, 2067]  # GS made it up by looking at anamoty, refer to Evernote for details
+# my_sub_vertices = [1533, 1106, 225, 163, 2420, 2966, 1393, 1666, 1681, 1834, 2067]  # GS made it up by looking at anamoty, refer to Evernote for details
 
 
-# my_sub_vertices = []
-# # in nice order from anterior to posterior in the cortex (cingulate is last)
-# label_names = ['medialdorsal', 'va', 'vl', 'vp', 'lateraldorsal',
-#                'lateralposterior', 'pulvinar', 'anteriornuclei']
-# label_names = ['medialdorsal', 'va', 'vl', 'vp', 'pulvinar', 'anteriornuclei']
-# for l in label_names:
-#     v = mne.read_label(env.fsl + '/mni/label/rh.' + l + '.label')
-#     my_sub_vertices.append(v.vertices)
+my_sub_vertices = []
+# in nice order from anterior to posterior in the cortex (cingulate is last)
+label_names = ['medialdorsal', 'va', 'vl', 'vp', 'lateraldorsal',
+               'lateralposterior', 'pulvinar', 'anteriornuclei']
+label_names = ['medialdorsal', 'va', 'vl', 'vp', 'pulvinar', 'anteriornuclei']
+for l in label_names:
+    v = mne.read_label(env.fsl + '/mni/label/rh.' + l + '.label')
+    my_sub_vertices.append(v.vertices)
 
-X = cortex[:, my_cor_vertices]
+X = cortex[:, my_cor_vertices].copy()
 num_subjects = X.shape[0]
 groups = [[0, num_subjects]]
-Y = subcortex[:, my_sub_vertices]
-# Y = np.zeros([num_subjects, len(my_sub_vertices)])
-# for r, roi in enumerate(my_sub_vertices):
-#     Y[:, r] = scipy.stats.nanmean(subcortex[:, roi], axis=1)
+# Y = subcortex[:, my_sub_vertices].copy()
+Y = np.zeros([num_subjects, len(my_sub_vertices)])
+for r, roi in enumerate(my_sub_vertices):
+    Y[:, r] = scipy.stats.nanmean(subcortex[:, roi], axis=1)
 
 # Adding ADHDs
-X = np.concatenate([X, cortex2[:, my_cor_vertices]], 0)
-Ya = subcortex2[:, my_sub_vertices]
-# Ya = np.zeros([cortex2.shape[0], len(my_sub_vertices)])
-# for r, roi in enumerate(my_sub_vertices):
-#     Ya[:, r] = scipy.stats.nanmean(subcortex2[:, roi], axis=1)
+X = np.concatenate([X, cortex2[:, my_cor_vertices].copy()], 0)
+# Ya = subcortex2[:, my_sub_vertices].copy()
+Ya = np.zeros([cortex2.shape[0], len(my_sub_vertices)])
+for r, roi in enumerate(my_sub_vertices):
+    Ya[:, r] = scipy.stats.nanmean(subcortex2[:, roi], axis=1)
 Y = np.concatenate([Y, Ya], 0)
 groups.append([num_subjects, X.shape[0]])
 num_subjects = X.shape[0]
