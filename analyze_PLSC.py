@@ -62,10 +62,10 @@ std_saliences = tmps[0].T
 std_patterns = tmpp[0].T
 
 pvals = np.sum(sv_perm >= sv2, axis=-1) / float(num_perms)
-sem = scipy.stats.sem(saliences_boot, axis=-1)
-stability_saliences = std_saliences / sem
-sem = scipy.stats.sem(patterns_boot, axis=-1)
-stability_patterns = std_patterns / sem
+se = np.std(saliences_boot, axis=-1)
+stability_saliences = std_saliences / se
+se = np.std(patterns_boot, axis=-1)
+stability_patterns = std_patterns / se
 
 # saliences and patterns with absolute value > 2.32 give p-value < .01, so we should only keep those. This is a way to do it:
 stable_saliences = saliences.copy()
