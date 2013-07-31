@@ -20,6 +20,7 @@ if sys.platform.find('linux') == 0:
     maps = '/home/sudregp/research_code/maps/'
     results = '/data/sudregp/results/'
     tmp = '/data/sudregp/tmp/'
+    fsl = '/Volumes/neuro/MEG_structural/freesurfer/'
 else:
     data = '/Volumes/neuro/'
     maps = '/Users/sudregp/research_code/maps/'
