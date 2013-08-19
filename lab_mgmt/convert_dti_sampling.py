@@ -71,3 +71,4 @@ for tract in tract_names:
         wr = csv.writer(fout)
         wr.writerows(array)
         fout.close()
+    fid.close()
