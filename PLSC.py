@@ -1,10 +1,10 @@
 import numpy as np
 import env
 import scipy
-import pdb
+import mne
 
 
-def PLSC(X, Y, groups, num_comps=2):
+def PLSC(X, Y, groups, num_comps=0):
     ''' Returns results of Partial Least Squares Correlation. groups is a list of 2-index lists, such as [[0, 10]] '''
 
     num_groups = len(groups)
@@ -59,10 +59,13 @@ def PLSC(X, Y, groups, num_comps=2):
     U, S, Vh = np.linalg.svd(R, full_matrices=False)
     V = Vh.T
 
-    return S[:num_comps], V[:, :num_comps]
+    if num_comps <= 0:
+        return S, V, U
+    else:
+        return S[:num_comps], V[:, :num_comps], U[:, :num_comps]
 
 
-''' # Toy examples 
+''' # Toy examples
 
 X = np.array(
     [[5., 6, 1, 9, 1, 7, 6, 2, 1, 7],
@@ -90,11 +93,10 @@ groups = [[0, 3], [3, 6], [6, 9]]
 '''
 
 # number of components to extract. Because we're only using seeds with one dimension, the econ version of svd only outputs one component!
-max_comps = 1
-# selecting only a few vertices in the thalamus
-my_sub_vertices = [2310, 1574, 1692, 1262, 1350]
+# max_comps = 100
+
 # number of permutations/bootstraps to run
-num_perms = 10
+num_perms = 1000
 
 cortex = np.genfromtxt(env.data + '/structural/slopes_nv_284.csv', delimiter=',')
 # removing first 2 columns and first row, because they're headers
@@ -110,37 +112,43 @@ subcortex = scipy.delete(subcortex, 0, 0)
 # format it to be subjects x variables
 subcortex = subcortex.T
 
+# selecting only a few vertices in the thalamus
+# my_sub_vertices = [2310, 1574, 1692, 1262, 1350]  # Philip's
+# my_sub_vertices = range(0, subcortex.shape[1], 100)  # every 100
 # my_sub_vertices = range(subcortex.shape[1])
+w = mne.read_w(env.fsl + '/mni/bem/cortex-3-rh.w')
+my_cor_vertices = w['vertices']
+w = mne.read_w(env.fsl + '/mni/bem/thalamus-10-rh.w')
+my_sub_vertices = w['vertices']
+
 num_subjects = cortex.shape[0]
 
-X = cortex
+X = cortex[:, my_cor_vertices]
 groups = [[0, num_subjects]]
-num_thalamus = len(my_sub_vertices)
-sv = np.empty([num_thalamus, max_comps])
-saliences = np.empty([num_thalamus, cortex.shape[1], max_comps])
-for i, v in enumerate(my_sub_vertices):
-    print str(i+1) + '/' + str(num_thalamus)
-    Y = subcortex[:, v]
-    sv[i, :], saliences[i, :, :] = PLSC(X, Y, groups, num_comps=max_comps)
+Y = subcortex[:, my_sub_vertices]
+
+sv, saliences, patterns = PLSC(X, Y, groups)
+
+num_comps = len(sv)
 
 # calculating permutations to assess significance of SVs
-sv_perm = np.empty([num_thalamus, max_comps, num_perms])
+saliences_perm = np.empty([X.shape[1], num_comps, num_perms])
+patterns_perm = np.empty([Y.shape[1], num_comps, num_perms])
+sv_perm = np.empty([num_comps, num_perms])
 for p in range(num_perms):
     print 'Permutation: ' + str(p+1) + '/' + str(num_perms)
     rand_indexes = np.random.permutation(num_subjects)
     Xp = X[rand_indexes, :]
-    for i, v in enumerate(my_sub_vertices):
-        Y = subcortex[:, v]
-        sv_perm[i, :, p], _ = PLSC(Xp, Y, groups, num_comps=max_comps)
+    sv_perm[:, p], saliences_perm[:, :, p], patterns_perm[:, :, p] = PLSC(Xp, Y, groups, num_comps=num_comps)
 
 # calculating bootstraps to assess reliability of SVs
-saliences_boot = np.empty([num_thalamus, cortex.shape[1], max_comps, num_perms])
+saliences_boot = np.empty([X.shape[1], num_comps, num_perms])
+patterns_boot = np.empty([Y.shape[1], num_comps, num_perms])
+sv_boot = np.empty([num_comps, num_perms])
 for p in range(num_perms):
     print 'Bootstrap: ' + str(p+1) + '/' + str(num_perms)
     rand_indexes = np.random.randint(num_subjects, size=num_subjects)
-    Xp = X[rand_indexes, :]
-    for i, v in enumerate(my_sub_vertices):
-        Y = subcortex[:, v]
-        _, saliences_boot[i, :, :, p] = PLSC(Xp, Y, groups, num_comps=max_comps)
-
-# np.savez(env.results + 'structurals_all_thalamus_all_cortex', sv_perm=sv_perm, saliences_boot=saliences_boot, sv=sv, saliences=saliences)
+    # now we need to shuffle both X and Y, because we need to keep the relationships between observations
+    Xb = X[rand_indexes, :]
+    Yb = Y[rand_indexes, :]
+    sv_boot[:, p], saliences_boot[:, :, p], patterns_boot[:, :, p] = PLSC(Xb, Yb, groups, num_comps=num_comps)
