@@ -2,6 +2,9 @@ import numpy as np
 import env
 import scipy
 import mne
+import surfer
+from mayavi import mlab
+import glob
 
 
 def PLSC(X, Y, groups, num_comps=0):
@@ -64,8 +67,8 @@ def PLSC(X, Y, groups, num_comps=0):
     else:
         return S[:num_comps], V[:, :num_comps], U[:, :num_comps]
 
-
-''' # Toy examples
+'''
+ # Toy examples
 
 X = np.array(
     [[5., 6, 1, 9, 1, 7, 6, 2, 1, 7],
@@ -96,44 +99,87 @@ groups = [[0, 3], [3, 6], [6, 9]]
 # max_comps = 100
 
 # number of permutations/bootstraps to run
-num_perms = 1000
+num_perms = 200
 
-cortex = np.genfromtxt(env.data + '/structural/slopes_nv_284.csv', delimiter=',')
-# removing first 2 columns and first row, because they're headers
-cortex = scipy.delete(cortex, [0, 1], 1)
+
+cortex = np.genfromtxt(env.data + '/structural/cortexR_SA_NV_10to21_MATCHscript.csv', delimiter=',')
+# removing first column and first row, because they're headers
+cortex = scipy.delete(cortex, 0, 1)
 cortex = scipy.delete(cortex, 0, 0)
 # format it to be subjects x variables
 cortex = cortex.T
 
-subcortex = np.genfromtxt(env.data + '/structural/THALAMUS_284_slopes.csv', delimiter=',')
-# removing first 2 columns and first row, because they're headers
-subcortex = scipy.delete(subcortex, [0, 1], 1)
+subcortex = np.genfromtxt(env.data + '/structural/thalamusR_SA_NV_10to21_MATCHscript.csv', delimiter=',')
+# removing first column and first row, because they're headers
+subcortex = scipy.delete(subcortex, 0, 1)
 subcortex = scipy.delete(subcortex, 0, 0)
 # format it to be subjects x variables
 subcortex = subcortex.T
+
+# ADHD data
+cortex2 = np.genfromtxt(env.data + '/structural/cortexR_SA_ADHD_10to21_MATCHscript.csv', delimiter=',')
+# removing first column and first row, because they're headers
+cortex2 = scipy.delete(cortex2, 0, 1)
+cortex2 = scipy.delete(cortex2, 0, 0)
+# format it to be subjects x variables
+cortex2 = cortex2.T
+
+subcortex2 = np.genfromtxt(env.data + '/structural/thalamusR_SA_ADHD_10to21_MATCHscript.csv', delimiter=',')
+# removing first column and first row, because they're headers
+subcortex2 = scipy.delete(subcortex2, 0, 1)
+subcortex2 = scipy.delete(subcortex2, 0, 0)
+# format it to be subjects x variables
+subcortex2 = subcortex2.T
 
 # selecting only a few vertices in the thalamus
 # my_sub_vertices = [2310, 1574, 1692, 1262, 1350]  # Philip's
 # my_sub_vertices = range(0, subcortex.shape[1], 100)  # every 100
 # my_sub_vertices = range(subcortex.shape[1])
+
 w = mne.read_w(env.fsl + '/mni/bem/cortex-3-rh.w')
 my_cor_vertices = w['vertices']
-w = mne.read_w(env.fsl + '/mni/bem/thalamus-10-rh.w')
-my_sub_vertices = w['vertices']
 
-num_subjects = cortex.shape[0]
+# w = mne.read_w(env.fsl + '/mni/bem/thalamus-10-rh.w')
+# my_sub_vertices = w['vertices']
+# my_cor_vertices = range(0, cortex.shape[1], 20)
+# my_sub_vertices = [2034,  950,  216,   52, 2276, 2893, 1386, 1922, 2187, 1831, 1828]  # GS made it up by looking at anamoty, refer to Evernote for details. WRONG!
+# my_sub_vertices = [1533, 1106, 225, 163, 2420, 2966, 1393, 1666, 1681, 1834, 2067]  # GS made it up by looking at anamoty, refer to Evernote for details
 
-X = cortex[:, my_cor_vertices]
+
+my_sub_vertices = []
+# in nice order from anterior to posterior in the cortex (cingulate is last)
+label_names = ['medialdorsal', 'va', 'vl', 'vp', 'lateraldorsal',
+               'lateralposterior', 'pulvinar', 'anteriornuclei']
+label_names = ['medialdorsal', 'va', 'vl', 'vp', 'pulvinar', 'anteriornuclei']
+for l in label_names:
+    v = mne.read_label(env.fsl + '/mni/label/rh.' + l + '.label')
+    my_sub_vertices.append(v.vertices)
+
+X = cortex[:, my_cor_vertices].copy()
+num_subjects = X.shape[0]
 groups = [[0, num_subjects]]
-Y = subcortex[:, my_sub_vertices]
+# Y = subcortex[:, my_sub_vertices].copy()
+Y = np.zeros([num_subjects, len(my_sub_vertices)])
+for r, roi in enumerate(my_sub_vertices):
+    Y[:, r] = scipy.stats.nanmean(subcortex[:, roi], axis=1)
+
+# Adding ADHDs
+X = np.concatenate([X, cortex2[:, my_cor_vertices].copy()], 0)
+# Ya = subcortex2[:, my_sub_vertices].copy()
+Ya = np.zeros([cortex2.shape[0], len(my_sub_vertices)])
+for r, roi in enumerate(my_sub_vertices):
+    Ya[:, r] = scipy.stats.nanmean(subcortex2[:, roi], axis=1)
+Y = np.concatenate([Y, Ya], 0)
+groups.append([num_subjects, X.shape[0]])
+num_subjects = X.shape[0]
 
 sv, saliences, patterns = PLSC(X, Y, groups)
 
 num_comps = len(sv)
 
 # calculating permutations to assess significance of SVs
-saliences_perm = np.empty([X.shape[1], num_comps, num_perms])
-patterns_perm = np.empty([Y.shape[1], num_comps, num_perms])
+saliences_perm = np.empty([saliences.shape[0], saliences.shape[1], num_perms])
+patterns_perm = np.empty([patterns.shape[0], patterns.shape[1], num_perms])
 sv_perm = np.empty([num_comps, num_perms])
 for p in range(num_perms):
     print 'Permutation: ' + str(p+1) + '/' + str(num_perms)
@@ -142,8 +188,8 @@ for p in range(num_perms):
     sv_perm[:, p], saliences_perm[:, :, p], patterns_perm[:, :, p] = PLSC(Xp, Y, groups, num_comps=num_comps)
 
 # calculating bootstraps to assess reliability of SVs
-saliences_boot = np.empty([X.shape[1], num_comps, num_perms])
-patterns_boot = np.empty([Y.shape[1], num_comps, num_perms])
+saliences_boot = np.empty([saliences.shape[0], saliences.shape[1], num_perms])
+patterns_boot = np.empty([patterns.shape[0], patterns.shape[1], num_perms])
 sv_boot = np.empty([num_comps, num_perms])
 for p in range(num_perms):
     print 'Bootstrap: ' + str(p+1) + '/' + str(num_perms)
@@ -152,3 +198,57 @@ for p in range(num_perms):
     Xb = X[rand_indexes, :]
     Yb = Y[rand_indexes, :]
     sv_boot[:, p], saliences_boot[:, :, p], patterns_boot[:, :, p] = PLSC(Xb, Yb, groups, num_comps=num_comps)
+
+
+def plot_lv(lv):
+    import matplotlib.pyplot as plt
+
+    fig1 = mlab.figure()
+    cor = surfer.Brain('mni', 'rh', 'cortex', curv=False, figure=fig1)
+    cor.add_data(saliences[:, lv], vertices=my_cor_vertices)
+    useTrans = len(my_cor_vertices) != saliences.shape[0]
+    cor.scale_data_colormap(np.min(saliences[:, lv]), 0, np.max(saliences[:, lv]), useTrans)
+
+    fig2 = mlab.figure()
+    cor = surfer.Brain('mni', 'rh', 'cortex', curv=False, figure=fig2)
+    cor.add_data(saliences[:, lv], vertices=my_cor_vertices)
+    useTrans = len(my_cor_vertices) != saliences.shape[0]
+    cor.scale_data_colormap(np.min(saliences[:, lv]), 0, np.max(saliences[:, lv]), useTrans)
+
+    ind = np.arange(num_comps)    # the x locations for the groups
+    width = 0.15       # the width of the bars: can also be len(x) sequence
+
+    fig = plt.figure()
+    ax = plt.subplot(111)
+
+    # colors = ['r', 'g', 'b', 'y', 'k']
+    from random import random
+    colors = ['red','orange','yellow','green','cyan', 'blue', 'purple', 'white', 'black', 'grey', 'brown']
+    # legend = ['mediodorsal', 'pulvinar', 'LGB', 'MGB', 'LP', 'LD', 'VPLc', 'VPL', 'VLO', 'VA', 'anterior']
+    # colors = [(1,1,1)] + [(random(),random(),random()) for i in xrange(patterns.shape[0])]
+    rects = [plt.bar(i, patterns[i, lv], color=colors[i], label=label_names[i]) for i in range(patterns.shape[0]/2)]
+    rects = rects + [plt.bar(i+1, patterns[i, lv], color=colors[i-len(label_names)]) for i in range(len(label_names), patterns.shape[0])]
+    plt.ylim([-1, 1])
+    # rects = []
+    # for c, color in enumerate(colors):
+    #     rects.append(pl.bar(ind + c * width, patterns[c, lv], width, color=color))
+
+    # plt.ylabel('Saliences')
+    # plt.title('Saliences by seed-voxel')
+    # plt.xticks(ind + width / 2., ['LV' + str(i + 1) for i in range(num_comps)])
+    # plt.plot(plt.xlim(), [0, 0], 'k')
+    # plt.legend(rects, [str(i + 1) for i in my_sub_vertices], loc=0)
+
+    # Shink current axis by 20%
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+
+    # Put a legend to the right of the current axis
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    # plt.legend(rects, legend, loc=0)
+
+    plt.show(block=False)
+    # fig2 = mlab.figure()
+    # tha = surfer.Brain('mni', 'rh', 'thalamus', curv=False, figure=fig2)
+    # tha.add_data(patterns[:, lv], vertices=my_sub_vertices, smoothing_steps=1)
+    # tha.scale_data_colormap(np.min(patterns[:, lv]), 0, np.max(patterns[:, lv]), True)
