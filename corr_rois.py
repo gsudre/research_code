@@ -2,7 +2,7 @@ import numpy as np
 import os
 import scipy
 import pylab as pl
-
+from scipy import stats
 
 thalamus_label_names = ['LGN', 'MGN', 'Anterior nuclei', 'Central nuclei', 'Lateral Dorsal', 'Lateral Posterior', 'Medial Dorsal', 'Pulvinar', 'VA', 'VL', 'VP']
 striatum_label_names = []
@@ -30,7 +30,7 @@ def construct_matrix(data, rois):
     num_subjects = data.shape[0]
     Y = np.zeros([num_subjects, len(rois)])
     for r, roi in enumerate(rois):
-        Y[:, r] = scipy.stats.nanmean(data[:, roi], axis=1)
+        Y[:, r] = stats.nanmean(data[:, roi], axis=1)
     return Y
 
 
@@ -40,7 +40,7 @@ def plot_correlations(corr):
     pl.colorbar()
     # ONLY WORKS FOR THE RIGHT SIDE!
     pl.xticks(range(corr.shape[1]),['Anterior nuclei', 'Central nuclei', 'Lateral Dorsal', 'Lateral Posterior', 'Medial Dorsal', 'Pulvinar', 'VA', 'VL', 'VP'],rotation='vertical')
-    pl.yticks(range(corr.shape[0]),['Nucleus Accumbens', 'Pre Putamen', 'Pre Caudate', 'Post Caudate', 'Post Putamen'])
+    pl.yticks(range(corr.shape[0]),['Nucleus Accumbens', 'Pre Putamen', 'Caudate-Putamen Medial Intersection', 'Pre Caudate', 'Post Caudate', 'Post Putamen'])
     pl.show(block=False)
     return pl.gcf
 
@@ -61,15 +61,15 @@ def do_bootstrapping(data1, data2, num_perms):
     return corr
 
 
-groups = ['NV', 'ADHD']
+groups = ['persistent', 'remission']
 num_perms = 10000
 corrs = []
 pvals = []
 boot_corrs = []
 for group in groups:
     out_fname = os.path.expanduser('~') + '/data/results/structural/' + 'pearson_rois_thalamus_striatum_%s_QCCIVETlt35_QCSUBePASS' % group
-    data1 = load_structural(os.path.expanduser('~') + '/data/structural/baseline_striatumR_SA_%s_QCCIVETlt35_QCSUBePASS.csv' % group)
-    data2 = load_structural(os.path.expanduser('~') + '/data/structural/baseline_thalamusR_SA_%s_QCCIVETlt35_QCSUBePASS.csv' % group)
+    data1 = load_structural(os.path.expanduser('~') + '/data/structural/last_striatumR_SA_%s_QCCIVETlt35_QCSUBePASS_MATCH7.csv' % group)
+    data2 = load_structural(os.path.expanduser('~') + '/data/structural/last_thalamusR_SA_%s_QCCIVETlt35_QCSUBePASS_MATCH7.csv' % group)
     data1_roi_labels, data1_roi_verts = load_rois(os.path.expanduser('~') + '/data/structural/labels/striatum_right_labels.txt')
     data2_roi_labels, data2_roi_verts = load_rois(os.path.expanduser('~') + '/data/structural/labels/thalamus_right_morpho_labels_test.txt')
 
@@ -81,13 +81,13 @@ for group in groups:
     for x in range(X.shape[1]):
         print str(x+1) + '/' + str(X.shape[1])
         for y in range(Y.shape[1]):
-            corr[x, y], pval[x, y] = scipy.stats.pearsonr(X[:, x], Y[:, y])
+            corr[x, y], pval[x, y] = stats.pearsonr(X[:, x], Y[:, y])
 
     corrs.append(corr)
     pvals.append(pval)
 
     plot_correlations(corr)
-    pl.title(group)
+    pl.title('%s, n=%d'%(group, X.shape[0]))
 
     # np.savez(out_fname, corr=corr, pvals=pvals)
 
@@ -101,7 +101,11 @@ for x in range(X.shape[1]):
     for y in range(Y.shape[1]):
         stat = np.sort(dcorr[x, y])
         diff_pvals[x, y] = np.nonzero(stat < 0)[0][-1]/float(num_perms)
+# invert the values for which 0 is in the wrong side of the distribution (i.e. the difference between the groups is still significant, but it's just not 1-0)
+wrong_side = diff_pvals>.5
+diff_pvals[wrong_side] = 1 - diff_pvals[wrong_side]
+
 plot_correlations(diff_pvals)
-pl.title('diffs')
+pl.title('diffs %s vs %s'%(groups[0], groups[1]))
 pl.clim(0,.05)
 # remember to use pl.ion()! to turn interactive session on

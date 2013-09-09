@@ -1,3 +1,4 @@
+# Converts the DTI sampling for TSA from the VTK format to R files
 import re
 import numpy as np
 import csv
