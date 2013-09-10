@@ -61,7 +61,7 @@ def do_bootstrapping(data1, data2, num_perms):
     return corr
 
 
-groups = ['persistent', 'remission']
+groups = ['NV', 'persistent']
 num_perms = 10000
 corrs = []
 pvals = []
