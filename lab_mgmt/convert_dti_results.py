@@ -2,9 +2,17 @@
 import os
 import numpy as np
 import re
+import sys
 
-tract_file = '/Volumes/neuro/registration_to_tsa/ixi_template_right_cst_def3.med.mean.vtk'
-results_file = '/Users/sudregp/tmp/FA_right_cst_RESULTS.csv'
+if len(sys.argv) == 3:
+    tract_file = sys.argv[1]
+    results_file = sys.argv[2]
+else:
+    raise NameError('Wrong number of parameters! Usage: python convert_dti_results.py tract_file results_file')
+
+# Leave these here for debugging purporses
+# tract_file = '/Volumes/neuro/registration_to_tsa/ixi_template_right_cst_def3.med.mean.vtk'
+# results_file = '/Users/sudregp/tmp/FA_right_cst_RESULTS.csv'
 
 # find the correct file for the tract, copy it and append the columns in correct order to the new file
 target_file = results_file[:-4] + '.vtk'
@@ -38,7 +46,5 @@ else:
         fout.write('\n\n%s 1 %d float\n'%(col, out_data.shape[0]))
         out_data[:, c].tofile(fout, sep=" ", format="%.4f")
 
-    fid.close()
+    fin.close()
     fout.close()
-
-#STILL NEED TO HANDLE SPECIAL CASE OF VECTORS!
