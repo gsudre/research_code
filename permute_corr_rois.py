@@ -62,18 +62,13 @@ def do_bootstrapping(data1, data2, num_perms, verbose):
     return corr
 
 
-def run_bootstrap_correlations(groups, num_perms, plot=False, verbose=False, permute=False):
+def run_bootstrap_correlations(Xall, Yall, groups, num_perms, plot=False, verbose=False, permute=False):
     corrs = []
     pvals = []
     boot_corrs = []
     for group in groups:
-        data1 = load_structural(os.path.expanduser('~') + '/data/structural/last_striatumR_SA_%s_mt18.csv' % group)
-        data2 = load_structural(os.path.expanduser('~') + '/data/structural/last_thalamusR_SA_%s_mt18.csv' % group)
-        data1_roi_labels, data1_roi_verts = load_rois(os.path.expanduser('~') + '/data/structural/labels/striatum_right_labels.txt')
-        data2_roi_labels, data2_roi_verts = load_rois(os.path.expanduser('~') + '/data/structural/labels/thalamus_right_morpho_labels_test.txt')
-
-        X = construct_matrix(data1, data1_roi_verts)
-        Y = construct_matrix(data2, data2_roi_verts)
+        X = Xall[group, :]
+        Y = Yall[group, :]
 
         corr = np.empty([X.shape[1], Y.shape[1]])
         pval = np.empty([X.shape[1], Y.shape[1]])
@@ -98,31 +93,48 @@ def run_bootstrap_correlations(groups, num_perms, plot=False, verbose=False, per
         for y in range(Y.shape[1]):
             stat = np.sort(dcorr[x, y])
             diff_pvals[x, y] = np.nonzero(stat < 0)[0][-1]/float(num_perms)
+
     # invert the values for which 0 is in the wrong side of the distribution (i.e. the difference between the groups is still significant, but it's just not 1-0)
     wrong_side = diff_pvals>.5
     diff_pvals[wrong_side] = 1 - diff_pvals[wrong_side]
 
-    return (corrs, pvals, diff_pvals)
+    return diff_pvals
 
-out_fname = os.path.expanduser('~') + '/data/results/structural/pearson_rois_thalamus_striatum_lastMT18'
+
+# re-run the ROI analysis but first permute the subjects in their groups
+out_fname = os.path.expanduser('~') + '/data/results/structural/pearson_rois_thalamus_striatum_baseAndLast18_perm%05d' % np.random.randint(99999)
 groups = ['NV', 'ADHD']
 num_perms = 10000
-corrs, pvals, diff_pvals = run_bootstrap_correlations(groups, num_perms, verbose=False, plot=False)
-np.savez(out_fname, corrs=corrs, pvals=pvals, groups=groups, diff_pvals=diff_pvals)
-
-plot_correlations(diff_pvals)
-pl.title('diffs %s vs %s'%(groups[0], groups[1]))
-pl.clim(0,.05)
-pl.draw()
-
-
-
-# now we run the exact same code as above but permuting the labels. Then, we count how many times we had a difference bigger than with the original set of bootstrapped subjects
 
 # load the data for both groups, both structures
+Xs = []
+Ys = []
+data1_roi_labels, data1_roi_verts = load_rois(os.path.expanduser('~') + '/data/structural/labels/striatum_right_labels.txt')
+data2_roi_labels, data2_roi_verts = load_rois(os.path.expanduser('~') + '/data/structural/labels/thalamus_right_morpho_labels_test.txt')
+for group in groups:
+    data1 = load_structural(os.path.expanduser('~') + '/data/structural/baseline_striatumR_SA_%s_lt18.csv' % group)
+    data2 = load_structural(os.path.expanduser('~') + '/data/structural/baseline_thalamusR_SA_%s_lt18.csv' % group)
+    Xs.append(construct_matrix(data1, data1_roi_verts))
+    Ys.append(construct_matrix(data2, data2_roi_verts))
 
-# store the original number of subjects in each group
+    data1 = load_structural(os.path.expanduser('~') + '/data/structural/last_striatumR_SA_%s_mt18.csv' % group)
+    data2 = load_structural(os.path.expanduser('~') + '/data/structural/last_thalamusR_SA_%s_mt18.csv' % group)
+    Xs.append(construct_matrix(data1, data1_roi_verts))
+    Ys.append(construct_matrix(data2, data2_roi_verts))
+
+# now, Xs and Ys have the baseline and last data for group1, then the same for group2
+num_subjs1 = Xs[0].shape[0]
+num_subjs2 = Xs[2].shape[0]
 
 # combine the subjects, but keeping their order the same in each structural matrix
+subj_labels = np.random.permutation(num_subjs1 + num_subjs2)
+subj_groups = [range(num_subjs1), [i+num_subjs1 for i in range(num_subjs2)]]
 
-# resplit the
+Xbase = np.concatenate((Xs[0], Xs[2]), axis=0)[subj_labels, :]
+Ybase = np.concatenate((Ys[0], Ys[2]), axis=0)[subj_labels, :]
+diff_pvals_base = run_bootstrap_correlations(Xbase, Ybase, subj_groups, num_perms, verbose=True, plot=False)
+Xlast = np.concatenate((Xs[1], Xs[3]), axis=0)[subj_labels, :]
+Ylast = np.concatenate((Ys[1], Ys[3]), axis=0)[subj_labels, :]
+diff_pvals_last = run_bootstrap_correlations(Xlast, Ylast, subj_groups, num_perms, verbose=True, plot=False)
+
+np.savez(out_fname, diff_pval_base=diff_pvals_base, diff_pvals_last=diff_pvals_last)
