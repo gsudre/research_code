@@ -23,7 +23,7 @@ def load_rois(fname):
     rois = np.unique(labels)
     for r in rois:
         roi_vertices.append(np.nonzero(labels == r)[0])
-    return rois, roi_vertices 
+    return rois, roi_vertices
 
 
 def construct_matrix(data, rois):
@@ -61,15 +61,15 @@ def do_bootstrapping(data1, data2, num_perms):
     return corr
 
 
-groups = ['NV', 'persistent']
+groups = ['NV', 'ADHD']
 num_perms = 10000
 corrs = []
 pvals = []
 boot_corrs = []
+out_fname = os.path.expanduser('~') + '/data/results/structural/pearson_rois_thalamus_striatum_baseLT18_MATCH5'
 for group in groups:
-    out_fname = os.path.expanduser('~') + '/data/results/structural/' + 'pearson_rois_thalamus_striatum_%s_QCCIVETlt35_QCSUBePASS' % group
-    data1 = load_structural(os.path.expanduser('~') + '/data/structural/last_striatumR_SA_%s_QCCIVETlt35_QCSUBePASS_MATCH7.csv' % group)
-    data2 = load_structural(os.path.expanduser('~') + '/data/structural/last_thalamusR_SA_%s_QCCIVETlt35_QCSUBePASS_MATCH7.csv' % group)
+    data1 = load_structural(os.path.expanduser('~') + '/data/structural/baseline_striatumR_SA_%s_QCCIVETlt35_QCSUBePASS_MATCH5_lt18.csv' % group)
+    data2 = load_structural(os.path.expanduser('~') + '/data/structural/baseline_thalamusR_SA_%s_QCCIVETlt35_QCSUBePASS_MATCH5_lt18.csv' % group)
     data1_roi_labels, data1_roi_verts = load_rois(os.path.expanduser('~') + '/data/structural/labels/striatum_right_labels.txt')
     data2_roi_labels, data2_roi_verts = load_rois(os.path.expanduser('~') + '/data/structural/labels/thalamus_right_morpho_labels_test.txt')
 
@@ -88,13 +88,11 @@ for group in groups:
 
     plot_correlations(corr)
     pl.title('%s, n=%d'%(group, X.shape[0]))
-
-    # np.savez(out_fname, corr=corr, pvals=pvals)
-
+    pl.draw()
 
     # checking p-values of the differences
     boot_corrs.append(do_bootstrapping(X, Y, num_perms))
-    
+
 diff_pvals = np.empty_like(corr)
 dcorr = boot_corrs[1] - boot_corrs[0]
 for x in range(X.shape[1]):
@@ -108,4 +106,7 @@ diff_pvals[wrong_side] = 1 - diff_pvals[wrong_side]
 plot_correlations(diff_pvals)
 pl.title('diffs %s vs %s'%(groups[0], groups[1]))
 pl.clim(0,.05)
+pl.draw()
 # remember to use pl.ion()! to turn interactive session on
+
+np.savez(out_fname, corrs=corrs, pvals=pvals, boot_corrs=boot_corrs, groups=groups)
