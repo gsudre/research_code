@@ -62,47 +62,19 @@ def do_bootstrapping(data1, data2, num_perms, verbose):
     return corr
 
 
-def run_bootstrap_correlations(Xall, Yall, groups, num_perms, plot=False, verbose=False, permute=False):
-    corrs = []
-    pvals = []
+def run_bootstrap_correlations(Xs, Ys, num_perms, plot=False, verbose=False, permute=False):
+# Returns the difference of correlation between X[1]*Y[1] - X[0]*Y[0] using bootstrap
     boot_corrs = []
-    for group in groups:
-        X = Xall[group, :]
-        Y = Yall[group, :]
-
-        corr = np.empty([X.shape[1], Y.shape[1]])
-        pval = np.empty([X.shape[1], Y.shape[1]])
-        for x in range(X.shape[1]):
-            for y in range(Y.shape[1]):
-                corr[x, y], pval[x, y] = stats.pearsonr(X[:, x], Y[:, y])
-
-        corrs.append(corr)
-        pvals.append(pval)
-
-        if plot:
-            plot_correlations(corr)
-            pl.title('%s, n=%d'%(group, X.shape[0]))
-            pl.draw()
-
-        # checking p-values of the differences
+    for X, Y in zip(Xs, Ys):
         boot_corrs.append(do_bootstrapping(X, Y, num_perms, verbose))
 
-    diff_pvals = np.empty_like(corrs[0])
     dcorr = boot_corrs[1] - boot_corrs[0]
-    for x in range(X.shape[1]):
-        for y in range(Y.shape[1]):
-            stat = np.sort(dcorr[x, y])
-            diff_pvals[x, y] = np.nonzero(stat < 0)[0][-1]/float(num_perms)
 
-    # invert the values for which 0 is in the wrong side of the distribution (i.e. the difference between the groups is still significant, but it's just not 1-0)
-    wrong_side = diff_pvals>.5
-    diff_pvals[wrong_side] = 1 - diff_pvals[wrong_side]
-
-    return diff_pvals
+    return dcorr
 
 
 # re-run the ROI analysis but first permute the subjects in their groups
-out_fname = os.path.expanduser('~') + '/data/results/structural/pearson_rois_thalamus_striatum_baseAndLast18_perm%05d' % np.random.randint(99999)
+out_fname = os.path.expanduser('~') + '/data/results/structural/perms/pearson_rois_thalamus_striatum_baseAndLast18_NVvsADHD_perm%05d' % np.random.randint(99999)
 groups = ['NV', 'ADHD']
 num_perms = 10000
 
@@ -132,9 +104,17 @@ subj_groups = [range(num_subjs1), [i+num_subjs1 for i in range(num_subjs2)]]
 
 Xbase = np.concatenate((Xs[0], Xs[2]), axis=0)[subj_labels, :]
 Ybase = np.concatenate((Ys[0], Ys[2]), axis=0)[subj_labels, :]
-diff_pvals_base = run_bootstrap_correlations(Xbase, Ybase, subj_groups, num_perms, verbose=True, plot=False)
 Xlast = np.concatenate((Xs[1], Xs[3]), axis=0)[subj_labels, :]
 Ylast = np.concatenate((Ys[1], Ys[3]), axis=0)[subj_labels, :]
-diff_pvals_last = run_bootstrap_correlations(Xlast, Ylast, subj_groups, num_perms, verbose=True, plot=False)
+Xs = []
+Ys = []
+# make Xs and Ys in the format g1base, g1last, g2base, g2last
+for group in subj_groups:
+    Xs.append(Xbase[group, :])
+    Xs.append(Xlast[group, :])
+    Ys.append(Ybase[group, :])
+    Ys.append(Ylast[group, :])
 
-np.savez(out_fname, diff_pval_base=diff_pvals_base, diff_pvals_last=diff_pvals_last)
+diff_last_base_G1 = run_bootstrap_correlations(Xs[:2], Ys[:2], num_perms, verbose=True, plot=False)
+diff_last_base_G2 = run_bootstrap_correlations(Xs[2:], Ys[2:], num_perms, verbose=True, plot=False)
+np.savez(out_fname, diff_last_base_G1=diff_last_base_G1, diff_last_base_G2=diff_last_base_G2)

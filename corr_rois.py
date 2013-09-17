@@ -67,8 +67,8 @@ def run_bootstrap_correlations(groups, num_perms, plot=False, verbose=False, per
     pvals = []
     boot_corrs = []
     for group in groups:
-        data1 = load_structural(os.path.expanduser('~') + '/data/structural/last_striatumR_SA_%s_mt18.csv' % group)
-        data2 = load_structural(os.path.expanduser('~') + '/data/structural/last_thalamusR_SA_%s_mt18.csv' % group)
+        data1 = load_structural(os.path.expanduser('~') + '/data/structural/baseline_striatumR_SA_%s_lt18.csv' % group)
+        data2 = load_structural(os.path.expanduser('~') + '/data/structural/baseline_thalamusR_SA_%s_lt18.csv' % group)
         data1_roi_labels, data1_roi_verts = load_rois(os.path.expanduser('~') + '/data/structural/labels/striatum_right_labels.txt')
         data2_roi_labels, data2_roi_verts = load_rois(os.path.expanduser('~') + '/data/structural/labels/thalamus_right_morpho_labels_test.txt')
 
@@ -104,10 +104,10 @@ def run_bootstrap_correlations(groups, num_perms, plot=False, verbose=False, per
 
     return (corrs, pvals, diff_pvals)
 
-out_fname = os.path.expanduser('~') + '/data/results/structural/pearson_rois_thalamus_striatum_lastMT18'
-groups = ['NV', 'ADHD']
+out_fname = os.path.expanduser('~') + '/data/results/structural/pearson_rois_thalamus_striatum_RemissionVsPersistent_baseLT18'
+groups = ['remission', 'persistent']
 num_perms = 10000
-corrs, pvals, diff_pvals = run_bootstrap_correlations(groups, num_perms, verbose=False, plot=False)
+corrs, pvals, diff_pvals = run_bootstrap_correlations(groups, num_perms, verbose=True, plot=False)
 np.savez(out_fname, corrs=corrs, pvals=pvals, groups=groups, diff_pvals=diff_pvals)
 
 plot_correlations(diff_pvals)
