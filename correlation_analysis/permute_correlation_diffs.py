@@ -84,8 +84,8 @@ def get_diff_correlations(Xs, Ys):
 
 
 # re-run the ROI analysis but first permute the subjects in their groups
-groups = ['persistent', 'remission']
-brain = ['thalamus', 'striatum']
+groups = ['ADHD', 'NV']
+brain = ['striatum', 'cortex']
 hemi = 'R'
 out_fname = '%s/data/results/structural/perms/pearson_rois_%s_%s_%s_baseAndLast18_%svs%s_perm%05d'%(
             os.path.expanduser('~'), brain[0], brain[1], hemi, groups[0], groups[1], np.random.randint(99999))
@@ -157,3 +157,5 @@ pl.xticks(range(pvals.shape[1]), data2_roi_labels ,rotation='vertical')
 pl.yticks(range(pvals.shape[0]), data1_roi_labels)
 pl.clim(0, .05)
 pl.show(block=False)
+
+print pvals
