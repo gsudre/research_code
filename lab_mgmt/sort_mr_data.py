@@ -39,7 +39,13 @@ for file in dicoms:
 
     # search for the subject's mask ID in the labmatrix output
     # sometimes the MRNs have dashes, so we account for that
-    mrns = [int(i[0].replace('-', '')) for i in ws]
+    # if there are dashes in the MRNs, the column is read as a string. Otherwise,
+    # it's read as integers. We need to account for that
+    if ws.dtype[0] == np.int64:
+        mrns = [i[0] for i in ws]
+    else:
+        mrns = [int(i[0].replace('-', '')) for i in ws]
+
     if int(mrn) in mrns:
         curMaskId = int(ws[mrns.index(int(mrn))][-1])
         print 'Found mask ID %d' % curMaskId

@@ -84,9 +84,9 @@ def get_diff_correlations(Xs, Ys):
 
 
 # re-run the ROI analysis but first permute the subjects in their groups
-groups = ['ADHD', 'NV']
-brain = ['striatum', 'cortex']
-hemi = 'R'
+groups = ['persistent', 'NV']
+brain = ['thalamus', 'gp']
+hemi = 'L'
 out_fname = '%s/data/results/structural/perms/pearson_rois_%s_%s_%s_baseAndLast18_%svs%s_perm%05d'%(
             os.path.expanduser('~'), brain[0], brain[1], hemi, groups[0], groups[1], np.random.randint(99999))
 num_perms = 2000
@@ -159,3 +159,10 @@ pl.clim(0, .05)
 pl.show(block=False)
 
 print pvals
+
+for x in range(pvals.shape[0]):
+    for y in range(pvals.shape[1]):
+        if pvals[x,y]<.05:
+            print '=== %s to %s (%s)===' % (data2_roi_labels[y], data1_roi_labels[x], hemi)
+            print 'delta(%s) = %.2f, delta(%s) = %.2f, diff = %.2f' % (
+                    groups[1], diff_last_base_G2[x,y], groups[0], diff_last_base_G1[x,y], diff_last_base[x,y])
