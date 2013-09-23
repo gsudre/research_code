@@ -1,4 +1,6 @@
-idx <- gf_1473$DX=="ADHD"
+matched_gf = read.csv('~/data/structural/gf_1473_matched_on18.csv')
+idx <- matched_gf$group3=='"remission"' & matched_gf$match_outcome==1 # matching script already uses the QC parameters
+# idx <- gf_1473$GROUP3=="remission" & gf_1473$QC_sub=="PASS" & gf_1473$QC_CIVET<3.5
 idx_base <- array(data=F,dim=length(idx))
 idx_last <- array(data=F,dim=length(idx))
 # find out all scans for each unique subject
@@ -16,18 +18,18 @@ for (subj in subjects) {
     }
 }
 mytable <- dtL_thalamus_1473[,idx & idx_last]
-write.csv(mytable,file='~/data/structural/last_thalamusL_SA_ADHD_mt18.csv')
+write.csv(mytable,file='~/data/structural/last_thalamusL_SA_remission_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_mt18.csv')
 mytable <- dtL_striatum_1473[,idx & idx_last]
-write.csv(mytable,file='~/data/structural/last_striatumL_SA_ADHD_mt18.csv')
+write.csv(mytable,file='~/data/structural/last_striatumL_SA_remission_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_mt18.csv')
 mytable <- dtL_cortex_SA_1473[,idx & idx_last]
-write.csv(mytable,file='~/data/structural/last_cortexL_SA_ADHD_mt18.csv')
+write.csv(mytable,file='~/data/structural/last_cortexL_SA_remission_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_mt18.csv')
 mytable <- dtL_gp[,idx & idx_last]
-write.csv(mytable,file='~/data/structural/last_gpL_SA_ADHD_mt18.csv')
+write.csv(mytable,file='~/data/structural/last_gpL_SA_remission_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_mt18.csv')
 mytable <- dtL_thalamus_1473[,idx & idx_base]
-write.csv(mytable,file='~/data/structural/baseline_thalamusL_SA_ADHD_lt18.csv')
+write.csv(mytable,file='~/data/structural/baseline_thalamusL_SA_remission_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_lt18.csv')
 mytable <- dtL_striatum_1473[,idx & idx_base]
-write.csv(mytable,file='~/data/structural/baseline_striatumL_SA_ADHD_lt18.csv')
+write.csv(mytable,file='~/data/structural/baseline_striatumL_SA_remission_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_lt18.csv')
 mytable <- dtL_cortex_SA_1473[,idx & idx_base]
-write.csv(mytable,file='~/data/structural/baseline_cortexL_SA_ADHD_lt18.csv')
+write.csv(mytable,file='~/data/structural/baseline_cortexL_SA_remission_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_lt18.csv')
 mytable <- dtL_gp[,idx & idx_base]
-write.csv(mytable,file='~/data/structural/baseline_gpL_SA_ADHD_lt18.csv')
+write.csv(mytable,file='~/data/structural/baseline_gpL_SA_remission_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_lt18.csv')
