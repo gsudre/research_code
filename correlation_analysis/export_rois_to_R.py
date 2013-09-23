@@ -83,7 +83,7 @@ for b in brain:
         num_subjs = 0 # index to make different subject names per group
         for g in group:
 
-            data = load_structural('%s/data/structural/baseline_%s%s_SA_%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_lt18.csv' % (os.path.expanduser('~'), b, h, g))
+            data = load_structural('%s/data/structural/baseline_%s%s_SA_%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_2to1_lt18.csv' % (os.path.expanduser('~'), b, h, g))
             X = construct_matrix(data, data_roi_verts, b)
 
             N = X.shape[0]
@@ -95,7 +95,7 @@ for b in brain:
             array = np.concatenate((array, base), axis=0)
 
             # now we add in the same subjects' last scan
-            data = load_structural('%s/data/structural/last_%s%s_SA_%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_mt18.csv' % (os.path.expanduser('~'), b, h, g))
+            data = load_structural('%s/data/structural/last_%s%s_SA_%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_2to1_mt18.csv' % (os.path.expanduser('~'), b, h, g))
             X = construct_matrix(data, data_roi_verts, b)
             last = np.recarray(N, dtype=dtype)
             for r in range(N):
@@ -103,4 +103,4 @@ for b in brain:
             array = np.concatenate((array, last), axis=0)
 
             num_subjs += N
-        mlab.rec2csv(array, '/Users/sudregp/data/structural/rois_%s%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv'%(b,h))
+        mlab.rec2csv(array, '/Users/sudregp/data/structural/rois_%s%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_2to1.csv'%(b,h))
