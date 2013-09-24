@@ -46,28 +46,28 @@ idxn = striatum$group=="NV" & striatum$visit=="baseline"
 # idxa = striatum$group=="ADHD" & striatum$visit=="baseline"
 idxa = idxr | idxp
 
+# pmatb = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
+#              cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
+# rmatb = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
+#              cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
+# nmatb = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
+#              cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
+# amatb = cbind(striatum[idxa,4:dim(striatum)[2]], thalamus[idxa,4:dim(thalamus)[2]],
+#              cortex[idxa,4:dim(cortex)[2]], gp[idxa,4:dim(gp)[2]])
+
 pmatb = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-             cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
+              gp[idxp,4:dim(gp)[2]])
 rmatb = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-             cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
+              gp[idxr,4:dim(gp)[2]])
 nmatb = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-             cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
+              gp[idxn,4:dim(gp)[2]])
 amatb = cbind(striatum[idxa,4:dim(striatum)[2]], thalamus[idxa,4:dim(thalamus)[2]],
-             cortex[idxa,4:dim(cortex)[2]], gp[idxa,4:dim(gp)[2]])
+              gp[idxa,4:dim(gp)[2]])
 
-# pmat = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-#              gp[idxp,4:dim(gp)[2]])
-# rmat = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-#              gp[idxr,4:dim(gp)[2]])
-# nmat = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-#              gp[idxn,4:dim(gp)[2]])
-# amat = cbind(striatum[idxa,4:dim(striatum)[2]], thalamus[idxa,4:dim(thalamus)[2]],
-#              gp[idxa,4:dim(gp)[2]])
-
-# pmat = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]])
-# rmat = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]])
-# nmat = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]])
-# amat = cbind(striatum[idxa,4:dim(striatum)[2]], thalamus[idxa,4:dim(thalamus)[2]])
+# pmatb = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]])
+# rmatb = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]])
+# nmatb = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]])
+# amatb = cbind(striatum[idxa,4:dim(striatum)[2]], thalamus[idxa,4:dim(thalamus)[2]])
 
 pcorb = cor(pmatb)
 rcorb = cor(rmatb)
@@ -104,14 +104,28 @@ idxn = striatum$group=="NV" & striatum$visit=="last"
 # idxa = striatum$group=="ADHD" & striatum$visit=="last"
 idxa = idxr | idxp
 
+# pmatl = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
+#              cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
+# rmatl = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
+#              cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
+# nmatl = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
+#              cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
+# amatl = cbind(striatum[idxa,4:dim(striatum)[2]], thalamus[idxa,4:dim(thalamus)[2]],
+#              cortex[idxa,4:dim(cortex)[2]], gp[idxa,4:dim(gp)[2]])
+
 pmatl = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-             cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
+              gp[idxp,4:dim(gp)[2]])
 rmatl = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-             cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
+              gp[idxr,4:dim(gp)[2]])
 nmatl = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-             cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
+              gp[idxn,4:dim(gp)[2]])
 amatl = cbind(striatum[idxa,4:dim(striatum)[2]], thalamus[idxa,4:dim(thalamus)[2]],
-             cortex[idxa,4:dim(cortex)[2]], gp[idxa,4:dim(gp)[2]])
+              gp[idxa,4:dim(gp)[2]])
+
+# pmatl = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]])
+# rmatl = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]])
+# nmatl = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]])
+# amatl = cbind(striatum[idxa,4:dim(striatum)[2]], thalamus[idxa,4:dim(thalamus)[2]])
 
 pcorl = cor(pmatl)
 rcorl = cor(rmatl)
@@ -163,3 +177,14 @@ names(dists)[4] = sprintf('PervsRem\np<%.3f', sum(permuteCorr(pdelta, rdelta, b_
 s_dists = sort(dists, index.return=TRUE)
 bp = barplot(s_dists$x, main='Deltas FU-Baseline', ylim=c(0, 1.2))
 error.bar(bp, s_dists$x, err_dists[s_dists$ix])
+
+
+# plotting all correlation matrices
+col.l <- colorRampPalette(c('blue', 'red'))(120)
+plot.new()
+par(mfrow=c(2,2), oma=c(2,0,2,0))
+print(levelplot(ncorDelta, col.regions=col.l, main="NV",scales=list(x=list(rot=90)),xlab='',ylab='',at=seq(-.4,1.2,length.out=120)), split=c(1, 1, 2, 2)) 
+print(levelplot(acorDelta, col.regions=col.l, main="ADHD",scales=list(x=list(rot=90)),xlab='',ylab='',at=seq(-.4,1.2,length.out=120)), split=c(1, 2, 2, 2), newpage=FALSE)
+print(levelplot(rcorDelta, col.regions=col.l, main="Remission",scales=list(x=list(rot=90)),xlab='',ylab='',at=seq(-.4,1.2,length.out=120)), split=c(2, 1, 2, 2), newpage=FALSE)
+print(levelplot(pcorDelta, col.regions=col.l, main="Persistent",scales=list(x=list(rot=90)),xlab='',ylab='',at=seq(-.4,1.2,length.out=120)), split=c(2, 2, 2, 2), newpage=FALSE)
+title("Deltas FU-BAseline", outer=TRUE)
