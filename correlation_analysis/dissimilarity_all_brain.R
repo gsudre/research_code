@@ -1,41 +1,17 @@
-h='R'
-withCortex=T
+# This one allows for connections between hemispheres
+striatumL = read.csv('~/data/structural/roisSum_striatumL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv')
+thalamusL = read.csv('~/data/structural/roisSum_thalamusL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv')
+gpL = read.csv('~/data/structural/roisSum_gpL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv')
+cortexL = read.csv('~/data/structural/roisSum_cortexL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv')
+striatumR = read.csv('~/data/structural/roisSum_striatumR_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv')
+thalamusR = read.csv('~/data/structural/roisSum_thalamusR_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv')
+gpR = read.csv('~/data/structural/roisSum_gpR_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv')
+cortexR = read.csv('~/data/structural/roisSum_cortexR_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv')
 
-striatum = read.csv(sprintf('~/data/structural/roisSum_striatum%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv',h))
-thalamus= read.csv(sprintf('~/data/structural/roisSum_thalamus%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv',h))
-gp = read.csv(sprintf('~/data/structural/roisSum_gp%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv',h))
-cortex = read.csv(sprintf('~/data/structural/roisSum_cortex%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv',h))
-
-permuteCorr <- function(data1, data2, nperms) 
-{
-    ds <- vector(mode = "numeric", length = nperms) 
-    all_data = rbind(data1, data2)
-    n1 = dim(data1)[1]
-    n2 = dim(data2)[1]
-    for (i in 1:nperms) {
-        perm_labels <- sample.int(dim(all_data)[1], replace = FALSE)
-        perm_data <- all_data[perm_labels, ]
-        pmat1 = perm_data[1:n1, ]
-        pmat2 = perm_data[(n1+1):(n1+n2), ]
-        cor1 = cor(pmat1)
-        cor2 = cor(pmat2)
-        ds[i] = 1-cor(cor1[upper.tri(cor1)], cor2[upper.tri(cor2)], method="spearman")
-    }
-    return(ds)
-}
-
-bootstrapCorr <- function(fixed_data, data, nperms) 
-{
-    ds <- vector(mode = "numeric", length = nperms) 
-    cor1 = cor(fixed_data)
-    for (i in 1:nperms) {
-        perm_labels <- sample.int(dim(data)[1], replace = TRUE)
-        perm_data <- data[perm_labels, ]
-        cor2 = cor(perm_data)
-        ds[i] = 1-cor(cor1[upper.tri(cor1)], cor2[upper.tri(cor2)], method="spearman")
-    }
-    return(ds)
-}
+striatum = cbind(striatumL, striatumR[,4:dim(striatumR)[2]])
+thalamus = cbind(thalamusL, thalamusR[,4:dim(thalamusR)[2]])
+gp = cbind(gpL, gpR[,4:dim(gpR)[2]])
+cortex = cbind(cortexL, cortexR[,4:dim(cortexR)[2]])
 
 permuteCorrDiff <- function(data1B, data1L, data2B, data2L, nperms) 
 {
@@ -81,6 +57,37 @@ bootstrapCorrDiff <- function(fixed_dataB, fixed_dataL, dataB, dataL, nperms)
     return(ds)
 }
 
+permuteCorr <- function(data1, data2, nperms) 
+{
+    ds <- vector(mode = "numeric", length = nperms) 
+    all_data = rbind(data1, data2)
+    n1 = dim(data1)[1]
+    n2 = dim(data2)[1]
+    for (i in 1:nperms) {
+        perm_labels <- sample.int(dim(all_data)[1], replace = FALSE)
+        perm_data <- all_data[perm_labels, ]
+        pmat1 = perm_data[1:n1, ]
+        pmat2 = perm_data[(n1+1):(n1+n2), ]
+        cor1 = cor(pmat1)
+        cor2 = cor(pmat2)
+        ds[i] = 1-cor(cor1[upper.tri(cor1)], cor2[upper.tri(cor2)], method="spearman")
+    }
+    return(ds)
+}
+
+bootstrapCorr <- function(fixed_data, data, nperms) 
+{
+    ds <- vector(mode = "numeric", length = nperms) 
+    cor1 = cor(fixed_data)
+    for (i in 1:nperms) {
+        perm_labels <- sample.int(dim(data)[1], replace = TRUE)
+        perm_data <- data[perm_labels, ]
+        cor2 = cor(perm_data)
+        ds[i] = 1-cor(cor1[upper.tri(cor1)], cor2[upper.tri(cor2)], method="spearman")
+    }
+    return(ds)
+}
+
 error.bar <- function(x, y, upper, lower=upper, length=0.1,...){
     if(length(x) != length(y) | length(y) !=length(lower) | length(lower) != length(upper))
         stop("vectors must be same length")
@@ -91,21 +98,12 @@ idxp = striatum$group=="persistent" & striatum$visit=="baseline"
 idxr = striatum$group=="remission" & striatum$visit=="baseline"
 idxn = striatum$group=="NV" & striatum$visit=="baseline"
 
-if (withCortex) {
-    pmatb = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-                 cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
-    rmatb = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-                 cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
-    nmatb = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-                 cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
-} else {
-    pmatb = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-                  gp[idxp,4:dim(gp)[2]])
-    rmatb = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-                  gp[idxr,4:dim(gp)[2]])
-    nmatb = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-                  gp[idxn,4:dim(gp)[2]])
-}
+pmatb = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
+             cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
+rmatb = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
+             cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
+nmatb = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
+             cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
 
 pcorb = cor(pmatb)
 rcorb = cor(rmatb)
@@ -142,21 +140,12 @@ idxp = striatum$group=="persistent" & striatum$visit=="last"
 idxr = striatum$group=="remission" & striatum$visit=="last"
 idxn = striatum$group=="NV" & striatum$visit=="last"
 
-if (withCortex) {
-    pmatl = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-                 cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
-    rmatl = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-                 cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
-    nmatl = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-                 cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
-} else {
-    pmatl = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-                  gp[idxp,4:dim(gp)[2]])
-    rmatl = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-                  gp[idxr,4:dim(gp)[2]])
-    nmatl = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-                  gp[idxn,4:dim(gp)[2]])
-}
+pmatl = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
+             cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
+rmatl = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
+             cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
+nmatl = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
+             cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
 
 pcorl = cor(pmatl)
 rcorl = cor(rmatl)
