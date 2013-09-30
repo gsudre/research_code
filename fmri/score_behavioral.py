@@ -179,8 +179,12 @@ for txtFile in files:
 
                 # remove offset and delay, and convert to seconds
                 onsets = (np.array(onsets) - blockOnset + delay) / float(1000)
-                for t in onsets:
-                    stim_fids[c].write('%.2f ' % t)
+                # if there are no trials in this run for the condition, add *
+                if len(onsets) == 0:
+                    stim_fids[c].write('*')
+                else:
+                    for t in onsets:
+                        stim_fids[c].write('%.2f ' % t)
                 stim_fids[c].write('\n')
 
     # Now we interpolate to get SSRT. First, order correctGoTrials based on RT, then choose the number relative to the STI accuracy
