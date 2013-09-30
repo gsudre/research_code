@@ -3,7 +3,7 @@ echo "Enter the subject mask ID (4 digits), followed by [ENTER]:"
 read subj
 
 subj_dir=/mnt/neuro/data_by_maskID/$subj/afni
-stim_dir=/mnt/neuro/MR_behavioral/cleaned_data/ 
+stim_dir=/mnt/neuro/MR_behavioral/stim_files_analysis1
 
 afni_proc.py -dsets ${subj_dir}/stop_run1+orig.BRIK           \
     ${subj_dir}/stop_run2+orig.BRIK                   \
@@ -21,19 +21,17 @@ afni_proc.py -dsets ${subj_dir}/stop_run1+orig.BRIK           \
     -volreg_align_to last                           \
     -blur_size 8                                \
     -align_opts_aea -cost lpc+zz -AddEdge                   \
-    -regress_basis 'BLOCK(2,1)'                     \
+    -regress_basis 'BLOCK(1,1)'                     \
     -regress_censor_motion 1                   \
     -regress_est_blur_epits                         \
     -regress_est_blur_errts                         \
     -regress_no_fitts                           \
     -regress_stim_times                         \
-        $stim_dir/${subj}_STB.txt       \
         $stim_dir/${subj}_STG-correct.txt       \
         $stim_dir/${subj}_STG-incorrect.txt       \
         $stim_dir/${subj}_STI-correct.txt       \
         $stim_dir/${subj}_STI-incorrect.txt       \
-        -regress_stim_labels    STB              \
-                STG-correct                \
+        -regress_stim_labels    STG-correct                \
                 STG-incorrect            \
                 STI-correct              \
                 STI-incorrect             \

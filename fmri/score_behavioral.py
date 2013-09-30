@@ -182,6 +182,9 @@ for txtFile in files:
                 # if there are no trials in this run for the condition, add *
                 if len(onsets) == 0:
                     stim_fids[c].write('*')
+                # if there is only one trial, add the * so we don't confuse file formats (see http://afni.nimh.nih.gov/pub/dist/doc/misc/Decon/DeconSummer2004.html), which can happen in the case of only one trial in every block
+                elif len(onsets) == 1:
+                    stim_fids[c].write('%.2f *' % onsets[0])
                 else:
                     for t in onsets:
                         stim_fids[c].write('%.2f ' % t)
