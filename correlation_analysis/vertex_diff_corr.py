@@ -121,3 +121,5 @@ for t in time:
             corrs.append(np.float16(scipy.stats.pearsonr(raw[:, x], raw[:, y])[0]))
     all_corrs.append(corrs)
 np.save('%s/data/results/structural/verts_corr_%s'%(os.path.expanduser('~'), group), all_corrs)
+
+# started running code for NVs on 10/3 at 12:30pm

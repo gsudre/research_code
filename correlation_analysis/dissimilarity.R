@@ -1,5 +1,5 @@
 h='R'
-withCortex=T
+withCortex=F
 
 striatum = read.csv(sprintf('~/data/structural/roisSum_striatum%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv',h))
 thalamus= read.csv(sprintf('~/data/structural/roisSum_thalamus%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT.csv',h))
