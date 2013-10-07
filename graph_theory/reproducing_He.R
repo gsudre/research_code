@@ -248,3 +248,18 @@ if (num_good_pvals > 0) {
         }
     }
 }
+
+#### Figure 5 ####
+pmax = vector(length=length(sparsity))
+rmax = vector(length=length(sparsity))
+cnt=1
+for (s in sparsity) {
+    pmax[cnt] = max(clusters(createNetwork(pcorr, s))$csize)
+    rmax[cnt] = max(clusters(createNetwork(rcorr, s))$csize)
+    cnt = cnt + 1
+}
+plot(sparsity,pmax,type='l',lwd=2,col='black',ylim=c(5,dim(pcorr)[1]+2),ylab='Size of largest component')
+lines(sparsity,rmax,type='l',lwd=2,col='grey')
+legend('bottomright', c('Persistent', 'Remission'), col=c('black','grey'), lwd=2)
+print('Lowest sparsity threshold in which both of the networks included all connected nodes:')
+print(min(sparsity[pmax==dim(pcorr)[1] & rmax==dim(pcorr)[1]]))

@@ -76,7 +76,7 @@ cortex_labels = [['Occipital', [132, 38, 63, 97, 175, 112, 251, 98, 154, 37, 54,
                 ['Frontal', [10, 2, 75, 5, 6, 1, 7, 70, 50, 15, 80, 90, 85, 27]],
                 ['Cingulate', [7, 27]]]
 
-group = 'NV' #, 'persistent', 'remission'
+group = 'remission' #, 'NV', 'persistent', 'remission'
 brain = ['striatum', 'gp', 'thalamus']
 hemi = ['L', 'R']
 time = ['baseline', 'last']
@@ -111,6 +111,7 @@ for t in time:
     num_vertices = len(verts)
     raw = raw[:num_subjects, :num_vertices]
 
+    print 'Computing correlations'
     # when we exclude the cortex, we can compute all at once
     all_corrs.append(np.float16(np.corrcoef(raw,rowvar=0)))
 #    # when we're done gathering all the data, compute the correlations
