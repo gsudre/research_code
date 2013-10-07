@@ -77,6 +77,40 @@ permuteMetric <- function(data1, data2, sparsity, fun)
     return(res)
 }
 
+permuteBetweeness <- function(data1, data2, sparsity) 
+{
+    nperms = 1000
+    nrois = dim(data1)[2]
+    ds <- matrix(nrow=nperms,ncol=nrois)
+    all_data = rbind(data1, data2)
+    n1 = dim(data1)[1]
+    n2 = dim(data2)[1]
+    for (i in 1:nperms) {
+        perm_labels <- sample.int(dim(all_data)[1], replace = FALSE)
+        perm_data <- all_data[perm_labels, ]
+        pmat1 = perm_data[1:n1, ]
+        pmat2 = perm_data[(n1+1):(n1+n2), ]
+        cor1 = pcor(pmat1)$estimate
+        cor2 = pcor(pmat2)$estimate
+        net1 = createNetwork(cor1, sparsity)
+        net2 = createNetwork(cor2, sparsity)
+        b = betweenness(net1)
+        bnorm1 = b/mean(b)
+        b = betweenness(net2)
+        bnorm2 = b/mean(b)
+        ds[i,] = bnorm1 - bnorm2
+    }
+    lci <- vector(mode = "numeric", length = nrois) 
+    uci <- vector(mode = "numeric", length = nrois)
+    for (r in 1:nrois) {
+        rds = sort(ds[,r])
+        lci[r] = rds[floor(.025*nperms)]   
+        uci[r] = rds[floor(.975*nperms)]
+    }
+    res = list(m=colMeans(ds),lci=lci,uci=uci)
+    return(res)
+}
+
 getPval <- function(r1, r2, n1, n2) {
     # returns the p-value for the null hypothesis that r1==r2. Uses a Z-transformation
     # r1 and r2 are square matrices of Rs
@@ -262,4 +296,23 @@ plot(sparsity,pmax,type='l',lwd=2,col='black',ylim=c(5,dim(pcorr)[1]+2),ylab='Si
 lines(sparsity,rmax,type='l',lwd=2,col='grey')
 legend('bottomright', c('Persistent', 'Remission'), col=c('black','grey'), lwd=2)
 print('Lowest sparsity threshold in which both of the networks included all connected nodes:')
-print(min(sparsity[pmax==dim(pcorr)[1] & rmax==dim(pcorr)[1]]))
+min_sparsity = min(sparsity[pmax==dim(pcorr)[1] & rmax==dim(pcorr)[1]])
+print(min_sparsity)
+
+#### Figure 6A ####
+pnet = createNetwork(pcorr, min_sparsity)
+b = betweenness(pnet)
+pbnorm = b/mean(b)
+rnet = createNetwork(rcorr, min_sparsity)
+b = betweenness(rnet)
+rbnorm = b/mean(b)
+diff_bt = pbnorm - rbnorm
+res = permuteBetweeness(pdata,rdata,min_sparsity)
+x = seq(1,dim(pcorr)[2])
+maxY = max(max(res$uci),max(diff_bt))
+minY = min(min(res$lci),min(diff_bt))
+plot(x, res$m, ylim=c(minY, maxY),ylab='Diff Betweenness',xaxt='n',xlab='')
+axis(1, at=x, lab=colnames(pcorr), las=2)
+arrows(x, res$uci, x, res$lci, angle=90, code=3, length=.1)
+points(x, diff_bt, pch=15, col='red')
+title('Changes in Betweenness')
