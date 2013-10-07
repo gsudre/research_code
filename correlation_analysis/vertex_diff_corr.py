@@ -76,15 +76,15 @@ cortex_labels = [['Occipital', [132, 38, 63, 97, 175, 112, 251, 98, 154, 37, 54,
                 ['Frontal', [10, 2, 75, 5, 6, 1, 7, 70, 50, 15, 80, 90, 85, 27]],
                 ['Cingulate', [7, 27]]]
 
-group = 'NV' #, 'persistent', 'remission']
-brain = ['striatum', 'gp', 'cortex', 'thalamus']
+group = 'NV' #, 'persistent', 'remission'
+brain = ['striatum', 'gp', 'thalamus']
 hemi = ['L', 'R']
 time = ['baseline', 'last']
 init_verts = 10e5
 init_subjs = 100
 
 all_corrs = []
-matched_gf = np.recfromcsv('/Users/sudregp/data/structural/gf_1473_matched_on18.csv')
+matched_gf = np.recfromcsv('/Users/sudregp/data/structural/gf_1473_dsm45_matched_on18_dsm4.csv')
 for t in time:
     # create huge array so we can add all the data and thenresize it appropriately
     raw = np.empty([init_subjs, init_verts],dtype=np.float16)
@@ -111,15 +111,16 @@ for t in time:
     num_vertices = len(verts)
     raw = raw[:num_subjects, :num_vertices]
 
-    # when we're done gathering all the data, compute the correlations
-    print 'Computing correlations\n'
-    num_vertices = raw.shape[1]
-    corrs = []
-    for x in range(num_vertices):
-        print 'vertex', x, '/', num_vertices
-        for y in range(x, num_vertices):
-            corrs.append(np.float16(scipy.stats.pearsonr(raw[:, x], raw[:, y])[0]))
-    all_corrs.append(corrs)
-np.save('%s/data/results/structural/verts_corr_%s'%(os.path.expanduser('~'), group), all_corrs)
-
-# started running code for NVs on 10/3 at 12:30pm
+    # when we exclude the cortex, we can compute all at once
+    all_corrs.append(np.float16(np.corrcoef(raw,rowvar=0)))
+#    # when we're done gathering all the data, compute the correlations
+#    print 'Computing correlations\n'
+#    num_vertices = raw.shape[1]
+#    corrs = []
+#    for x in range(num_vertices):
+#        print 'vertex', x, '/', num_vertices
+#        for y in range(x, num_vertices):
+#            corrs.append(np.float16(scipy.stats.pearsonr(raw[:, x], raw[:, y])[0]))
+#    all_corrs.append(corrs)
+np.savez('%s/data/results/structural/verts_corr_%s'%(os.path.expanduser('~'), group),
+        allcorrs=all_corrs, verts=verts)
