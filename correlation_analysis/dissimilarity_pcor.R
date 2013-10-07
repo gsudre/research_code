@@ -1,20 +1,23 @@
-# This one allows for connections between hemispheres
-striatum = read.csv('~/data/structural/roisSum_striatumL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm4.csv')
-thalamus = read.csv('~/data/structural/roisSum_thalamusL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm4.csv')
-gp = read.csv('~/data/structural/roisSum_gpL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm4.csv')
-cortex = read.csv('~/data/structural/roisSum_cortexL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm4.csv')
+# Hemisphere-dependent partial correlation analysis
+hemi = 'R'
+dsm = 4
+p_perms = 10
+striatum = read.csv(sprintf('~/data/structural/roisSum_striatum%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm%d.csv', hemi, dsm))
+thalamus = read.csv(sprintf('~/data/structural/roisSum_thalamus%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm%d.csv', hemi, dsm))
+gp = read.csv(sprintf('~/data/structural/roisSum_gp%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm%d.csv', hemi, dsm))
+cortex = read.csv(sprintf('~/data/structural/roisSum_cortex%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm%d.csv', hemi, dsm))
 
 permuteCorrDiff <- function(data1B, data1L, data2B, data2L, nperms) 
 {
     ds <- vector(mode = "numeric", length = nperms) 
-    all_dataB = rbind(data1B, data2B)
-    all_dataL = rbind(data1L, data2L)
+    alL_dataB = rbind(data1B, data2B)
+    alL_dataL = rbind(data1L, data2L)
     n1 = dim(data1B)[1]
     n2 = dim(data2B)[1]
     for (i in 1:nperms) {
         perm_labels <- sample.int(n1+n2, replace = FALSE)
-        perm_dataB <- all_dataB[perm_labels, ]
-        perm_dataL <- all_dataL[perm_labels, ]
+        perm_dataB <- alL_dataB[perm_labels, ]
+        perm_dataL <- alL_dataL[perm_labels, ]
         pmat1b = perm_dataB[1:n1, ]
         pmat2b = perm_dataB[(n1+1):(n1+n2), ]
         pmat1l = perm_dataL[1:n1, ]
@@ -30,33 +33,15 @@ permuteCorrDiff <- function(data1B, data1L, data2B, data2L, nperms)
     return(ds)
 }
 
-bootstrapCorrDiff <- function(fixed_dataB, fixed_dataL, dataB, dataL, nperms) 
-{
-    ds <- vector(mode = "numeric", length = nperms) 
-    cor1b = cor(fixed_dataB)
-    cor1l = cor(fixed_dataL)
-    deltaCor1 = cor1l - cor1b
-    for (i in 1:nperms) {
-        perm_labels <- sample.int(dim(dataB)[1], replace = TRUE)
-        perm_dataB <- dataB[perm_labels, ]
-        perm_dataL <- dataL[perm_labels, ]
-        cor2b = cor(perm_dataB)
-        cor2l = cor(perm_dataL)
-        deltaCor2 = cor2l - cor2b
-        ds[i] = 1-cor(deltaCor1[upper.tri(deltaCor1)], deltaCor2[upper.tri(deltaCor2)], method="spearman")
-    }
-    return(ds)
-}
-
 permuteCorr <- function(data1, data2, nperms) 
 {
     ds <- vector(mode = "numeric", length = nperms) 
-    all_data = rbind(data1, data2)
+    alL_data = rbind(data1, data2)
     n1 = dim(data1)[1]
     n2 = dim(data2)[1]
     for (i in 1:nperms) {
-        perm_labels <- sample.int(dim(all_data)[1], replace = FALSE)
-        perm_data <- all_data[perm_labels, ]
+        perm_labels <- sample.int(dim(alL_data)[1], replace = FALSE)
+        perm_data <- alL_data[perm_labels, ]
         pmat1 = perm_data[1:n1, ]
         pmat2 = perm_data[(n1+1):(n1+n2), ]
         cor1 = pcor(pmat1)$estimate
@@ -64,25 +49,6 @@ permuteCorr <- function(data1, data2, nperms)
         ds[i] = 1-cor(cor1[upper.tri(cor1)], cor2[upper.tri(cor2)], method="spearman")
     }
     return(ds)
-}
-
-bootstrapCorr <- function(fixed_data, data, nperms) 
-{
-    ds <- vector(mode = "numeric", length = nperms) 
-    cor1 = pcor(fixed_data)$estimate
-    for (i in 1:nperms) {
-        perm_labels <- sample.int(dim(data)[1], replace = TRUE)
-        perm_data <- data[perm_labels, ]
-        cor2 = pcor(perm_data)$estimate
-        ds[i] = 1-cor(cor1[upper.tri(cor1)], cor2[upper.tri(cor2)], method="spearman")
-    }
-    return(ds)
-}
-
-error.bar <- function(x, y, upper, lower=upper, length=0.1,...){
-    if(length(x) != length(y) | length(y) !=length(lower) | length(lower) != length(upper))
-        stop("vectors must be same length")
-    arrows(x,y+upper, x, y-lower, angle=90, code=3, length=length, ...)
 }
 
 idxp = striatum$group=="persistent" & striatum$visit=="baseline"
@@ -104,7 +70,6 @@ dnpb = 1-cor(ncorb[upper.tri(ncorb)], pcorb[upper.tri(pcorb)], method="spearman"
 dnrb = 1-cor(ncorb[upper.tri(ncorb)], rcorb[upper.tri(rcorb)], method="spearman")
 dprb = 1-cor(pcorb[upper.tri(pcorb)], rcorb[upper.tri(rcorb)], method="spearman")
 
-p_perms = 1000
 dists = c(dnrb, dnpb, dprb)
 pval = sum(permuteCorr(nmatb, rmatb, p_perms)>dnrb)/p_perms
 pval = min(pval,1-pval)
@@ -117,7 +82,7 @@ pval = min(pval,1-pval)
 names(dists)[3] = sprintf('PervsRem\np<%.3f', pval)
 par(mfrow=c(1,3))
 s_dists = sort(dists, index.return=TRUE)
-bp = barplot(s_dists$x, main='Baseline', ylim=c(0, 1.2))
+bp = barplot(s_dists$x, main=sprintf('Baseline (%s)', hemi), ylim=c(0, 1.2))
 
 #####################
 
@@ -151,7 +116,7 @@ pval = sum(permuteCorr(pmatl, rmatl, p_perms)>dprl)/p_perms
 pval = min(pval,1-pval)
 names(dists)[3] = sprintf('PervsRem\np<%.3f', pval)
 s_dists = sort(dists, index.return=TRUE)
-bp = barplot(s_dists$x, main='Follow up', ylim=c(0, 1.2))
+bp = barplot(s_dists$x, main=sprintf('Follow up (%s)', hemi), ylim=c(0, 1.2))
 
 # now we look at FU-baseline differences
 pcorDelta = pcorl - pcorb
@@ -171,4 +136,4 @@ pval = sum(permuteCorrDiff(pmatb, pmatl, rmatb, rmatl, p_perms)>dDeltaPR)/p_perm
 pval = min(pval,1-pval)
 names(dists)[3] = sprintf('PervsRem\np<%.3f', pval)
 s_dists = sort(dists, index.return=TRUE)
-bp = barplot(s_dists$x, main='Deltas FU-Baseline', ylim=c(0, 1.2))
+bp = barplot(s_dists$x, main=sprintf('Deltas FU-Baseline (%s)', hemi), ylim=c(0, 1.2))
