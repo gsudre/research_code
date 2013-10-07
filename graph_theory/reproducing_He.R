@@ -316,3 +316,22 @@ axis(1, at=x, lab=colnames(pcorr), las=2)
 arrows(x, res$uci, x, res$lci, angle=90, code=3, length=.1)
 points(x, diff_bt, pch=15, col='red')
 title('Changes in Betweenness')
+
+#### Tables 2 and 3 ####
+thresh = 1.5
+print(sprintf('Hub regions (b>%.2f) for %s', thresh, 'Persistent'))
+cat('Region\tNormBi\tDegree\n')
+nhubs = sum(pbnorm>thresh)
+sb = sort(pbnorm, index.return=T, decreasing=T)
+d = degree(pnet)
+for (i in 1:nhubs) {
+    cat(sprintf("%s\t%.2f\t%d\n", colnames(pcorr)[sb$ix[i]], sb$x[i], d[sb$ix[i]]))
+}
+print(sprintf('Hub regions (b>%.2f) for %s', thresh, 'Remission'))
+cat('Region\tNormBi\tDegree\n')
+nhubs = sum(rbnorm>thresh)
+sb = sort(rbnorm, index.return=T, decreasing=T)
+d = degree(rnet)
+for (i in 1:nhubs) {
+    cat(sprintf("%s\t%.2f\t%d\n", colnames(rcorr)[sb$ix[i]], sb$x[i], d[sb$ix[i]]))
+}
