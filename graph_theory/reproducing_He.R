@@ -77,8 +77,25 @@ permuteMetric <- function(data1, data2, sparsity, fun)
     return(res)
 }
 
-pcor = pcorb
-rcor = rcorb
+getPval <- function(r1, r2, n1, n2) {
+    # returns the p-value for the null hypothesis that r1==r2. Uses a Z-transformation
+    # r1 and r2 are square matrices of Rs
+    print('DO NOT USE ME TO TEST DIFFERENCE OF CORRELATIONS!!! USE THAT OTHER PAPER TO GET CIS')
+    z1 = atanh(r1)
+    z2 = atanh(r2)
+    variance = 1/(n1-3) + 1/(n2-3)
+    z = (z1-z2)/sqrt(variance)
+    pval = pnorm(z)
+    for (i in 1:dim(pval)[1]) {
+        for (j in 1:dim(pval)[1]) {
+            pval[i,j] = min(pval[i,j],1-pval[i,j])
+        }
+    }
+    return(pval*2)
+}
+
+pcorr = pcorb
+rcorr = rcorb
 pdata = pmatb
 rdata = rmatb
 sparsity = seq(.06,.4,.02)
@@ -90,10 +107,10 @@ pgamma = vector(length=length(sparsity))
 rgamma = vector(length=length(sparsity))
 cnt=1
 for (s in sparsity) {
-    pnet = createNetwork(pcor, s)
+    pnet = createNetwork(pcorr, s)
     plambda[cnt] = getLambda(pnet)
     pgamma[cnt] = getGamma(pnet)
-    rnet = createNetwork(rcor, s)
+    rnet = createNetwork(rcorr, s)
     rlambda[cnt] = getLambda(rnet)
     rgamma[cnt] = getGamma(rnet)
     cnt = cnt + 1
@@ -118,8 +135,8 @@ nullcc = vector(length=length(sparsity))
 cnt=1
 for (s in sparsity) {
     print(sprintf('Working on sparsity %.2f', s))
-    pcc[cnt] = transitivity(createNetwork(pcor, s))
-    rcc[cnt] = transitivity(createNetwork(rcor, s))
+    pcc[cnt] = transitivity(createNetwork(pcorr, s))
+    rcc[cnt] = transitivity(createNetwork(rcorr, s))
     perm = permuteMetric(pdata,rdata,s,transitivity)
     nullcc[cnt] = perm$m
     ucicc[cnt] = perm$uci
@@ -150,8 +167,8 @@ nullapl = vector(length=length(sparsity))
 cnt=1
 for (s in sparsity) {
     print(sprintf('Working on sparsity %.2f', s))
-    papl[cnt] = average.path.length(createNetwork(pcor, s))
-    rapl[cnt] = average.path.length(createNetwork(rcor, s))
+    papl[cnt] = average.path.length(createNetwork(pcorr, s))
+    rapl[cnt] = average.path.length(createNetwork(rcorr, s))
     perm = permuteMetric(pdata,rdata,s,average.path.length)
     nullapl[cnt] = perm$m
     uciapl[cnt] = perm$uci
@@ -197,3 +214,37 @@ plot(x, y, ylim=c(minY, maxY),xaxt='n',ylab='AUC Diff Lp',xlab='')
 arrows(x,upper, x, lower, angle=90, code=3, length=.1)
 points(x, aucapl, pch=15, col='black')
 title('Path length')
+
+#### Table 1 ####
+thresh = .05
+pval_connections = getPval(pcorr, rcorr, dim(pdata)[1], dim(rdata)[1])
+pval_connections = pval_connections[upper.tri(pval_connections)]
+pval_connections = p.adjust(pval_connections, method='fdr')
+good_pvals = pval_connections < thresh
+num_good_pvals = sum(good_pvals)
+print(sprintf('Total of significant differences: %d', sum(good_pvals)))
+if (num_good_pvals > 0) {
+    ppvals = pcor(pmatb)$p.value
+    rpvals = pcor(rmatb)$p.value
+    ppvals = ppvals[upper.tri(ppvals)]
+    rpvals = rpvals[upper.tri(rpvals)]
+    ppvals = p.adjust(ppvals, method='fdr')
+    rpvals = p.adjust(rpvals, method='fdr')
+    p_good_pvals = ppvals < thresh
+    r_good_pvals = rpvals < thresh
+    very_good_pvals = good_pvals & (p_good_pvals | r_good_pvals)
+    nrows = sum(very_good_pvals)
+    print(sprintf('Significant differences with significant Rs: %d', nrows))
+    if (nrows > 0) {
+        pvals2list = pval_connections[very_good_pvals]
+        pcorr2list = pcorr[upper.tri(pcorr)][very_good_pvals]
+        rcorr2list = rcorr[upper.tri(rcorr)][very_good_pvals]
+        cat('ROI1\t\t\t\t\t\t\t\tROI2\t\t\t\t\t\t\tPersistent\t\t\tRemission\t\t\tDiff pval\n')
+        for (i in 1:nrows) {
+            idx = which(pcorr==pcorr2list[i] & rcorr==rcorr2list[i], arr.ind=TRUE)
+            cat(sprintf("%s\t\t\t%s\t\t\t%.2f\t\t\t%.2f\t\t\t%.3f\n",
+                        colnames(pcorr)[idx[1]],colnames(pcorr)[idx[2]],
+                          pcorr2list[i],rcorr2list[i],pvals2list[i]))
+        }
+    }
+}
