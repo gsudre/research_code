@@ -1,3 +1,12 @@
+# need to run on of the dissiimlarity scripts first to make data matrices
+corr1 = pcorb
+corr2 = rcorb
+data1 = pmatb
+data2 = rmatb
+gtitle1 = 'Persistent'
+gtitle2 = 'Remission'
+sparsity = seq(.06,.4,.02)
+
 library(igraph)
 createNetwork <- function(data, sparsity) {
     # remove correlation to itself
@@ -128,61 +137,55 @@ getPval <- function(r1, r2, n1, n2) {
     return(pval*2)
 }
 
-pcorr = pcorb
-rcorr = rcorb
-pdata = pmatb
-rdata = rmatb
-sparsity = seq(.06,.4,.02)
-
 #### Generating figure 2
-plambda = vector(length=length(sparsity))
-rlambda = vector(length=length(sparsity))
-pgamma = vector(length=length(sparsity))
-rgamma = vector(length=length(sparsity))
+lambda1 = vector(length=length(sparsity))
+lambda2 = vector(length=length(sparsity))
+gamma1 = vector(length=length(sparsity))
+gamma2 = vector(length=length(sparsity))
 cnt=1
 for (s in sparsity) {
-    pnet = createNetwork(pcorr, s)
-    plambda[cnt] = getLambda(pnet)
-    pgamma[cnt] = getGamma(pnet)
-    rnet = createNetwork(rcorr, s)
-    rlambda[cnt] = getLambda(rnet)
-    rgamma[cnt] = getGamma(rnet)
+    net1 = createNetwork(corr1, s)
+    lambda1[cnt] = getLambda(net1)
+    gamma1[cnt] = getGamma(net1)
+    net2 = createNetwork(corr2, s)
+    lambda2[cnt] = getLambda(net2)
+    gamma2[cnt] = getGamma(net2)
     cnt = cnt + 1
 }
-maxY = max(ceiling(max(rgamma)),ceiling(max(pgamma)))
+maxY = max(ceiling(max(gamma1)),ceiling(max(gamma2)))
 par(mfrow=c(1,2))
-plot(sparsity, plambda, type="l", col='black', ylim=c(0, maxY), lwd=2)
-lines(sparsity, pgamma, type="l", col='grey', lwd=2)
+plot(sparsity, lambda1, type="l", col='black', ylim=c(0, maxY), lwd=2)
+lines(sparsity, gamma1, type="l", col='grey', lwd=2)
 legend('topright', c('Lambda', 'Gamma'), col=c('black','grey'), lwd=2)
 title('Small-Worldness, Persistent')
-plot(sparsity, rlambda, type="l", col='black', ylim=c(0, maxY), lwd=2)
-lines(sparsity, rgamma, type="l", col='grey', lwd=2)
+plot(sparsity, lambda2, type="l", col='black', ylim=c(0, maxY), lwd=2)
+lines(sparsity, gamma2, type="l", col='grey', lwd=2)
 legend('topright', c('Lambda', 'Gamma'), col=c('black','grey'), lwd=2)
 title('Small-Worldness, Remission')
 
 #### Figure 3A ####
-pcc = vector(length=length(sparsity))
-rcc = vector(length=length(sparsity))
+cc1 = vector(length=length(sparsity))
+cc2 = vector(length=length(sparsity))
 lcicc = vector(length=length(sparsity))
 ucicc = vector(length=length(sparsity))
 nullcc = vector(length=length(sparsity))
 cnt=1
 for (s in sparsity) {
     print(sprintf('Working on sparsity %.2f', s))
-    pcc[cnt] = transitivity(createNetwork(pcorr, s))
-    rcc[cnt] = transitivity(createNetwork(rcorr, s))
-    perm = permuteMetric(pdata,rdata,s,transitivity)
+    cc1[cnt] = transitivity(createNetwork(corr1, s))
+    cc2[cnt] = transitivity(createNetwork(corr2, s))
+    perm = permuteMetric(data1,data2,s,transitivity)
     nullcc[cnt] = perm$m
     ucicc[cnt] = perm$uci
     lcicc[cnt] = perm$lci
     cnt = cnt + 1
 }
-diff_cc = pcc-rcc
-maxY = max(max(rcc),max(pcc))
+diff_cc = cc1-cc2
+maxY = max(max(cc2),max(cc1))
 par(mfrow=c(1,2))
-plot(sparsity, pcc, type="l", col='black', ylab='Cp', ylim=c(0, maxY), lwd=2)
-lines(sparsity, rcc, type="l", col='grey', lwd=2)
-legend('bottomright', c('Persistent', 'Remission'), col=c('black','grey'), lwd=2)
+plot(sparsity, cc1, type="l", col='black', ylab='Cp', ylim=c(0, maxY), lwd=2)
+lines(sparsity, cc2, type="l", col='grey', lwd=2)
+legend('bottomright', c(gtitle1, gtitle2), col=c('black','grey'), lwd=2)
 title('Mean Clustering Coefficient')
 maxY = max(max(ucicc),max(diff_cc))
 minY = min(min(lcicc),min(diff_cc))
@@ -193,28 +196,28 @@ lines(sparsity, ucicc, type="l", col='grey', lwd=2)
 title('Difference')
 
 #### Figure 3B ####
-papl = vector(length=length(sparsity))
-rapl = vector(length=length(sparsity))
+apl1 = vector(length=length(sparsity))
+apl2 = vector(length=length(sparsity))
 lciapl = vector(length=length(sparsity))
 uciapl = vector(length=length(sparsity))
 nullapl = vector(length=length(sparsity))
 cnt=1
 for (s in sparsity) {
     print(sprintf('Working on sparsity %.2f', s))
-    papl[cnt] = average.path.length(createNetwork(pcorr, s))
-    rapl[cnt] = average.path.length(createNetwork(rcorr, s))
-    perm = permuteMetric(pdata,rdata,s,average.path.length)
+    apl1[cnt] = average.path.length(createNetwork(corr1, s))
+    apl2[cnt] = average.path.length(createNetwork(corr2, s))
+    perm = permuteMetric(data1,data2,s,average.path.length)
     nullapl[cnt] = perm$m
     uciapl[cnt] = perm$uci
     lciapl[cnt] = perm$lci
     cnt = cnt + 1
 }
-diff_apl = papl-rapl
-maxY = max(max(rapl),max(papl))
+diff_apl = apl1-apl2
+maxY = max(max(apl2),max(apl1))
 par(mfrow=c(1,2))
-plot(sparsity, papl, type="l", col='black', ylab='Cp', ylim=c(0, maxY), lwd=2)
-lines(sparsity, rapl, type="l", col='grey', lwd=2)
-legend('bottomright', c('Persistent', 'Remission'), col=c('black','grey'), lwd=2)
+plot(sparsity, apl1, type="l", col='black', ylab='Cp', ylim=c(0, maxY), lwd=2)
+lines(sparsity, apl2, type="l", col='grey', lwd=2)
+legend('bottomright', c(gtitle1, gtitle2), col=c('black','grey'), lwd=2)
 title('Mean Path Length')
 maxY = max(max(uciapl),max(diff_apl))
 minY = min(min(lciapl),min(diff_apl))
@@ -251,87 +254,87 @@ title('Path length')
 
 #### Table 1 ####
 thresh = .05
-pval_connections = getPval(pcorr, rcorr, dim(pdata)[1], dim(rdata)[1])
+pval_connections = getPval(corr1, corr2, dim(data1)[1], dim(data2)[1])
 pval_connections = pval_connections[upper.tri(pval_connections)]
 pval_connections = p.adjust(pval_connections, method='fdr')
 good_pvals = pval_connections < thresh
 num_good_pvals = sum(good_pvals)
 print(sprintf('Total of significant differences: %d', sum(good_pvals)))
 if (num_good_pvals > 0) {
-    ppvals = pcor(pmatb)$p.value
-    rpvals = pcor(rmatb)$p.value
-    ppvals = ppvals[upper.tri(ppvals)]
-    rpvals = rpvals[upper.tri(rpvals)]
-    ppvals = p.adjust(ppvals, method='fdr')
-    rpvals = p.adjust(rpvals, method='fdr')
-    p_good_pvals = ppvals < thresh
-    r_good_pvals = rpvals < thresh
-    very_good_pvals = good_pvals & (p_good_pvals | r_good_pvals)
+    pvals1 = pcor(data1)$p.value
+    pvals2 = pcor(data2)$p.value
+    pvals1 = pvals1[upper.tri(pvals1)]
+    pvals2 = pvals2[upper.tri(pvals2)]
+    pvals1 = p.adjust(pvals1, method='fdr')
+    pvals2 = p.adjust(pvals2, method='fdr')
+    good_pvals1 = pvals1 < thresh
+    good_pvals2 = pvals2 < thresh
+    very_good_pvals = good_pvals & (good_pvals1 | good_pvals2)
     nrows = sum(very_good_pvals)
     print(sprintf('Significant differences with significant Rs: %d', nrows))
     if (nrows > 0) {
         pvals2list = pval_connections[very_good_pvals]
-        pcorr2list = pcorr[upper.tri(pcorr)][very_good_pvals]
-        rcorr2list = rcorr[upper.tri(rcorr)][very_good_pvals]
+        corr12list = corr1[upper.tri(corr1)][very_good_pvals]
+        corr22list = corr2[upper.tri(corr2)][very_good_pvals]
         cat('ROI1\t\t\t\t\t\t\t\tROI2\t\t\t\t\t\t\tPersistent\t\t\tRemission\t\t\tDiff pval\n')
         for (i in 1:nrows) {
-            idx = which(pcorr==pcorr2list[i] & rcorr==rcorr2list[i], arr.ind=TRUE)
+            idx = which(corr1==corr12list[i] & corr2==corr22list[i], arr.ind=TRUE)
             cat(sprintf("%s\t\t\t%s\t\t\t%.2f\t\t\t%.2f\t\t\t%.3f\n",
-                        colnames(pcorr)[idx[1]],colnames(pcorr)[idx[2]],
-                          pcorr2list[i],rcorr2list[i],pvals2list[i]))
+                        colnames(corr1)[idx[1]],colnames(corr1)[idx[2]],
+                          corr12list[i],corr22list[i],pvals2list[i]))
         }
     }
 }
 
 #### Figure 5 ####
-pmax = vector(length=length(sparsity))
-rmax = vector(length=length(sparsity))
+max1 = vector(length=length(sparsity))
+max2 = vector(length=length(sparsity))
 cnt=1
 for (s in sparsity) {
-    pmax[cnt] = max(clusters(createNetwork(pcorr, s))$csize)
-    rmax[cnt] = max(clusters(createNetwork(rcorr, s))$csize)
+    max1[cnt] = max(clusters(createNetwork(corr1, s))$csize)
+    max2[cnt] = max(clusters(createNetwork(corr2, s))$csize)
     cnt = cnt + 1
 }
-plot(sparsity,pmax,type='l',lwd=2,col='black',ylim=c(5,dim(pcorr)[1]+2),ylab='Size of largest component')
-lines(sparsity,rmax,type='l',lwd=2,col='grey')
-legend('bottomright', c('Persistent', 'Remission'), col=c('black','grey'), lwd=2)
+plot(sparsity,max1,type='l',lwd=2,col='black',ylim=c(5,dim(corr1)[1]+2),ylab='Size of largest component')
+lines(sparsity,max2,type='l',lwd=2,col='grey')
+legend('bottomright', c(gtitle1, gtitle2), col=c('black','grey'), lwd=2)
 print('Lowest sparsity threshold in which both of the networks included all connected nodes:')
-min_sparsity = min(sparsity[pmax==dim(pcorr)[1] & rmax==dim(pcorr)[1]])
+min_sparsity = min(sparsity[max1==dim(corr1)[1] & max2==dim(corr1)[1]])
 print(min_sparsity)
 
 #### Figure 6A ####
-pnet = createNetwork(pcorr, min_sparsity)
-b = betweenness(pnet)
-pbnorm = b/mean(b)
-rnet = createNetwork(rcorr, min_sparsity)
-b = betweenness(rnet)
-rbnorm = b/mean(b)
-diff_bt = pbnorm - rbnorm
-res = permuteBetweeness(pdata,rdata,min_sparsity)
-x = seq(1,dim(pcorr)[2])
+net1 = createNetwork(corr1, min_sparsity)
+b = betweenness(net1)
+bnorm1 = b/mean(b)
+net2 = createNetwork(corr2, min_sparsity)
+b = betweenness(net2)
+bnorm2 = b/mean(b)
+diff_bt = bnorm1 - bnorm2
+res = permuteBetweeness(data1,data2,min_sparsity)
+x = seq(1,dim(corr1)[2])
 maxY = max(max(res$uci),max(diff_bt))
 minY = min(min(res$lci),min(diff_bt))
 plot(x, res$m, ylim=c(minY, maxY),ylab='Diff Betweenness',xaxt='n',xlab='')
-axis(1, at=x, lab=colnames(pcorr), las=2)
+axis(1, at=x, lab=colnames(corr1), las=2)
 arrows(x, res$uci, x, res$lci, angle=90, code=3, length=.1)
 points(x, diff_bt, pch=15, col='red')
 title('Changes in Betweenness')
 
 #### Tables 2 and 3 ####
 thresh = 1.5
-print(sprintf('Hub regions (b>%.2f) for %s', thresh, 'Persistent'))
+print(sprintf('Hub regions (b>%.2f) for %s', thresh, gtitle1))
 cat('Region\tNormBi\tDegree\n')
-nhubs = sum(pbnorm>thresh)
-sb = sort(pbnorm, index.return=T, decreasing=T)
-d = degree(pnet)
+nhubs = sum(bnorm1>thresh)
+sb = sort(bnorm1, index.return=T, decreasing=T)
+d = degree(net1)
 for (i in 1:nhubs) {
-    cat(sprintf("%s\t%.2f\t%d\n", colnames(pcorr)[sb$ix[i]], sb$x[i], d[sb$ix[i]]))
+    cat(sprintf("%s\t%.2f\t%d\n", colnames(corr1)[sb$ix[i]], sb$x[i], d[sb$ix[i]]))
 }
-print(sprintf('Hub regions (b>%.2f) for %s', thresh, 'Remission'))
+print(sprintf('Hub regions (b>%.2f) for %s', thresh, gtitle2))
 cat('Region\tNormBi\tDegree\n')
-nhubs = sum(rbnorm>thresh)
-sb = sort(rbnorm, index.return=T, decreasing=T)
-d = degree(rnet)
+nhubs = sum(bnorm2>thresh)
+sb = sort(bnorm2, index.return=T, decreasing=T)
+d = degree(net2)
 for (i in 1:nhubs) {
-    cat(sprintf("%s\t%.2f\t%d\n", colnames(rcorr)[sb$ix[i]], sb$x[i], d[sb$ix[i]]))
+    cat(sprintf("%s\t%.2f\t%d\n", colnames(corr2)[sb$ix[i]], sb$x[i], d[sb$ix[i]]))
 }
