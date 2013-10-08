@@ -22,10 +22,10 @@ permuteCorrDiff <- function(data1B, data1L, data2B, data2L, nperms)
         pmat2b = perm_dataB[(n1+1):(n1+n2), ]
         pmat1l = perm_dataL[1:n1, ]
         pmat2l = perm_dataL[(n1+1):(n1+n2), ]
-        cor1b = cor(pmat1b)
-        cor2b = cor(pmat2b)
-        cor1l = cor(pmat1l)
-        cor2l = cor(pmat2l)
+        cor1b = pcor(pmat1b)$estimate
+        cor2b = pcor(pmat2b)$estimate
+        cor1l = pcor(pmat1l)$estimate
+        cor2l = pcor(pmat2l)$estimate
         deltaCor1 = cor1l - cor1b
         deltaCor2 = cor2l - cor2b
         ds[i] = 1-cor(deltaCor1[upper.tri(deltaCor1)], deltaCor2[upper.tri(deltaCor2)], method="spearman")
