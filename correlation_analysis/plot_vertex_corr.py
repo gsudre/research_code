@@ -3,25 +3,26 @@ import numpy as np
 import os
 import pylab as pl
 
-
-g1 = 'persistent'
-g2 = 'remission'
-method = 'baseline'  # 'baseline','last','delta'
+# Note that we need to plot differences because if we just plot one group most
+# vertices inside the same ROI will be highly correlated!
+g1 = 'NV'
+g2 = 'persistent'
+method = 'delta'  # 'baseline','last','delta'
 # we need to decimate the correlation matrix, otherwise it cannot plot it
 decim = 5
 
 res1 = np.load('%s/data/results/structural/verts_corr_%s.npz'%(os.path.expanduser('~'), g1))
 res2 = np.load('%s/data/results/structural/verts_corr_%s.npz'%(os.path.expanduser('~'), g2))
-cmin=-1
-cmax=1
+cmin=-1.2
+cmax=1.2
 if method=='baseline':
     mat = res1['allcorrs'][0] - res2['allcorrs'][0]
 elif method=='last':
     mat = res1['allcorrs'][1] - res2['allcorrs'][1]
 elif method=='delta':
     mat = (res1['allcorrs'][1] - res1['allcorrs'][0]) - (res2['allcorrs'][1] - res2['allcorrs'][0])
-    cmin=-2
-    cmax=2
+    cmin=-1.5
+    cmax=1.5
 else:
     print('Error: do not recognize method.')
     exit()
