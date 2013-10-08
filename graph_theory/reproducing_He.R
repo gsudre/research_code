@@ -1,10 +1,14 @@
 # need to run on of the dissiimlarity scripts first to make data matrices
-corr1 = pcorb
-corr2 = rcorb
+corr1 = pcorDelta
+corr2 = rcorDelta
 data1 = pmatb
 data2 = rmatb
 gtitle1 = 'Persistent'
 gtitle2 = 'Remission'
+# when delta==T, data1=G1B, data2=G2B, data3=G1L, data4=G2L, so that delta1=data3-data1
+delta = T
+data3 = pmatl
+data4 = rmatl
 sparsity = seq(.06,.4,.02)
 
 library(igraph)
@@ -86,6 +90,37 @@ permuteMetric <- function(data1, data2, sparsity, fun)
     return(res)
 }
 
+permuteDeltaMetric <- function(data1B, data2B, data1L, data2L, sparsity, fun) 
+{
+    nperms = 1000
+    ds <- vector(mode = "numeric", length = nperms) 
+    all_dataB = rbind(data1B, data2B)
+    all_dataL = rbind(data1L, data2L)
+    n1 = dim(data1B)[1]
+    n2 = dim(data2B)[1]
+    for (i in 1:nperms) {
+        perm_labels <- sample.int(n1+n2, replace = FALSE)
+        perm_dataB <- all_dataB[perm_labels, ]
+        perm_dataL <- all_dataL[perm_labels, ]
+        pmat1b = perm_dataB[1:n1, ]
+        pmat2b = perm_dataB[(n1+1):(n1+n2), ]
+        pmat1l = perm_dataL[1:n1, ]
+        pmat2l = perm_dataL[(n1+1):(n1+n2), ]
+        cor1b = pcor(pmat1b)$estimate
+        cor2b = pcor(pmat2b)$estimate
+        cor1l = pcor(pmat1l)$estimate
+        cor2l = pcor(pmat2l)$estimate
+        deltaCor1 = cor1l - cor1b
+        deltaCor2 = cor2l - cor2b
+        net1 = createNetwork(deltaCor1, sparsity)
+        net2 = createNetwork(deltaCor2, sparsity)
+        ds[i] = fun(net1) - fun(net2)
+    }
+    ds = sort(ds)
+    res = list(m=mean(ds),lci=ds[floor(.025*nperms)],uci=ds[floor(.975*nperms)])
+    return(res)
+}
+
 permuteBetweeness <- function(data1, data2, sparsity) 
 {
     nperms = 1000
@@ -103,6 +138,48 @@ permuteBetweeness <- function(data1, data2, sparsity)
         cor2 = pcor(pmat2)$estimate
         net1 = createNetwork(cor1, sparsity)
         net2 = createNetwork(cor2, sparsity)
+        b = betweenness(net1)
+        bnorm1 = b/mean(b)
+        b = betweenness(net2)
+        bnorm2 = b/mean(b)
+        ds[i,] = bnorm1 - bnorm2
+    }
+    lci <- vector(mode = "numeric", length = nrois) 
+    uci <- vector(mode = "numeric", length = nrois)
+    for (r in 1:nrois) {
+        rds = sort(ds[,r])
+        lci[r] = rds[floor(.025*nperms)]   
+        uci[r] = rds[floor(.975*nperms)]
+    }
+    res = list(m=colMeans(ds),lci=lci,uci=uci)
+    return(res)
+}
+
+permuteDeltaBetweeness <- function(data1B, data2B, data1L, data2L, sparsity) 
+{
+    nperms = 1000
+    nrois = dim(data1)[2]
+    ds <- matrix(nrow=nperms,ncol=nrois) 
+    all_dataB = rbind(data1B, data2B)
+    all_dataL = rbind(data1L, data2L)
+    n1 = dim(data1B)[1]
+    n2 = dim(data2B)[1]
+    for (i in 1:nperms) {
+        perm_labels <- sample.int(n1+n2, replace = FALSE)
+        perm_dataB <- all_dataB[perm_labels, ]
+        perm_dataL <- all_dataL[perm_labels, ]
+        pmat1b = perm_dataB[1:n1, ]
+        pmat2b = perm_dataB[(n1+1):(n1+n2), ]
+        pmat1l = perm_dataL[1:n1, ]
+        pmat2l = perm_dataL[(n1+1):(n1+n2), ]
+        cor1b = pcor(pmat1b)$estimate
+        cor2b = pcor(pmat2b)$estimate
+        cor1l = pcor(pmat1l)$estimate
+        cor2l = pcor(pmat2l)$estimate
+        deltaCor1 = cor1l - cor1b
+        deltaCor2 = cor2l - cor2b
+        net1 = createNetwork(deltaCor1, sparsity)
+        net2 = createNetwork(deltaCor2, sparsity)
         b = betweenness(net1)
         bnorm1 = b/mean(b)
         b = betweenness(net2)
@@ -174,7 +251,11 @@ for (s in sparsity) {
     print(sprintf('Working on sparsity %.2f', s))
     cc1[cnt] = transitivity(createNetwork(corr1, s))
     cc2[cnt] = transitivity(createNetwork(corr2, s))
-    perm = permuteMetric(data1,data2,s,transitivity)
+    if (delta) {
+        perm = permuteDeltaMetric(data1,data2,data3,data4,s,transitivity)
+    } else {
+        perm = permuteMetric(data1,data2,s,transitivity)
+    }
     nullcc[cnt] = perm$m
     ucicc[cnt] = perm$uci
     lcicc[cnt] = perm$lci
@@ -206,7 +287,11 @@ for (s in sparsity) {
     print(sprintf('Working on sparsity %.2f', s))
     apl1[cnt] = average.path.length(createNetwork(corr1, s))
     apl2[cnt] = average.path.length(createNetwork(corr2, s))
-    perm = permuteMetric(data1,data2,s,average.path.length)
+    if (delta) {
+        perm = permuteDeltaMetric(data1,data2,data3,data4,s,average.path.length)
+    } else {
+        perm = permuteMetric(data1,data2,s,average.path.length)
+    }
     nullapl[cnt] = perm$m
     uciapl[cnt] = perm$uci
     lciapl[cnt] = perm$lci
@@ -253,35 +338,37 @@ points(x, aucapl, pch=15, col='black')
 title('Path length')
 
 #### Table 1 ####
-thresh = .05
-pval_connections = getPval(corr1, corr2, dim(data1)[1], dim(data2)[1])
-pval_connections = pval_connections[upper.tri(pval_connections)]
-pval_connections = p.adjust(pval_connections, method='fdr')
-good_pvals = pval_connections < thresh
-num_good_pvals = sum(good_pvals)
-print(sprintf('Total of significant differences: %d', sum(good_pvals)))
-if (num_good_pvals > 0) {
-    pvals1 = pcor(data1)$p.value
-    pvals2 = pcor(data2)$p.value
-    pvals1 = pvals1[upper.tri(pvals1)]
-    pvals2 = pvals2[upper.tri(pvals2)]
-    pvals1 = p.adjust(pvals1, method='fdr')
-    pvals2 = p.adjust(pvals2, method='fdr')
-    good_pvals1 = pvals1 < thresh
-    good_pvals2 = pvals2 < thresh
-    very_good_pvals = good_pvals & (good_pvals1 | good_pvals2)
-    nrows = sum(very_good_pvals)
-    print(sprintf('Significant differences with significant Rs: %d', nrows))
-    if (nrows > 0) {
-        pvals2list = pval_connections[very_good_pvals]
-        corr12list = corr1[upper.tri(corr1)][very_good_pvals]
-        corr22list = corr2[upper.tri(corr2)][very_good_pvals]
-        cat('ROI1\t\t\t\t\t\t\t\tROI2\t\t\t\t\t\t\tPersistent\t\t\tRemission\t\t\tDiff pval\n')
-        for (i in 1:nrows) {
-            idx = which(corr1==corr12list[i] & corr2==corr22list[i], arr.ind=TRUE)
-            cat(sprintf("%s\t\t\t%s\t\t\t%.2f\t\t\t%.2f\t\t\t%.3f\n",
-                        colnames(corr1)[idx[1]],colnames(corr1)[idx[2]],
-                          corr12list[i],corr22list[i],pvals2list[i]))
+if (!delta) {
+    thresh = .05
+    pval_connections = getPval(corr1, corr2, dim(data1)[1], dim(data2)[1])
+    pval_connections = pval_connections[upper.tri(pval_connections)]
+    pval_connections = p.adjust(pval_connections, method='fdr')
+    good_pvals = pval_connections < thresh
+    num_good_pvals = sum(good_pvals)
+    print(sprintf('Total of significant differences: %d', sum(good_pvals)))
+    if (num_good_pvals > 0) {
+        pvals1 = pcor(data1)$p.value
+        pvals2 = pcor(data2)$p.value
+        pvals1 = pvals1[upper.tri(pvals1)]
+        pvals2 = pvals2[upper.tri(pvals2)]
+        pvals1 = p.adjust(pvals1, method='fdr')
+        pvals2 = p.adjust(pvals2, method='fdr')
+        good_pvals1 = pvals1 < thresh
+        good_pvals2 = pvals2 < thresh
+        very_good_pvals = good_pvals & (good_pvals1 | good_pvals2)
+        nrows = sum(very_good_pvals)
+        print(sprintf('Significant differences with significant Rs: %d', nrows))
+        if (nrows > 0) {
+            pvals2list = pval_connections[very_good_pvals]
+            corr12list = corr1[upper.tri(corr1)][very_good_pvals]
+            corr22list = corr2[upper.tri(corr2)][very_good_pvals]
+            cat('ROI1\t\t\t\t\t\t\t\tROI2\t\t\t\t\t\t\tPersistent\t\t\tRemission\t\t\tDiff pval\n')
+            for (i in 1:nrows) {
+                idx = which(corr1==corr12list[i] & corr2==corr22list[i], arr.ind=TRUE)
+                cat(sprintf("%s\t\t\t%s\t\t\t%.2f\t\t\t%.2f\t\t\t%.3f\n",
+                            colnames(corr1)[idx[1]],colnames(corr1)[idx[2]],
+                              corr12list[i],corr22list[i],pvals2list[i]))
+            }
         }
     }
 }
@@ -310,7 +397,11 @@ net2 = createNetwork(corr2, min_sparsity)
 b = betweenness(net2)
 bnorm2 = b/mean(b)
 diff_bt = bnorm1 - bnorm2
-res = permuteBetweeness(data1,data2,min_sparsity)
+if (delta) {
+    res = permuteDeltaBetweeness(data1,data2,data3,data4,min_sparsity)
+} else {
+    res = permuteBetweeness(data1,data2,min_sparsity)
+}
 x = seq(1,dim(corr1)[2])
 maxY = max(max(res$uci),max(diff_bt))
 minY = min(min(res$lci),min(diff_bt))
