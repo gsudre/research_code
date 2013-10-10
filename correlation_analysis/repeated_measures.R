@@ -1,5 +1,6 @@
 # combine all the data ot get approximated MACACC
 library(nlme)
+brain_data = c('dtL_cortex_SA_1473', 'dtR_cortex_SA_1473')
 txt = sprintf('%s[idx_base | idx_last,]', brain_data[1])
 for (i in 2:length(brain_data)) {
     txt = sprintf('%s, %s[idx_base | idx_last,]', txt, brain_data[i])
@@ -13,6 +14,10 @@ visit <- array(data='baseline',dim=length(idx))
 visit[idx_last] = 'last'
 visit = as.factor(visit)
 # compute model for all brain regions
+brain_data = c('dtL_thalamus_1473', 'dtR_thalamus_1473', 
+               'dtL_striatum_1473', 'dtR_striatum_1473',
+               #                'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473',
+               'dtL_gp', 'dtR_gp')
 for (i in brain_data) {
     cat('Working on ', i, '\n')
     eval(parse(text=sprintf('data=%s[idx_base | idx_last,]', i)))
@@ -29,6 +34,6 @@ for (i in brain_data) {
     }
     
     # save results to file
-    fname = sprintf('~/data/results/structural/repeatedMeasuresANOVA_%s.txt', i)
+    fname = sprintf('~/data/results/structural/repeatedMeasuresANOVA_approxCortex_%s.txt', i)
     write_vertices(res, fname, c('Slope.Fval', 'Slope.pval'))
 }

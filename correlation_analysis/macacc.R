@@ -1,6 +1,7 @@
 # combine all the data ot get approximated MACACC
 library(lawstat)
 
+brain_data = c('dtL_cortex_SA_1473', 'dtR_cortex_SA_1473')
 txt_base = sprintf('%s[idx_base,]', brain_data[1])
 txt_last = sprintf('%s[idx_last,]', brain_data[1])
 for (i in 2:length(brain_data)) {
@@ -20,6 +21,10 @@ approx = rowMeans(delta)
 group = group[idx_last]
 
 # compute model for all brain regions
+brain_data = c('dtL_thalamus_1473', 'dtR_thalamus_1473', 
+               'dtL_striatum_1473', 'dtR_striatum_1473',
+#                'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473',
+               'dtL_gp', 'dtR_gp')
 for (i in brain_data) {
     print(sprintf('Working on %s', i))
     eval(parse(text=sprintf('baseData=%s[idx_base,]', i)))
@@ -39,6 +44,6 @@ for (i in brain_data) {
     }
     
     # save results to file
-    fname = sprintf('~/data/results/structural/macacc_slopes_%s.txt', i)
+    fname = sprintf('~/data/results/structural/macacc_slopes_approxCortex_%s.txt', i)
     write_vertices(res, fname, c('Slope.Fval', 'Slope.pval', 'Levene.Fval', 'Levene.pval'))
 }
