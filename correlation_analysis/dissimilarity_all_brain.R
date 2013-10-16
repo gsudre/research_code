@@ -108,11 +108,17 @@ idxr = striatum$group=="remission" & striatum$visit=="baseline"
 idxn = striatum$group=="NV" & striatum$visit=="baseline"
 
 pmatb = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-             cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
+             gp[idxp,4:dim(gp)[2]])
 rmatb = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-             cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
+             gp[idxr,4:dim(gp)[2]])
 nmatb = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-             cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
+             gp[idxn,4:dim(gp)[2]])
+# pmatb = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
+#               cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
+# rmatb = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
+#               cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
+# nmatb = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
+#               cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
 
 pcorb = cor(pmatb)
 rcorb = cor(rmatb)
@@ -150,11 +156,17 @@ idxr = striatum$group=="remission" & striatum$visit=="last"
 idxn = striatum$group=="NV" & striatum$visit=="last"
 
 pmatl = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-             cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
+             gp[idxp,4:dim(gp)[2]])
 rmatl = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-             cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
+             gp[idxr,4:dim(gp)[2]])
 nmatl = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-             cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
+             gp[idxn,4:dim(gp)[2]])
+# pmatl = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
+#               cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
+# rmatl = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
+#               cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
+# nmatl = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
+#               cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
 
 pcorl = cor(pmatl)
 rcorl = cor(rmatl)

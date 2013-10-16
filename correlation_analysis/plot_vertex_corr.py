@@ -21,8 +21,8 @@ elif method=='last':
     mat = res1['allcorrs'][1] - res2['allcorrs'][1]
 elif method=='delta':
     mat = (res1['allcorrs'][1] - res1['allcorrs'][0]) - (res2['allcorrs'][1] - res2['allcorrs'][0])
-    cmin=-1.5
-    cmax=1.5
+    #cmin=-1.5
+    #cmax=1.5
 else:
     print('Error: do not recognize method.')
     exit()

@@ -229,7 +229,7 @@ for (s in sparsity) {
     gamma2[cnt] = getGamma(net2)
     cnt = cnt + 1
 }
-maxY = max(ceiling(max(gamma1)),ceiling(max(gamma2)))
+maxY = max(ceiling(max(gamma1,na.rm=T)),ceiling(max(gamma2,na.rm=T)))
 par(mfrow=c(1,2))
 plot(sparsity, lambda1, type="l", col='black', ylim=c(0, maxY), lwd=2)
 lines(sparsity, gamma1, type="l", col='grey', lwd=2)
@@ -239,6 +239,10 @@ plot(sparsity, lambda2, type="l", col='black', ylim=c(0, maxY), lwd=2)
 lines(sparsity, gamma2, type="l", col='grey', lwd=2)
 legend('topright', c('Lambda', 'Gamma'), col=c('black','grey'), lwd=2)
 title('Small-Worldness, Remission')
+# reconfigure sparsity to keep sigma > 1
+sigma1 = gamma1/lambda1
+sigma2 = gamma2/lambda2
+sparsity = sparsity[sigma1>0 & sigma2>0 & !is.na(sigma1) & !is.na(sigma2)]
 
 #### Figure 3A ####
 cc1 = vector(length=length(sparsity))

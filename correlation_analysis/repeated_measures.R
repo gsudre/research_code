@@ -1,6 +1,6 @@
 # combine all the data ot get approximated MACACC
 library(nlme)
-brain_data = c('dtL_cortex_SA_1473', 'dtR_cortex_SA_1473')
+# brain_data = c('dtL_cortex_SA_1473', 'dtR_cortex_SA_1473')
 txt = sprintf('%s[idx_base | idx_last,]', brain_data[1])
 for (i in 2:length(brain_data)) {
     txt = sprintf('%s, %s[idx_base | idx_last,]', txt, brain_data[i])
@@ -28,12 +28,17 @@ for (i in brain_data) {
     for (v in 1:nverts) {
         cat('\t', v, ' / ', nverts, '\n')
         df = data.frame(vert=data[,v], seed=approx, group=group, visit=visit, subject=subject)
-        fit = lme(seed ~ vert*group*visit, random=~1|subject/visit, data=df)
-        res[v,1] = anova(fit)$"F-value"[8]
-        res[v,2] = anova(fit)$"p-value"[8]
+        fit = try(lme(seed ~ vert*group*visit, random=~1|subject/visit, data=df))
+        if (length(fit)>1) {
+            res[v,1] = anova(fit)$"F-value"[8]
+            res[v,2] = anova(fit)$"p-value"[8]
+        } else {
+            res[v,1] = 0
+            res[v,2] = 1
+        }
     }
     
     # save results to file
-    fname = sprintf('~/data/results/structural/repeatedMeasuresANOVA_approxCortex_%s.txt', i)
+    fname = sprintf('~/data/results/structural/repeatedMeasuresANOVA_subcortical_matched_NVVSremission_%s.txt', i)
     write_vertices(res, fname, c('Slope.Fval', 'Slope.pval'))
 }

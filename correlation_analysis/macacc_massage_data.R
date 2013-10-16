@@ -11,6 +11,7 @@ write_vertices <- function (data, filename, cnames)
 # use only subjects with more than one scan
 load('~/data/structural/just_gf1473_dsm45.RData')
 idx = gf_1473$outcome.dsm4=="NV" | gf_1473$outcome.dsm4=="remission" | gf_1473$outcome.dsm4=="persistent"
+idx = gf_1473$outcome.dsm4=="persistent" | gf_1473$outcome.dsm4=="NV"
 idx_base <- array(data=F,dim=length(idx))
 idx_last <- array(data=F,dim=length(idx))
 # get rid of scans that don't pass our QC
@@ -40,7 +41,7 @@ load('~/data/structural/GP_1473.RData')
 load('~/data/structural/DATA_1473.RData')
 brain_data = c('dtL_thalamus_1473', 'dtR_thalamus_1473', 
                'dtL_striatum_1473', 'dtR_striatum_1473',
-               'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473',
+#                'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473',
                'dtL_gp', 'dtR_gp')
 
 # regress out all contributions of age and gender, and put subjects in the first dimension
