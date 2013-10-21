@@ -5,14 +5,14 @@ import pylab as pl
 
 # Note that we need to plot differences because if we just plot one group most
 # vertices inside the same ROI will be highly correlated!
-g1 = 'NV'
+g1 = 'remission'
 g2 = 'persistent'
 method = 'delta'  # 'baseline','last','delta'
 # we need to decimate the correlation matrix, otherwise it cannot plot it
 decim = 5
 
-res1 = np.load('%s/data/results/structural/verts_corr_%s.npz'%(os.path.expanduser('~'), g1))
-res2 = np.load('%s/data/results/structural/verts_corr_%s.npz'%(os.path.expanduser('~'), g2))
+res1 = np.load('%s/data/results/structural/verts_corr_matchdiff_dsm4_%s.npz'%(os.path.expanduser('~'), g1))
+res2 = np.load('%s/data/results/structural/verts_corr_matchdiff_dsm4_%s.npz'%(os.path.expanduser('~'), g2))
 cmin=-1.2
 cmax=1.2
 if method=='baseline':
@@ -53,5 +53,5 @@ for item in (ax.get_xticklabels() + ax.get_yticklabels()):
 #pl.show()
 fig.set_size_inches([ 17.45,   9.8 ])
 pl.subplots_adjust(left=0, right=1.0, bottom=0.15, top=.95)
-pl.savefig('%s/data/results/structural/diff_corr_%svs%s_%s.png' %
+pl.savefig('%s/data/results/structural/diff_corr_matchdiff_dsm4_%svs%s_%s.png' %
             (os.path.expanduser('~'), g1, g2, method), dpi=100)

@@ -76,10 +76,10 @@ cortex_labels = [['Occipital', [132, 38, 63, 97, 175, 112, 251, 98, 154, 37, 54,
                 ['Frontal', [10, 2, 75, 5, 6, 1, 7, 70, 50, 15, 80, 90, 85, 27]],
                 ['Cingulate', [7, 27]]]
 
-group = 'remission' #, 'NV', 'persistent', 'remission'
+group = 'NV' #, 'NV', 'persistent', 'remission'
 brain = ['striatum', 'gp', 'thalamus']
 hemi = ['L', 'R']
-time = ['baseline', 'last']
+time = ['base', 'last']
 init_verts = 10e5
 init_subjs = 100
 
@@ -95,7 +95,7 @@ for t in time:
         print 'Working on ' + b
         for h in hemi:
             data_roi_labels, data_roi_verts = load_rois('%s/data/structural/labels/%s_%s_labels.txt'%(os.path.expanduser('~'), b, h), b)
-            data = load_structural('%s/data/structural/%s_%s%s_%s_noAge_SA_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_on18_dsm4.csv' % (os.path.expanduser('~'), t, b, h, group))
+            data = load_structural('%s/data/structural/%s_%s%s_%s_SA_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm4.csv' % (os.path.expanduser('~'), t, b, h, group))
             num_subjects = data.shape[0]
             X, vert_labels = construct_matrix(data, data_roi_verts, data_roi_labels, h)
             raw[0:num_subjects,cnt:(cnt+len(vert_labels))] = X
@@ -119,5 +119,5 @@ for t in time:
 #        for y in range(x, num_vertices):
 #            corrs.append(np.float16(scipy.stats.pearsonr(raw[:, x], raw[:, y])[0]))
 #    all_corrs.append(corrs)
-np.savez('%s/data/results/structural/verts_corr_noAge_%s'%(os.path.expanduser('~'), group),
+np.savez('%s/data/results/structural/verts_corr_matchdiff_dsm4_%s'%(os.path.expanduser('~'), group),
         allcorrs=all_corrs, verts=verts)
