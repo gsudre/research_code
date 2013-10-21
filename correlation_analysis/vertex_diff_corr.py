@@ -84,7 +84,6 @@ init_verts = 10e5
 init_subjs = 100
 
 all_corrs = []
-matched_gf = np.recfromcsv('/Users/sudregp/data/structural/gf_1473_dsm45_matched_on18_dsm4.csv')
 for t in time:
     # create huge array so we can add all the data and thenresize it appropriately
     raw = np.empty([init_subjs, init_verts],dtype=np.float16)
@@ -96,10 +95,7 @@ for t in time:
         print 'Working on ' + b
         for h in hemi:
             data_roi_labels, data_roi_verts = load_rois('%s/data/structural/labels/%s_%s_labels.txt'%(os.path.expanduser('~'), b, h), b)
-            if t == 'baseline':
-                data = load_structural('%s/data/structural/%s_%s%s_SA_%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_lt18.csv' % (os.path.expanduser('~'), t, b, h, group))
-            else:
-                data = load_structural('%s/data/structural/%s_%s%s_SA_%s_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_mt18.csv' % (os.path.expanduser('~'), t, b, h, group))
+            data = load_structural('%s/data/structural/%s_%s%s_%s_noAge_SA_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_on18_dsm4.csv' % (os.path.expanduser('~'), t, b, h, group))
             num_subjects = data.shape[0]
             X, vert_labels = construct_matrix(data, data_roi_verts, data_roi_labels, h)
             raw[0:num_subjects,cnt:(cnt+len(vert_labels))] = X
@@ -123,5 +119,5 @@ for t in time:
 #        for y in range(x, num_vertices):
 #            corrs.append(np.float16(scipy.stats.pearsonr(raw[:, x], raw[:, y])[0]))
 #    all_corrs.append(corrs)
-np.savez('%s/data/results/structural/verts_corr_%s'%(os.path.expanduser('~'), group),
+np.savez('%s/data/results/structural/verts_corr_noAge_%s'%(os.path.expanduser('~'), group),
         allcorrs=all_corrs, verts=verts)
