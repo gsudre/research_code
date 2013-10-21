@@ -32,6 +32,7 @@ for (p in 1:nperms) {
     perm_labels <- sample.int(length(group), replace = FALSE)
     perm_group = group[perm_labels]
     perm_visit = visit[perm_labels]
+    perm_subject = subject[perm_labels]
     cnt = 1
     for (i in brain_data) {
         eval(parse(text=sprintf('data=%s[idx_base | idx_last,]', i)))
@@ -41,7 +42,7 @@ for (p in 1:nperms) {
         
         # do all the necessary tests (slope, variance)
         for (v in 1:nverts) {
-            df = data.frame(vert=data[,v], seed=approx, group=perm_group, visit=perm_visit, subject=subject)
+            df = data.frame(vert=data[,v], seed=approx, group=perm_group, visit=perm_visit, subject=perm_subject)
             fit = try(lme(seed ~ vert*group*visit, random=~1|subject/visit, data=df))
             if (length(fit)>1) {
                 res[v,1] = anova(fit)$"F-value"[8]
