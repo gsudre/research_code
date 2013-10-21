@@ -27,7 +27,7 @@ fit_names = vector(length=length(brain_data))
 
 for (p in 1:nperms) {
     cat('Working on perm', p, '/', nperms, '\n')
-    perm_labels <- sample.int(length(groups), replace = FALSE)
+    perm_labels <- sample.int(length(group), replace = FALSE)
     perm_group = group[perm_labels]
     perm_visit = visit[perm_labels]
     cnt = 1
