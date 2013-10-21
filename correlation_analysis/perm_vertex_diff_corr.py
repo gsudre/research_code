@@ -96,7 +96,7 @@ for t in time:
             print 'Working on ' + b + ' for ' + group
             for h in hemi:
                 data_roi_labels, data_roi_verts = load_rois('%s/data/structural/labels/%s_%s_labels.txt'%(os.path.expanduser('~'), b, h), b)
-                data = load_structural('%s/data/structural/%s_%s%s_%s_noAge_SA_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_on18_dsm4.csv' % (os.path.expanduser('~'), t, b, h, group))
+                data = load_structural('%s/data/structural/%s_%s%s_%s_SA_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm4.csv' % (os.path.expanduser('~'), t, b, h, group))
                 group_subjects = data.shape[0]
                 X, vert_labels = construct_matrix(data, data_roi_verts, data_roi_labels, h)
                 raw[num_subjects:(num_subjects+group_subjects),cnt:(cnt+len(vert_labels))] = X
