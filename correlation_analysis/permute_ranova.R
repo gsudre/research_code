@@ -1,6 +1,8 @@
 nperms = 10
 source('~/research_code/correlation_analysis/macacc_massage_data_matched.R')
 
+set.seed( as.integer((as.double(Sys.time())*1000+Sys.getpid()) %% 2^31) )
+
 fname_root = 'perm_repeatedMeasuresANOVA_subcortical_matchedDiffDSM4_perVSnv'
 max_Fval = vector(mode="numeric", length=nperms)
 
