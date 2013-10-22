@@ -42,7 +42,7 @@ idx_last = idx & idx_last
 # later scripts will need this for compatibility
 brain_data = c('dtL_thalamus_1473', 'dtR_thalamus_1473', 
                'dtL_striatum_1473', 'dtR_striatum_1473',
-#                               'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473',
+               'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473',
                'dtL_gp', 'dtR_gp')
 group = as.factor(gf_1473[idx_last | idx_base,]$outcomedsm4)
 subject = as.factor(gf_1473[idx_last | idx_base,]$personx)

@@ -8,8 +8,12 @@ def write_bv(X, filename):
     # start by composing the headers
     header = '<header>\n<matrix>\n</matrix>\n</header>\n'
 
-    # for every variable (columns), add a header called var#
-    for v in range(X.shape[1]):
+    # for every variable (columns), add a header called var
+    if len(X.shape)==1:
+        nvars = 1
+    else:
+        nvars = X.shape[1]
+    for v in range(nvars):
         header = header + 'var' + str(v + 1) + ' '
 
     # write the matrix with the headr from above

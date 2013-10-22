@@ -6,7 +6,7 @@ import pylab as pl
 # Note that we need to plot differences because if we just plot one group most
 # vertices inside the same ROI will be highly correlated!
 g1 = 'remission'
-g2 = 'persistent'
+g2 = 'NV'
 method = 'delta'  # 'baseline','last','delta'
 # we need to decimate the correlation matrix, otherwise it cannot plot it
 decim = 5
