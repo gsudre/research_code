@@ -34,7 +34,8 @@ for subj_dir in subjs:
             # find the line that has the word 'rage', then parse out the name of the folder that contains the data
             fid = open(txtfile[0])
             for line in fid:
-                if line.lower().find('prage') > 0:
+                # not all MPRages start with prage, and rage by itself can match Storage
+                if line.lower().find('rage_') > 0:
                     m_obj = re.search("Series:(\S+)", line)
                     # ignore any commas we might end up selecting
                     if m_obj.group(1)[-1] == ',':

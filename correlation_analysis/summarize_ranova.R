@@ -1,10 +1,10 @@
-fname = "~/data/results/structural/repeatedMeasuresANOVA_Cortex_matchedDiffDSM4_perVSnv_%s.txt"
+fname = "~/data/results/structural/repeatedMeasuresANOVA_subcortical_matchedDiffDSM4_perVSnv_%s.txt"
 
 rft = 4.36 # threshold obtained using Random Field Theory
-brain_data = c('dtL_thalamus_1473', 'dtR_thalamus_1473')
-#                'dtL_striatum_1473', 'dtR_striatum_1473',
+brain_data = c('dtL_thalamus_1473', 'dtR_thalamus_1473',
+               'dtL_striatum_1473', 'dtR_striatum_1473',
 #                'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473',
-#                'dtL_gp', 'dtR_gp')
+               'dtL_gp', 'dtR_gp')
 a = read.table(
     sprintf(fname, brain_data[1]),
     skip=3)
@@ -38,7 +38,7 @@ cat('\nMinimum uncorrected F-val:', min(fvals[pvals<.05]))
 cat('\nGood RFT pvals:', sum(fvals>frft), '/', length(fvals))
 cat('\nMinimum RFT F-val:', frft, '(Z score:', rft, ')')
 cat('\nGood FDR pvals:', sum(adj_pvals<.05), '/', length(adj_pvals))
-cat('\nMinimum FDR F-val:', min(fvals[adj_pvals<.05]))
+cat('\nMinimum FDR F-val:', min(fvals[adj_pvals<.]))
 # cat('\nGood uncorrected pvals variance:', sum(pvalsv<.05), '/', length(pvalsv))
 # cat('\nMinimum uncorrected F-val variance:', min(fvalsv[pvalsv<.05]))
 # cat('\nGood corrected pvals variance:', sum(adj_pvalsv<.05), '/', length(adj_pvalsv))

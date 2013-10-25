@@ -1,13 +1,13 @@
-fname_root = 'repeatedMeasuresANOVA_toOtherSubcortex_matchedDiffDSM4_perVSnv'
+fname_root = 'repeatedMeasuresANOVA_subcortical_matchedDiffDSM5_2to1_perVSnv'
 
 # combine all the data ot get approximated MACAC
 library(nlme)
-brain_data = c(
-#                 'dtL_thalamus_1473', 'dtR_thalamus_1473', 
-               'dtL_striatum_1473', 'dtR_striatum_1473',
-#               'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473'
-               'dtL_gp', 'dtR_gp'
-                )
+# brain_data = c(
+# #                 'dtL_thalamus_1473', 'dtR_thalamus_1473', 
+#                'dtL_striatum_1473', 'dtR_striatum_1473',
+# #               'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473'
+#                'dtL_gp', 'dtR_gp'
+#                 )
 txt = sprintf('%s[idx_base | idx_last,]', brain_data[1])
 for (i in 2:length(brain_data)) {
     txt = sprintf('%s, %s[idx_base | idx_last,]', txt, brain_data[i])
@@ -21,13 +21,13 @@ visit <- array(data='baseline',dim=length(idx))
 visit[idx_last] = 'last'
 visit = as.factor(visit)
 # compute model for all brain regions
-brain_data = c(
-                    'dtL_thalamus_1473', 'dtR_thalamus_1473'
-    #                'dtL_striatum_1473', 'dtR_striatum_1473',
-#     'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473',
-    #                'dtL_gp', 'dtR_gp'
-             )
-fit_names = vector(length=length(brain_data))
+# brain_data = c(
+#                     'dtL_thalamus_1473', 'dtR_thalamus_1473'
+#     #                'dtL_striatum_1473', 'dtR_striatum_1473',
+# #     'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473',
+#     #                'dtL_gp', 'dtR_gp'
+#              )
+# fit_names = vector(length=length(brain_data))
 cnt = 1
 for (i in brain_data) {
     cat('Working on ', i, '\n')
