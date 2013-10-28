@@ -14,21 +14,28 @@ import os
 import glob
 import tarfile
 import shutil
-import numpy as np
 import re
 import pdb
 
-email = '/Users/sudregp/tmp/email2.txt'
-csvOutput = '/Users/sudregp/tmp/scans.csv'
+# File summarizing the scaning day(s)
+email = '/Users/sudregp/tmp/email.txt'
+# Where to output the scan records
+csvOutput = '/Users/sudregp/tmp/scans2.csv'
+# where to find .tar.gz with downloaded MR data
 tmpFolder = '/Users/sudregp/Downloads/'
-mrFolder = '/Users/sudregp/tmp/MR_data/' #/Volumes/neuro/MR_data/'
-symlinkFolder = '/Users/sudregp/tmp/data_by_maskid/' #/Volumes/neuro/data_by_maskID/'
+# target folder to upack the data
+mrFolder = '/Volumes/neuro/MR_data/'
+# where to place symbolic links
+symlinkFolder = '/Volumes/neuro/data_by_maskID/'
 
+# type of modalities we scan
 # note that these names need to be found in the README file!
 modInReadme = ['rage', 'fmri', 'rest', 'edti', 'clinical', 'fat_sat']  
+# how they should be called in the Scan record (same order!)
 modInCSV = ['MPRAGE', 'stop task', 'rest', 'eDTI', 'clinical', 'T2']
 
 
+# Function that checks whether we scanned a certain type of data (dtype) in a given data folder
 def check_for_data(dtype, folder):
     dataFolder = glob.glob(folder + '/20*')
     # get the name of the text file
@@ -56,7 +63,7 @@ subjectScore = None
 subjectTaskId = None
 for line in fid:
     # check if it's a mask id
-    match = re.search("mask id: (\S+)", line.lower())
+    match = re.search("mask id: ncr(\S+)", line.lower())
     if match is not None:
         maskid = int(match.group(1))
 
@@ -188,7 +195,10 @@ for fidx, file in enumerate(dicoms):
     print 'Creating symlinks...'
     linkName = symlinkFolder + ('%04.0d' % curMaskId)
     source = '../MR_data/' + folder2move[0].split('/')[-2] + '/' + str(curMaskId)
-    os.symlink(source, linkName)
+    if not os.path.exists(linkName):
+        os.symlink(source, linkName)
+    else:
+        print 'WARNING: Link already exists!'    
 
     # get the information we'll need for the CSV file
     for midx, mod in enumerate(modInReadme):
