@@ -14,13 +14,11 @@ import os
 import glob
 import tarfile
 import shutil
-import re
+import numpy as np
 import pdb
 
-# File summarizing the scaning day(s)
-email = '/Users/sudregp/tmp/email.txt'
 # Where to output the scan records
-csvOutput = '/Users/sudregp/tmp/scans2.csv'
+csvOutput = '/Users/sudregp/tmp/scans.csv'
 # where to find .tar.gz with downloaded MR data
 tmpFolder = '/Users/sudregp/Downloads/'
 # target folder to upack the data
@@ -50,79 +48,20 @@ def check_for_data(dtype, folder):
     return -1
 
 
-# parse the e-mail Dan sends
-# MAKE SURE THERE ARE ONLY SUBJECTS WITH NEUROIMAGES IN THE EMAIL!
-fid = open(email, 'r')
-names = {}
-scores = {}
-ages = {}
-taskIDs = {}
-subjectNames = None
-subjectAge = None
-subjectScore = None
-subjectTaskId = None
-for line in fid:
-    # check if it's a mask id
-    match = re.search("mask id: ncr(\S+)", line.lower())
-    if match is not None:
-        maskid = int(match.group(1))
+# find out what's the next mask id to use
+maskid_dirs = glob.glob(symlinkFolder + '*')
+curMaskId = [int(m.split('/')[-1]) for m in maskid_dirs]
+curMaskId = max(curMaskId) + 1
 
-    # check if it's a task
-    match = re.search("task id: (\S+)", line.lower())
-    if match is not None:
-        subjectTaskId = match.group(1)
-    
-    # check if it's a MPRAGE score
-    match = re.search("mprage score: (\S+)", line.lower())
-    if match is not None:
-        subjectScore = match.group(1)
-
-    # check if it's the subject's info
-    match = re.search("([\w ]*) \((.*)\)", line)
-    if match is not None:
-        subjectNames = match.group(1).split(' ')
-        subjectAge = 'young'
-        for word in match.group(2).split(' '):
-            if word == 'adult':
-                subjectAge = 'adult'
-
-    # just finished a subject
-    if line == '\n':
-        names[maskid] = subjectNames
-        scores[maskid] = subjectScore
-        ages[maskid] = subjectAge
-        taskIDs[maskid] = subjectTaskId
-        subjectNames = None
-        subjectAge = None
-        subjectScore = None
-        subjectTaskId
-fid.close()
-
-# make sure we add the last subject, in case the file didn't end with a new line
-if line != '\n':
-    names[maskid] = subjectNames
-    scores[maskid] = subjectScore
-    ages[maskid] = subjectAge
-    taskIDs[maskid] = subjectTaskId
-
-# match the DICOMs we find in the folder to their info from the e-mail
+# assign a mask ID for each DICOM we find
 dicoms = glob.glob(tmpFolder + '/*-DICOM*')
 file2maskid = []
 print 'Found these DICOM files in ' + tmpFolder + ':\n'
 for file in dicoms:
-    found = False
     print file
-    subjectName = file.split('-')[0].split('/')[-1]
-    # find the mask id sent in the email
-    for key, val in names.iteritems():
-        # here we assume names only stores first and last name!
-        if (subjectName.find(val[0].upper()) >= 0 and
-           subjectName.find(val[1].upper()) >= 0):
-            file2maskid.append(key)
-            print 'Mask ID:', key
-            found = True
-    if not found:
-        print 'ERROR: Could not find mask ID in e-mail!'
+    file2maskid.append(curMaskId)
+    print 'Mask ID:', curMaskId
+    curMaskId += 1
 
 raw_input('\nPress any key to start sorting, or Ctrl+C to quit...')
 
@@ -134,6 +73,7 @@ scanners = []
 maskIDs = []
 taskIDsCSV = []
 mprageQuality = []
+notes = []
 
 # while we still have subjects to uncompress
 for fidx, file in enumerate(dicoms):
@@ -180,10 +120,10 @@ for fidx, file in enumerate(dicoms):
         respData = glob.glob(targetFolder + '/E' + scanId + '/Resp_*')
         if len(ecgData) != len(respData):
             print '\tDifferent numbers of respiration and ECG data!'
-        elif len(ecgData) == 1 and ages[curMaskId]=='adult':
+        elif len(ecgData) == 1:
             print '\tOnly found one set of physiological data!'
         # adults should have 4 + 1 physiological files
-        elif len(ecgData) != 5 and ages[curMaskId]=='adult':  
+        elif len(ecgData) != 5:  
             print '\tFound unexpected number of physiological files (%d)!' % len(ecgData)
 
     # moving extracted files inside maskId folder
@@ -208,14 +148,19 @@ for fidx, file in enumerate(dicoms):
             datesCollected.append(file.split('-')[2])
             scanTypes.append(modInCSV[midx])
             scanners.append('3TA')
-            if mod == 'fmri' and taskIDs[curMaskId] is not None:
-                taskIDsCSV.append(taskIDs[curMaskId])
-            else:
-                taskIDsCSV.append('')
-            if mod == 'rage' and scores[curMaskId] is not None:
-                mprageQuality.append(scores[curMaskId])
-            else:
-                mprageQuality.append('')
+            taskIDsCSV.append('')
+            mprageQuality.append('')
+            if mod=='edti':
+                # checking the duration of cdi99 if any
+                edti99_file = targetFolder + '/E' + scanId + '/cdiflist99'
+                if os.path.exists(edti99_file):
+                    e99 = np.genfromtxt(edti99_file)
+                    nslices = e99.shape[0]
+                    e99Duration = nslices * 18.696
+                    notes.append('edti99 duration: %.2f sec.' % e99Duration)
+                else:
+                    notes.append('No edti99 necessary')
+
 
 headers = 'MRN,Date,Type,Scanner,Mask ID,MPRAGE quality,Task / MEG ID,Notes\n'
 fid = open(csvOutput, 'w')
@@ -223,7 +168,7 @@ fid.write(headers)
 for i in range(len(subjectMRNs)):
     fid.write(subjectMRNs[i] + ',' + datesCollected[i] + ',' + scanTypes[i]
               + ',' + scanners[i] + ',' + str(maskIDs[i]) + ','
-              + mprageQuality[i] + ',' + taskIDsCSV[i] + '\n')
+              + mprageQuality[i] + ',' + taskIDsCSV[i] + ',' + notes[i] + '\n')
 fid.close()
 
 print 'Done storing files in server and outputting CSV.'
