@@ -154,12 +154,14 @@ for fidx, file in enumerate(dicoms):
                 # checking the duration of cdi99 if any
                 edti99_file = targetFolder + '/E' + scanId + '/cdiflist99'
                 if os.path.exists(edti99_file):
-                    e99 = np.genfromtxt(edti99_file)
+                    e99 = np.genfromtxt(edti99_file, skip_header=1)
                     nslices = e99.shape[0]
                     e99Duration = nslices * 18.696
                     notes.append('edti99 duration: %.2f sec.' % e99Duration)
                 else:
-                    notes.append('No edti99 necessary')
+                    notes.append('No edti99 used.')
+            else:
+                notes.append('')
 
 
 headers = 'MRN,Date,Type,Scanner,Mask ID,MPRAGE quality,Task / MEG ID,Notes\n'
