@@ -83,6 +83,7 @@ hemi = ['L', 'R']
 time = ['base', 'last']
 init_verts = 10e5
 init_subjs = 100
+subjects_per_group = {}
 
 raw_data = []
 for t in time:
@@ -102,6 +103,7 @@ for t in time:
                 raw[num_subjects:(num_subjects+group_subjects),cnt:(cnt+len(vert_labels))] = X
                 cnt += len(vert_labels)
         num_subjects += group_subjects
+        subjects_per_group[group] = group_subjects
     # trimming the matric to the correct number of vertices and subjects
     print 'Resizing matrices'
     num_vertices = cnt
@@ -110,22 +112,30 @@ for t in time:
 diff_base = []
 diff_last = []
 diff_delta = []
-iu = np.triu_indices(raw_data[0].shape[1])
+diff_base_ed = []
+diff_last_ed = []
+diff_delta_ed = []
+subj_split = subjects_per_group[groups[0]]
+iu = np.triu_indices(raw_data[0].shape[1], k=1)
 for p in range(num_perms):
     print 'Perm', p+1, '/', num_perms
     subj_labels = np.random.permutation(num_subjects)
-    cor1b = np.float16(np.corrcoef(raw_data[0][subj_labels[:num_subjects/2],:],rowvar=0))
-    cor2b = np.float16(np.corrcoef(raw_data[0][subj_labels[num_subjects/2:],:],rowvar=0))
+    cor1b = np.float16(np.corrcoef(raw_data[0][subj_labels[:subj_split], :], rowvar=0))
+    cor2b = np.float16(np.corrcoef(raw_data[0][subj_labels[subj_split:], :], rowvar=0))
     diff_base.append(1 - stats.spearmanr(cor1b[iu], cor2b[iu])[0])
+    diff_base_ed.append(np.linalg.norm(cor1b[iu]-cor2b[iu]))
 
-    cor1l = np.float16(np.corrcoef(raw_data[1][subj_labels[:num_subjects/2],:],rowvar=0))
-    cor2l = np.float16(np.corrcoef(raw_data[1][subj_labels[num_subjects/2:],:],rowvar=0))
+    cor1l = np.float16(np.corrcoef(raw_data[1][subj_labels[:subj_split], :], rowvar=0))
+    cor2l = np.float16(np.corrcoef(raw_data[1][subj_labels[subj_split:], :], rowvar=0))
     diff_last.append(1 - stats.spearmanr(cor1l[iu], cor2l[iu])[0])
+    diff_last_ed.append(np.linalg.norm(cor1l[iu]-cor2l[iu]))
 
     delta1 = cor1l - cor1b
     delta2 = cor2l - cor2b
     diff_delta.append(1 - stats.spearmanr(delta1[iu], delta2[iu])[0])
+    diff_delta_ed.append(np.linalg.norm(delta1[iu]-delta2[iu]))
 
 np.savez('%s/data/results/structural/perms/perm_verts_corr_%sVS%s_%04d'%(
         os.path.expanduser('~'), groups[0], groups[1], np.random.randint(0, 9999)),
-        diff_base=diff_base, diff_last=diff_last, diff_delta=diff_delta)
+        diff_base=diff_base, diff_last=diff_last, diff_delta=diff_delta,
+        diff_base_ed=diff_base_ed, diff_last_ed=diff_last_ed, diff_delta_ed=diff_delta_ed)
