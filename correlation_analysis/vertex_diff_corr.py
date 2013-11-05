@@ -76,13 +76,14 @@ cortex_labels = [['Occipital', [132, 38, 63, 97, 175, 112, 251, 98, 154, 37, 54,
                 ['Frontal', [10, 2, 75, 5, 6, 1, 7, 70, 50, 15, 80, 90, 85, 27]],
                 ['Cingulate', [7, 27]]]
 
-group = 'NV' #, 'NV', 'persistent', 'remission'
+group = 'remission' #, 'NV', 'persistent', 'remission'
 brain = ['striatum', 'gp', 'thalamus']
 hemi = ['L', 'R']
 time = ['base', 'last']
 init_verts = 10e5
 init_subjs = 100
 
+all_data = []
 all_corrs = []
 for t in time:
     # create huge array so we can add all the data and thenresize it appropriately
@@ -95,7 +96,7 @@ for t in time:
         print 'Working on ' + b
         for h in hemi:
             data_roi_labels, data_roi_verts = load_rois('%s/data/structural/labels/%s_%s_labels.txt'%(os.path.expanduser('~'), b, h), b)
-            data = load_structural('%s/data/structural/%s_%s%s_%s_SA_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm4.csv' % (os.path.expanduser('~'), t, b, h, group))
+            data = load_structural('%s/data/structural/%s_%s%s_%s_SA_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm5_2to1.csv' % (os.path.expanduser('~'), t, b, h, group))
             num_subjects = data.shape[0]
             X, vert_labels = construct_matrix(data, data_roi_verts, data_roi_labels, h)
             raw[0:num_subjects,cnt:(cnt+len(vert_labels))] = X
@@ -109,15 +110,10 @@ for t in time:
 
     print 'Computing correlations'
     # when we exclude the cortex, we can compute all at once
-    all_corrs.append(np.float16(np.corrcoef(raw,rowvar=0)))
-#    # when we're done gathering all the data, compute the correlations
-#    print 'Computing correlations\n'
-#    num_vertices = raw.shape[1]
-#    corrs = []
-#    for x in range(num_vertices):
-#        print 'vertex', x, '/', num_vertices
-#        for y in range(x, num_vertices):
-#            corrs.append(np.float16(scipy.stats.pearsonr(raw[:, x], raw[:, y])[0]))
-#    all_corrs.append(corrs)
-np.savez('%s/data/results/structural/verts_corr_matchdiff_dsm4_%s'%(os.path.expanduser('~'), group),
-        allcorrs=all_corrs, verts=verts)
+    corrs = np.float16(np.corrcoef(raw,rowvar=0))
+    np.savez('%s/data/results/structural/verts_%sCorr_matchdiff_dsm5_2to1_%s'%
+            (os.path.expanduser('~'), t, group), corrs=corrs, verts=verts)
+    all_data.append(raw)
+corrs = np.float16(np.corrcoef(all_data[1]-all_data[0],rowvar=0))
+np.savez('%s/data/results/structural/verts_deltaCorr_matchdiff_dsm5_2to1_%s'%(os.path.expanduser('~'), group),
+        corrs=corrs, verts=verts)
