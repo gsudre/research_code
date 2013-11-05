@@ -78,7 +78,7 @@ cortex_labels = [['Occipital', [132, 38, 63, 97, 175, 112, 251, 98, 154, 37, 54,
 
 groups = ['NV', 'persistent']
 num_perms = 10
-brain = ['thalamus', 'striatum', 'gp']
+brain = ['striatum', 'gp', 'thalamus']
 hemi = ['L', 'R']
 time = ['base', 'last']
 init_verts = 10e5
@@ -96,7 +96,7 @@ for t in time:
             print 'Working on ' + b + ' for ' + group
             for h in hemi:
                 data_roi_labels, data_roi_verts = load_rois('%s/data/structural/labels/%s_%s_labels.txt'%(os.path.expanduser('~'), b, h), b)
-                data = load_structural('%s/data/structural/%s_%s%s_%s_SA_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm4.csv' % (os.path.expanduser('~'), t, b, h, group))
+                data = load_structural('%s/data/structural/%s_%s%s_%s_SA_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm5_2to1.csv' % (os.path.expanduser('~'), t, b, h, group))
                 group_subjects = data.shape[0]
                 X, vert_labels = construct_matrix(data, data_roi_verts, data_roi_labels, h)
                 raw[num_subjects:(num_subjects+group_subjects),cnt:(cnt+len(vert_labels))] = X
@@ -112,7 +112,7 @@ diff_last = []
 diff_delta = []
 iu = np.triu_indices(raw_data[0].shape[1])
 for p in range(num_perms):
-    print 'Perm', p, '/', num_perms
+    print 'Perm', p+1, '/', num_perms
     subj_labels = np.random.permutation(num_subjects)
     cor1b = np.float16(np.corrcoef(raw_data[0][subj_labels[:num_subjects/2],:],rowvar=0))
     cor2b = np.float16(np.corrcoef(raw_data[0][subj_labels[num_subjects/2:],:],rowvar=0))
@@ -126,6 +126,6 @@ for p in range(num_perms):
     delta2 = cor2l - cor2b
     diff_delta.append(1 - stats.spearmanr(delta1[iu], delta2[iu])[0])
 
-np.savez('%s/data/results/structural/perm_verts_corr_%sVS%s_%04d'%(
+np.savez('%s/data/results/structural/perms/perm_verts_corr_%sVS%s_%04d'%(
         os.path.expanduser('~'), groups[0], groups[1], np.random.randint(0, 9999)),
         diff_base=diff_base, diff_last=diff_last, diff_delta=diff_delta)
