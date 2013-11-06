@@ -2,6 +2,18 @@ fname = "~/data/results/structural/repeatedMeasuresANOVA_toOtherSubcortical_matc
 
 thresh = .05
 brain_data = c('thalamusR', 'thalamusL')
+
+# trimmed down version of mni.compute.FDR
+getFDR <- function (p.values, df = Inf, fdr = 0.05) {
+    sorted.p.values <- sort(p.values, index.return = TRUE)
+    q <- sorted.p.values$x/1:length(p.values) * length(p.values)
+    q2 <- q <= fdr
+    r <- sort(q2, decreasing = TRUE, index.return = TRUE)
+    fdr.threshold <- qt(sorted.p.values$x[max(r$ix[r$x == TRUE])], df)
+    q[sorted.p.values$ix] <- q
+    return(fdr.threshold, q)
+}
+
 a = read.table(
     sprintf(fname, brain_data[1]),
     skip=3)

@@ -77,7 +77,7 @@ cortex_labels = [['Occipital', [132, 38, 63, 97, 175, 112, 251, 98, 154, 37, 54,
                 ['Cingulate', [7, 27]]]
 
 groups = ['NV', 'persistent']
-num_perms = 10
+num_perms = 3
 brain = ['striatum', 'gp', 'thalamus']
 hemi = ['L', 'R']
 time = ['base', 'last']

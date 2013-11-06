@@ -1,20 +1,27 @@
-fname_root = 'repeatedMeasuresANOVA_subcortical_matchedDiffDSM5_2to1_perVSnv'
+fname_root = 'repeatedMeasuresANOVA_toLgpLstriatum_matchedDiffDSM5_2to1_perVSnv'
 
 # combine all the data ot get approximated MACAC
 library(nlme)
+# determining the seed region
 # brain_data = c(
 # #                 'dtL_thalamus_1473', 'dtR_thalamus_1473', 
 #                'dtL_striatum_1473', 'dtR_striatum_1473',
 # #               'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473'
 #                'dtL_gp', 'dtR_gp'
 #                 )
+brain_data = c('gpL','striatumL')
+# brain_data = c('thalamusR','thalamusR')
+# verts = c(1092, 1093, 1096, 1099, 1230, 1232, 1235, 1236, 1238, 1370, 1372,
+#           1376, 1502, 1505, 1507, 1509, 1510, 1626, 1630, 1633, 1634, 1638,
+#           1639, 1761, 1763, 1765, 1766, 1770, 1771, 1890, 1894, 1895, 1897,
+#           1898, 1900)
 txt = sprintf('%s[idx_base | idx_last,]', brain_data[1])
 for (i in 2:length(brain_data)) {
     txt = sprintf('%s, %s[idx_base | idx_last,]', txt, brain_data[i])
 }
 eval(parse(text=sprintf('data=cbind(%s)', txt)))
-
 # get approximate vector for all subjects and time points
+# approx = rowMeans(data[,verts])
 approx = rowMeans(data)
 
 visit <- array(data='baseline',dim=length(idx))
@@ -27,7 +34,8 @@ visit = as.factor(visit)
 # #     'dtL_cortex_SA_1473', 'dtR_cortex_SA_1473',
 #     #                'dtL_gp', 'dtR_gp'
 #              )
-# fit_names = vector(length=length(brain_data))
+fit_names = vector(length=length(brain_data))
+brain_data = c('thalamusL')
 cnt = 1
 for (i in brain_data) {
     cat('Working on ', i, '\n')

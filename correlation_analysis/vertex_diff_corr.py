@@ -76,9 +76,9 @@ cortex_labels = [['Occipital', [132, 38, 63, 97, 175, 112, 251, 98, 154, 37, 54,
                 ['Frontal', [10, 2, 75, 5, 6, 1, 7, 70, 50, 15, 80, 90, 85, 27]],
                 ['Cingulate', [7, 27]]]
 
-group = 'remission' #, 'NV', 'persistent', 'remission'
-brain = ['striatum', 'gp', 'thalamus']
-hemi = ['L', 'R']
+group = 'NV' #, 'NV', 'persistent', 'remission'
+brain = ['gp','thalamus'] #['striatum', 'gp', 'thalamus']
+hemi = ['R']
 time = ['base', 'last']
 init_verts = 10e5
 init_subjs = 100
@@ -111,9 +111,9 @@ for t in time:
     print 'Computing correlations'
     # when we exclude the cortex, we can compute all at once
     corrs = np.float16(np.corrcoef(raw,rowvar=0))
-    np.savez('%s/data/results/structural/verts_%sCorr_matchdiff_dsm5_2to1_%s'%
+    np.savez('%s/data/results/structural/TMPverts_%sCorr_matchdiff_dsm5_2to1_%s'%
             (os.path.expanduser('~'), t, group), corrs=corrs, verts=verts)
     all_data.append(raw)
 corrs = np.float16(np.corrcoef(all_data[1]-all_data[0],rowvar=0))
-np.savez('%s/data/results/structural/verts_deltaCorr_matchdiff_dsm5_2to1_%s'%(os.path.expanduser('~'), group),
+np.savez('%s/data/results/structural/TMPverts_deltaCorr_matchdiff_dsm5_2to1_%s'%(os.path.expanduser('~'), group),
         corrs=corrs, verts=verts)
