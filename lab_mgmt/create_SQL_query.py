@@ -66,4 +66,5 @@ fid.write('\tLEFT JOIN @Note ON [@Note].[id] = [MART_SubjectInformation].[subjec
 fid.write('WHERE [@%s].[res]=\'X\'' % tables[0][0])
 for f in range(1, len(tables)):
     fid.write(' OR [@%s].[res]=\'X\'' % tables[f][0])
+fid.write(' OR LEN([@Specimen].[res])>0')
 fid.close()
