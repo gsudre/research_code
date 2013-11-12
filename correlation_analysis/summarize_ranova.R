@@ -1,7 +1,7 @@
-fname = "~/data/results/structural/repeatedMeasuresANOVA_toOtherSubcortical_matchedDiffDSM5_2to1_perVSnv_%s.txt"
+fname = "~/data/results/structural/repeatedMeasuresANOVA_toRstriatum_matchedDiffDSM5_1to1_perVSnv_%s.txt"
 
 thresh = .05
-brain_data = c('thalamusR', 'thalamusL')
+brain_data = c('thalamusR')
 
 # trimmed down version of mni.compute.FDR
 getFDR <- function (p.values, df = Inf, fdr = 0.05) {
@@ -19,12 +19,14 @@ a = read.table(
     skip=3)
 pvals = a[,2]
 fvals = a[,1]
-for (b in 2:length(brain_data)) {
-    a = read.table(
-        sprintf(fname, brain_data[b]),
-        skip=3)
-    pvals = c(pvals, a[,2])
-    fvals = c(fvals, a[,1])
+if (length(brain_data)>1) {
+    for (b in 2:length(brain_data)) {
+        a = read.table(
+            sprintf(fname, brain_data[b]),
+            skip=3)
+        pvals = c(pvals, a[,2])
+        fvals = c(fvals, a[,1])
+    }
 }
 adj_pvals = p.adjust(pvals, method='fdr')
 nverts = length(pvals)
