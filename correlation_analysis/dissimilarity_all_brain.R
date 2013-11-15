@@ -1,28 +1,21 @@
 # This one allows for connections between hemispheres
-striatumL = read.csv('~/data/structural/roisSum_striatumL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm4.csv')
-thalamusL = read.csv('~/data/structural/roisSum_thalamusL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm4.csv')
-gpL = read.csv('~/data/structural/roisSum_gpL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm4.csv')
-cortexL = read.csv('~/data/structural/roisSum_cortexL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm4.csv')
-striatumR = read.csv('~/data/structural/roisSum_striatumR_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm4.csv')
-thalamusR = read.csv('~/data/structural/roisSum_thalamusR_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm4.csv')
-gpR = read.csv('~/data/structural/roisSum_gpR_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm4.csv')
-cortexR = read.csv('~/data/structural/roisSum_cortexR_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_dsm4.csv')
+# g1 = 'NV'
+# g2 = 'persistent'
+# g3 = 'remission'
+nperms = 1000
+# gf = read.csv('~/data/structural/gf_1473_dsm45_matched_on18_dsm5_diff_1to1.csv')
+# dataRoot = '~/data/structural/roisSum_%s%s_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm5_1to1.csv'
+brain = c('striatum', 'thalamus', 'gp')
+hemi = c('L', 'R')
+for (b in brain) {
+#     for (h in hemi) {
+#         eval(parse(text=sprintf('%s%s=read.csv("%s")', 
+#                                 b, h, sprintf(dataRoot, b, h))))    
+#     }
+    eval(parse(text=sprintf('%s=cbind(%s%s,%s%s)', b, b, h, b, h)))
+}
 
-# striatumL = read.csv('~/data/structural/rois_striatumL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_2to1.csv')
-# thalamusL = read.csv('~/data/structural/rois_thalamusL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_2to1.csv')
-# gpL = read.csv('~/data/structural/rois_gpL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_2to1.csv')
-# cortexL = read.csv('~/data/structural/rois_cortexL_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_2to1.csv')
-# striatumR = read.csv('~/data/structural/rois_striatumR_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_2to1.csv')
-# thalamusR = read.csv('~/data/structural/rois_thalamusR_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_2to1.csv')
-# gpR = read.csv('~/data/structural/rois_gpR_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_2to1.csv')
-# cortexR = read.csv('~/data/structural/rois_cortexR_QCCIVETlt35_QCSUBePASS_MATCHSCRIPT_2to1.csv')
-
-striatum = cbind(striatumL, striatumR[,4:dim(striatumR)[2]])
-thalamus = cbind(thalamusL, thalamusR[,4:dim(thalamusR)[2]])
-gp = cbind(gpL, gpR[,4:dim(gpR)[2]])
-cortex = cbind(cortexL, cortexR[,4:dim(cortexR)[2]])
-
-permuteCorrDiff <- function(data1B, data1L, data2B, data2L, nperms) 
+permuteCorrDelta <- function(data1B, data1L, data2B, data2L, nperms) 
 {
     ds <- vector(mode = "numeric", length = nperms) 
     all_dataB = rbind(data1B, data2B)
@@ -48,24 +41,6 @@ permuteCorrDiff <- function(data1B, data1L, data2B, data2L, nperms)
     return(ds)
 }
 
-bootstrapCorrDiff <- function(fixed_dataB, fixed_dataL, dataB, dataL, nperms) 
-{
-    ds <- vector(mode = "numeric", length = nperms) 
-    cor1b = cor(fixed_dataB)
-    cor1l = cor(fixed_dataL)
-    deltaCor1 = cor1l - cor1b
-    for (i in 1:nperms) {
-        perm_labels <- sample.int(dim(dataB)[1], replace = TRUE)
-        perm_dataB <- dataB[perm_labels, ]
-        perm_dataL <- dataL[perm_labels, ]
-        cor2b = cor(perm_dataB)
-        cor2l = cor(perm_dataL)
-        deltaCor2 = cor2l - cor2b
-        ds[i] = 1-cor(deltaCor1[upper.tri(deltaCor1)], deltaCor2[upper.tri(deltaCor2)], method="spearman")
-    }
-    return(ds)
-}
-
 permuteCorr <- function(data1, data2, nperms) 
 {
     ds <- vector(mode = "numeric", length = nperms) 
@@ -84,137 +59,123 @@ permuteCorr <- function(data1, data2, nperms)
     return(ds)
 }
 
-bootstrapCorr <- function(fixed_data, data, nperms) 
-{
-    ds <- vector(mode = "numeric", length = nperms) 
-    cor1 = cor(fixed_data)
-    for (i in 1:nperms) {
-        perm_labels <- sample.int(dim(data)[1], replace = TRUE)
-        perm_data <- data[perm_labels, ]
-        cor2 = cor(perm_data)
-        ds[i] = 1-cor(cor1[upper.tri(cor1)], cor2[upper.tri(cor2)], method="spearman")
+# idx = gf$group==g1 | gf$group==g2 | gf$group==g3
+# idx_base <- array(data=F,dim=length(idx))
+# idx_last <- array(data=F,dim=length(idx))
+# subjects = unique(gf[idx,]$subject)  # only look at subjects that obeyed previous criteria
+# for (subj in subjects) {
+#     good_subj_scans <- which((gf$subject == subj) & idx)
+#     ages <- gf[good_subj_scans,]$age
+#     if ((min(ages)<18) && (max(ages) > 18)) {
+#         ages <- sort(ages, index.return=T)
+#         # makes the first scan true
+#         idx_base[good_subj_scans[ages$ix][1]] = T
+#         # makes the last scan true
+#         idx_last[tail(good_subj_scans[ages$ix], n=1)] = T
+#     }
+# }
+# idx_base = idx & idx_base
+# idx_last = idx & idx_last
+
+# creating data and correlation matrices
+for (i in 1:3) {
+    eval(parse(text=sprintf('idx%g=group==g%g & idx_base', i, i)))
+    txt = sprintf('%s[idx%g,]', brain[1], i)
+    for (b in brain) {
+        txt = sprintf('%s,%s[idx%g,]', txt, b, i)
     }
-    return(ds)
+    eval(parse(text=sprintf('mat%gb=cbind(%s)', i, txt)))
+    eval(parse(text=sprintf('cor%gb=cor(mat%gb)', i, i)))
+}
+# computing distances
+for (i in 1:3) {
+    for (j in i:3) {
+        if (i != j) {
+            eval(parse(text=sprintf(
+                'd%g%gb=1-cor(cor%gb[upper.tri(cor%gb)], cor%gb[upper.tri(cor%gb)], method="spearman")',
+                i, j, i, i, j, j)))
+        }
+    }
 }
 
-error.bar <- function(x, y, upper, lower=upper, length=0.1,...){
-    if(length(x) != length(y) | length(y) !=length(lower) | length(lower) != length(upper))
-        stop("vectors must be same length")
-    arrows(x,y+upper, x, y-lower, angle=90, code=3, length=length, ...)
+# getting p-value for distances
+for (i in 1:3) {
+    for (j in i:3) {
+        if (i != j) {
+            eval(parse(text=sprintf('tmp=permuteCorr(mat%gb, mat%gb, nperms)>d%g%gb',
+                                    i, j, i, j)))
+            pval = sum(tmp)/nperms
+            pval = min(pval,1-pval)
+            eval(parse(text=sprintf('pval%g%gb=pval', i, j)))
+            cat(sprintf('Baseline: %s vs %s: p = %f\n', 
+                        eval(parse(text=sprintf('g%g', i))), 
+                        eval(parse(text=sprintf('g%g', j))), 
+                        pval))
+        }
+    }
 }
 
-idxp = striatum$group=="persistent" & striatum$visit=="baseline"
-idxr = striatum$group=="remission" & striatum$visit=="baseline"
-idxn = striatum$group=="NV" & striatum$visit=="baseline"
-
-pmatb = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-             gp[idxp,4:dim(gp)[2]])
-rmatb = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-             gp[idxr,4:dim(gp)[2]])
-nmatb = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-             gp[idxn,4:dim(gp)[2]])
-# pmatb = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-#               cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
-# rmatb = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-#               cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
-# nmatb = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-#               cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
-
-pcorb = cor(pmatb)
-rcorb = cor(rmatb)
-ncorb = cor(nmatb)
-
-dnpb = 1-cor(ncorb[upper.tri(ncorb)], pcorb[upper.tri(pcorb)], method="spearman")
-dnrb = 1-cor(ncorb[upper.tri(ncorb)], rcorb[upper.tri(rcorb)], method="spearman")
-dprb = 1-cor(pcorb[upper.tri(pcorb)], rcorb[upper.tri(rcorb)], method="spearman")
-
-b_perms = 1000
-p_perms = 1000
-err_dnrb = sd(bootstrapCorr(nmatb, rmatb, b_perms))
-err_dnpb = sd(bootstrapCorr(nmatb, pmatb, b_perms))
-err_dprb = sd(bootstrapCorr(pmatb, rmatb, b_perms))
-dists = c(dnrb, dnpb, dprb)
-err_dists = c(err_dnrb, err_dnpb, err_dprb)
-pval = sum(permuteCorr(nmatb, rmatb, p_perms)>dnrb)/p_perms
-pval = min(pval,1-pval)
-names(dists)[1] = sprintf('NVvsRem\np<%.3f', pval)
-pval = sum(permuteCorr(nmatb, pmatb, p_perms)>dnpb)/p_perms
-pval = min(pval,1-pval)
-names(dists)[2] = sprintf('NVvsPer\np<%.3f', pval)
-pval = sum(permuteCorr(pmatb, rmatb, p_perms)>dprb)/p_perms
-pval = min(pval,1-pval)
-names(dists)[3] = sprintf('PervsRem\np<%.3f', pval)
-s_dists = sort(dists, index.return=TRUE)
-par(mfrow=c(1,3))
-bp = barplot(s_dists$x, main='Baseline', ylim=c(0, 0.7))
-error.bar(bp, s_dists$x, err_dists[s_dists$ix])
-
-#####################
-
-idxp = striatum$group=="persistent" & striatum$visit=="last"
-idxr = striatum$group=="remission" & striatum$visit=="last"
-idxn = striatum$group=="NV" & striatum$visit=="last"
-
-pmatl = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-             gp[idxp,4:dim(gp)[2]])
-rmatl = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-             gp[idxr,4:dim(gp)[2]])
-nmatl = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-             gp[idxn,4:dim(gp)[2]])
-# pmatl = cbind(striatum[idxp,4:dim(striatum)[2]], thalamus[idxp,4:dim(thalamus)[2]],
-#               cortex[idxp,4:dim(cortex)[2]], gp[idxp,4:dim(gp)[2]])
-# rmatl = cbind(striatum[idxr,4:dim(striatum)[2]], thalamus[idxr,4:dim(thalamus)[2]],
-#               cortex[idxr,4:dim(cortex)[2]], gp[idxr,4:dim(gp)[2]])
-# nmatl = cbind(striatum[idxn,4:dim(striatum)[2]], thalamus[idxn,4:dim(thalamus)[2]],
-#               cortex[idxn,4:dim(cortex)[2]], gp[idxn,4:dim(gp)[2]])
-
-pcorl = cor(pmatl)
-rcorl = cor(rmatl)
-ncorl = cor(nmatl)
-
-dnpl = 1-cor(ncorl[upper.tri(ncorl)], pcorl[upper.tri(pcorl)], method="spearman")
-dnrl = 1-cor(ncorl[upper.tri(ncorl)], rcorl[upper.tri(rcorl)], method="spearman")
-dprl = 1-cor(pcorl[upper.tri(pcorl)], rcorl[upper.tri(rcorl)], method="spearman")
-
-err_dnrl = sd(bootstrapCorr(nmatl, rmatl, b_perms))
-err_dnpl = sd(bootstrapCorr(nmatl, pmatl, b_perms))
-err_dprl = sd(bootstrapCorr(pmatl, rmatl, b_perms))
-dists = c(dnrl, dnpl, dprl)
-err_dists = c(err_dnrl, err_dnpl, err_dprl)
-pval = sum(permuteCorr(nmatl, rmatl, p_perms)>dnrl)/p_perms
-pval = min(pval,1-pval)
-names(dists)[1] = sprintf('NVvsRem\np<%.3f', pval)
-pval = sum(permuteCorr(nmatl, pmatl, p_perms)>dnpl)/p_perms
-pval = min(pval,1-pval)
-names(dists)[2] = sprintf('NVvsPer\np<%.3f', pval)
-pval = sum(permuteCorr(pmatl, rmatl, p_perms)>dprl)/p_perms
-pval = min(pval,1-pval)
-names(dists)[3] = sprintf('PervsRem\np<%.3f', pval)
-s_dists = sort(dists, index.return=TRUE)
-bp = barplot(s_dists$x, main='Follow up', ylim=c(0, 0.7))
-error.bar(bp, s_dists$x, err_dists[s_dists$ix])
+# doing the same as above, but now for follow up data
+for (i in 1:3) {
+    eval(parse(text=sprintf('idx%g=gf$group==g%g & idx_last', i, i)))
+    txt = sprintf('%s[idx%g,]', brain[1], i)
+    for (b in brain) {
+        txt = sprintf('%s,%s[idx%g,]', txt, b, i)
+    }
+    eval(parse(text=sprintf('mat%gf=cbind(%s)', i, txt)))
+    eval(parse(text=sprintf('cor%gf=cor(mat%gf)', i, i)))
+}
+for (i in 1:3) {
+    for (j in i:3) {
+        if (i != j) {
+            eval(parse(text=sprintf(
+                'd%g%gf=1-cor(cor%gf[upper.tri(cor%gf)], cor%gf[upper.tri(cor%gf)], method="spearman")',
+                i, j, i, i, j, j)))
+        }
+    }
+}
+for (i in 1:3) {
+    for (j in i:3) {
+        if (i != j) {
+            eval(parse(text=sprintf('tmp=permuteCorr(mat%gf, mat%gf, nperms)>d%g%gf',
+                                    i, j, i, j)))
+            pval = sum(tmp)/nperms
+            pval = min(pval,1-pval)
+            eval(parse(text=sprintf('pval%g%gf=pval', i, j)))
+            cat(sprintf('Follow-up: %s vs %s: p = %f\n', 
+                        eval(parse(text=sprintf('g%g', i))), 
+                        eval(parse(text=sprintf('g%g', j))), 
+                        pval))
+        }
+    }
+}
 
 # now we look at FU-baseline differences
-pcorDelta = pcorl - pcorb
-rcorDelta = rcorl - rcorb
-ncorDelta = ncorl - ncorb
-dDeltaNR = 1-cor(ncorDelta[upper.tri(ncorDelta)], rcorDelta[upper.tri(rcorDelta)], method="spearman")
-dDeltaNP = 1-cor(ncorDelta[upper.tri(ncorDelta)], pcorDelta[upper.tri(pcorDelta)], method="spearman")
-dDeltaPR = 1-cor(pcorDelta[upper.tri(pcorDelta)], rcorDelta[upper.tri(rcorDelta)], method="spearman")
-err_dDeltaNR = sd(bootstrapCorrDiff(nmatb, nmatl, rmatb, rmatl, b_perms))
-err_dDeltaNP = sd(bootstrapCorrDiff(nmatb, nmatl, pmatb, pmatl, b_perms))
-err_dDeltaPR = sd(bootstrapCorrDiff(pmatb, pmatl, rmatb, rmatl, b_perms))
-dists = c(dDeltaNR, dDeltaNP, dDeltaPR)
-err_dists = c(err_dDeltaNR, err_dDeltaNP, err_dDeltaPR)
-pval = sum(permuteCorrDiff(nmatb, nmatl, rmatb, rmatl, p_perms)>dDeltaNR)/p_perms
-pval = min(pval,1-pval)
-names(dists)[1] = sprintf('NVvsRem\np<%.3f', pval)
-pval = sum(permuteCorrDiff(nmatb, nmatl, pmatb, pmatl, p_perms)>dDeltaNP)/p_perms
-pval = min(pval,1-pval)
-names(dists)[2] = sprintf('NVvsPer\np<%.3f', pval)
-pval = sum(permuteCorrDiff(pmatb, pmatl, rmatb, rmatl, p_perms)>dDeltaPR)/p_perms
-pval = min(pval,1-pval)
-names(dists)[3] = sprintf('PervsRem\np<%.3f', pval)
-s_dists = sort(dists, index.return=TRUE)
-bp = barplot(s_dists$x, main='Deltas FU-Baseline', ylim=c(0, 1.2))
-error.bar(bp, s_dists$x, err_dists[s_dists$ix])
+for (i in 1:3) {
+    eval(parse(text=sprintf('deltaCor%g=cor%gf-cor%gb', i, i, i)))
+}
+for (i in 1:3) {
+    for (j in i:3) {
+        if (i != j) {
+            eval(parse(text=sprintf(
+                'd%g%gd=1-cor(deltaCor%g[upper.tri(deltaCor%g)], 
+                            deltaCor%g[upper.tri(deltaCor%g)], method="spearman")',
+                i, j, i, i, j, j)))
+        }
+    }
+}
+for (i in 1:3) {
+    for (j in i:3) {
+        if (i != j) {
+            eval(parse(text=sprintf('tmp=permuteCorrDelta(mat%gb, mat%gf, mat%gb, mat%gf, nperms)>d%g%gd',
+                                    i, i, j, j, i, j)))
+            pval = sum(tmp)/nperms
+            pval = min(pval,1-pval)
+            eval(parse(text=sprintf('pval%g%gd=pval', i, j)))
+            cat(sprintf('Delta: %s vs %s: p = %f\n', 
+                        eval(parse(text=sprintf('g%g', i))), 
+                        eval(parse(text=sprintf('g%g', j))), 
+                        pval))
+        }
+    }
+}

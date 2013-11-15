@@ -1,7 +1,7 @@
-fname = "~/data/results/structural/repeatedMeasuresANOVA_toRstriatum_matchedDiffDSM5_1to1_perVSnv_%s.txt"
+fname = "~/data/results/structural/repeatedMeasuresANOVA_toLstriatum_matchedDiffDSM5_2to1_perVSnv_%s.txt"
 
 thresh = .05
-brain_data = c('thalamusR')
+brain_data = c('thalamusL')
 
 # trimmed down version of mni.compute.FDR
 getFDR <- function (p.values, df = Inf, fdr = 0.05) {
@@ -37,12 +37,13 @@ Z = seq(0,5,.01)
 expEC = (resels*(4*log(2))*((2*pi)^(-3/2))*Z)*exp((Z^2)*(-0.5))
 rft = Z[which(expEC<thresh)[2]]
 frft = min(fvals[pvals < 2*pnorm(-abs(rft))])
+qf(max(pvals[adj_pvals < thresh])/2, 1, 58)
 cat('File: ', fname)
 cat('\nThreshold: p <', thresh)
 cat('\nMaximum F-val: ', max(fvals))
 cat('\nGood uncorrected pvals:', sum(pvals<thresh), '/', length(pvals))
-cat('\nMinimum uncorrected F-val:', min(fvals[pvals<thresh]))
-cat('\nGood RFT pvals:', sum(fvals>frft), '/', length(fvals))
+cat('\nMinimum uncorrected F-val:', min(abs(fvals[pvals<thresh])))
+cat('\nGood RFT pvals:', sum(abs(fvals)>frft), '/', length(fvals))
 cat('\nMinimum RFT F-val:', frft, '(Z score:', rft, ')')
 cat('\nGood FDR pvals:', sum(adj_pvals<thresh), '/', length(adj_pvals))
-cat('\nMinimum FDR F-val:', min(fvals[adj_pvals<thresh]))
+cat('\nMinimum FDR F-val:', min(abs(fvals[adj_pvals<thresh])))

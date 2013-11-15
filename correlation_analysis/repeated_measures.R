@@ -1,9 +1,9 @@
-fname_root = 'repeatedMeasuresANOVA_toLstriatum_matchedDiffDSM5_2to1_remVSper'
+fname_root = 'repeatedMeasuresANOVA_toRthalamus_matchedDiffDSM5_2to1_remVSper'
 
 # combine all the data ot get approximated MACAC
 library(nlme)
 # determining the seed region
-brain_data = c('striatumL')
+brain_data = c('thalamusR')
 txt = sprintf('%s[idx_base | idx_last,]', brain_data[1])
 if (length(brain_data) > 1) {
     for (i in 2:length(brain_data)) {
@@ -12,13 +12,14 @@ if (length(brain_data) > 1) {
 }
 eval(parse(text=sprintf('data=cbind(%s)', txt)))
 # get approximate vector for all subjects and time points
-approx = rowMeans(data)
+roi = 1:dim(data)[2]
+approx = rowMeans(data[,roi])
 
 visit <- array(data='baseline',dim=length(idx))
 visit[idx_last] = 'last'
 visit = as.factor(visit)
 # compute model for all brain regions
-brain_data = c('thalamusL')
+brain_data = c('cortexR')
 fit_names = vector(length=length(brain_data))
 cnt = 1
 for (i in brain_data) {

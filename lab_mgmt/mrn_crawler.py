@@ -4,7 +4,7 @@ from openpyxl import load_workbook
 from xlrd import open_workbook
 
 mrnListFile = '/Users/sudregp/tmp/mrnList.txt'
-dataDir = '/Volumes/Labs/Shaw/'
+dataDir = '/Users/sudregp/tmp/'
 
 # get the list of MRNs
 mrns = [] 

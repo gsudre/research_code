@@ -1,23 +1,26 @@
-dsm = 4
-g1 = '"persistent"'
-g2 = '"NV"'
-gf_1473 = read.csv(sprintf('~/data/structural/gf_1473_dsm45_matched_on18_dsm%d_diff.csv', dsm))
-eval(parse(text=sprintf('idx = gf_1473$outcomedsm%d==g1 | gf_1473$outcomedsm%d==g2', dsm, dsm)))
-idx = idx & gf_1473$match_outcome==1
-ages = array()
+dsm = 5
+g1 = 'persistent'
+g2 = 'remission'
+gf = read.csv(sprintf('~/data/structural/gf_1473_dsm45_matched_on18_dsm5_diff_2to1.csv', dsm))
+idx = gf$group==g1 | gf$group==g2
+age_diff = array()
+age_base = array()
+age_fu = array()
 groups = array()
-subjects = unique(gf_1473[idx,]$personx)  # only look at subjects that obeyed previous criteria
+subjects = unique(gf[idx,]$subject)  # only look at subjects that obeyed previous criteria
 cnt=1
 for (subj in subjects) {
-    good_subj_scans <- which((gf_1473$personx == subj) & idx)
-    subj_ages <- gf_1473[good_subj_scans,]$agescan
+    good_subj_scans <- which((gf$subject == subj) & idx)
+    subj_ages <- gf[good_subj_scans,]$age
     if ((min(subj_ages)<18) && (max(subj_ages) > 18)) {
         tmp_ages <- sort(subj_ages)
-        age_base = tmp_ages[1]
-        age_last = tail(tmp_ages, n=1)
-        ages[cnt] = age_last-age_base
-        eval(parse(text=sprintf('groups[cnt] = unique(as.character(gf_1473[good_subj_scans,]$outcomedsm%d))', dsm)))
+        age_base[cnt] = tmp_ages[1]
+        age_fu[cnt] = tail(tmp_ages, n=1)
+        age_diff[cnt] = age_fu[cnt]-age_base[cnt]
+        groups[cnt] = unique(as.character(gf[good_subj_scans,]$group))
         cnt = cnt+1
     }
 }
-print(t.test(ages ~ as.factor(groups)))
+print(t.test(age_base ~ as.factor(groups)))
+print(t.test(age_fu ~ as.factor(groups)))
+print(t.test(age_diff ~ as.factor(groups)))

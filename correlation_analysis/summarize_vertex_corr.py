@@ -31,16 +31,16 @@ elif method=='last':
 elif method=='delta':
     for g in groups:
         print g
-        resb = np.load('%s/data/results/structural/verts_baseCorr_matchdiff_dsm5_2to1_%s.npz'% (os.path.expanduser('~'), g))
-        resl = np.load('%s/data/results/structural/verts_lastCorr_matchdiff_dsm5_2to1_%s.npz'% (os.path.expanduser('~'), g))
+        resb = np.load('%s/data/results/structural/verts_baseCorr_striatumRthamalusRmatchdiff_dsm5_2to1_%s.npz'% (os.path.expanduser('~'), g))
+        resl = np.load('%s/data/results/structural/verts_lastCorr_striatumRthamalusRmatchdiff_dsm5_2to1_%s.npz'% (os.path.expanduser('~'), g))
         corrs.append(resl['corrs'] - resb['corrs'])
 else:
     print('Error: did not recognize method.')
 
-
-nverts = corrs[0].shape[0]
-# indexes of the triangular matrix (above the symetric diagonal)
-print 'Getting upper indexes'
-ui = np.triu_indices(nverts,k=1)
-print 'Calculating distance between groups'
-theDist = 1 - scipy.stats.spearmanr(corrs[0][ui], corrs[1][ui])[0]
+idx1 = np.array(range(6178))
+idx2 = 6178 + np.array(range(3108))
+data1 = [list(corrs[0][i, idx2]) for i in idx1]
+data1 = [j for k in data1 for j in k]
+data2 = [list(corrs[1][i, idx2]) for i in idx1]
+data2 = [j for k in data2 for j in k]
+theDiff = 1 - scipy.stats.spearmanr(data1, data2)[0]

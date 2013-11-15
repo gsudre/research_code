@@ -29,8 +29,10 @@ csv_file = '/Users/sudregp/data/structural/gf_1473_dsm45.csv'
 nv_csv_file = '/Users/sudregp/data/structural/15T_ADD_ADT_OCD_NV_scans_2011_06_27_clean.csv'
 split_age = 18
 dsm = 5
-gf_fname = csv_file[:-4] + '_matched_on' + str(split_age) + '_dsm' + str(dsm) + '_diff_2to1.csv'
-maskid_fname = '/Users/sudregp/tmp/maskids_dsm' + str(dsm) + '.txt'
+ratio = 2 # 2 for 2:1 ratio of NVs to other groups, or another number
+thresh = .07
+gf_fname = csv_file[:-4] + '_matched_on' + str(split_age) + '_dsm' + str(dsm) + '_diff_' + str(ratio) + 'to1.csv'
+maskid_fname = '/Users/sudregp/data/structural/maskids_dsm' + str(dsm) + '_' + str(ratio) + 'to1.txt'
 
 gf = np.recfromcsv(csv_file)
 gf_nv = np.recfromcsv(nv_csv_file)
@@ -147,7 +149,7 @@ for subj in rm:
 num_tries = 50000
 cnt = 0
 pval = 0
-while cnt < num_tries and pval<.06:
+while cnt < num_tries and pval<thresh:
     print cnt
     nv_pool = list(nv_subjects)
     nv_matches = []
@@ -155,7 +157,7 @@ while cnt < num_tries and pval<.06:
     nv_exported_ages = []
     nv_exported_subjects = []
     nv_rows = []
-    for i in range(2*num_males):
+    for i in range(ratio*num_males):
         ridx = np.random.randint(len(nv_pool))
         while sex[nv_pool[ridx]] != 'M':
             ridx = np.random.randint(0, len(nv_pool))
@@ -175,7 +177,7 @@ while cnt < num_tries and pval<.06:
         nv_exported_subjects.append(subj)
         nv_exported_subjects.append(subj)
     num_females_left = sum(np.array([sex[s] for s in nv_pool])=='F')
-    females_needed = 2*(len(per_subjects)-num_males)
+    females_needed = ratio*(len(per_subjects)-num_males)
     if num_females_left < females_needed:
         print 'ERROR: not enough females left!'
         cnt = num_tries
@@ -205,13 +207,14 @@ while cnt < num_tries and pval<.06:
 if cnt==num_tries:
     print 'Cannot find good NV set, giving up!'
 else:
-    # now we need to write up a new gf file and a file to retrieve the data
-    
-    # to retrieve the data, all we need are the mask ids
+    print 'Age differences, ttest between groups:'
+    print 'NV vs persistent:', stats.ttest_ind(nv_ages,per_diffs)[1]
+    print 'NV vs remission:', stats.ttest_ind(nv_ages,rem_diffs)[1]
+    print 'persistent vs remission:', stats.ttest_ind(rem_diffs,per_diffs)[1]
+    # now we need to write up a new gf file. MaskIDs will be needed to retrieve the data
     nv_maskids = [gf_nv[i]['maskid'] for j in nv_rows for i in j]
     sym_maskids = [int(gf[j]['maskid'].split('/')[-1].split('_')[2]) for i in good_rows for j in i]
     mask_ids = sym_maskids + nv_maskids
-    np.savetxt(maskid_fname, mask_ids, fmt='%05d')
 
     # in the gf, we need maskid, subject, group, and age
     subjects = subjects + nv_exported_subjects
@@ -225,7 +228,3 @@ else:
         fid.write('%05d,%d,%s,%02.02f\n' % (mask_ids[i], subjects[i],
             group[i], ages2export[i]))
     fid.close()
-
-'''
-WRITE SCRIPT TO GRAB DATA
-'''

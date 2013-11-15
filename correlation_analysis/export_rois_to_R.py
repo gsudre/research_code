@@ -70,7 +70,7 @@ cortex_labels = [['Occipital', [132, 38, 63, 97, 175, 112, 251, 98, 154, 37, 54,
                 ['Cingulate', [7, 27]]]
 
 group = ['NV', 'persistent', 'remission']
-brain = ['striatum', 'gp', 'cortex', 'thalamus']
+brain = ['striatum', 'gp', 'thalamus']
 hemi = ['L', 'R']
 
 var_names = []
@@ -78,29 +78,27 @@ for b in brain:
     print 'Working on ' + b
     for h in hemi:
         data_roi_labels, data_roi_verts = load_rois('%s/data/structural/labels/%s_%s_labels.txt'%(os.path.expanduser('~'), b, h), b)
-        dtype = [('subject', object), ('visit', object), ('group', object)] + [(roi, float) for roi in data_roi_labels]
+        dtype = [(roi, float) for roi in data_roi_labels]
         array = np.recarray(0, dtype=dtype)
         num_subjs = 0 # index to make different subject names per group
         for g in group:
 
-            data = load_structural('%s/data/structural/base_%s%s_%s_SA_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm5.csv' % (os.path.expanduser('~'), b, h, g))
+            data = load_structural('%s/data/structural/base_%s%s_%s_SA_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm5_1to1.csv' % (os.path.expanduser('~'), b, h, g))
             X = construct_matrix(data, data_roi_verts, b)
 
             N = X.shape[0]
-            subj_names = ['subj' + str(i+1+num_subjs) for i in range(N)]
-
             base = np.recarray(N, dtype=dtype)
             for r in range(N):
-                base[r] = (subj_names[r], 'baseline', g) + tuple(X[r, :])
+                base[r] = tuple(X[r, :])
             array = np.concatenate((array, base), axis=0)
 
             # now we add in the same subjects' last scan
-            data = load_structural('%s/data/structural/last_%s%s_%s_SA_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm5.csv' % (os.path.expanduser('~'), b, h, g))
+            data = load_structural('%s/data/structural/last_%s%s_%s_SA_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm5_1to1.csv' % (os.path.expanduser('~'), b, h, g))
             X = construct_matrix(data, data_roi_verts, b)
             last = np.recarray(N, dtype=dtype)
             for r in range(N):
-                last[r] = (subj_names[r], 'last', g) + tuple(X[r, :])
+                last[r] = tuple(X[r, :])
             array = np.concatenate((array, last), axis=0)
 
             num_subjs += N
-        mlab.rec2csv(array, '/Users/sudregp/data/structural/roisSum_%s%s_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm5.csv'%(b,h))
+        mlab.rec2csv(array, '/Users/sudregp/data/structural/roisSum_%s%s_QCCIVETlt35_QCSUBePASS_MATCHDIFF_on18_dsm5_1to1.csv'%(b,h))
