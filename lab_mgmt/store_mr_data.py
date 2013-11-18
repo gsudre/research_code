@@ -15,6 +15,7 @@ import glob
 import tarfile
 import shutil
 import numpy as np
+import datetime
 import pdb
 
 # Where to output the scan records
@@ -42,10 +43,10 @@ def check_for_data(dtype, folder):
     text = fid.read()
     pos = text.lower().find(dtype)
     if pos > 0:
-        return 1
+        return True
 
     # if we get to here, we didn't find the type fo data in any of the matching folders
-    return -1
+    return False
 
 
 # find out what's the next mask id to use
@@ -145,7 +146,9 @@ for fidx, file in enumerate(dicoms):
         if check_for_data(mod, targetFolder):
             subjectMRNs.append(mrn) 
             maskIDs.append(curMaskId)
-            datesCollected.append(file.split('-')[2])
+            myDate = file.split('-')[2]
+            myDate = datetime.datetime.strptime(myDate,'%Y%m%d')
+            datesCollected.append(datetime.datetime.strftime(myDate,'%m/%d/%Y'))
             scanTypes.append(modInCSV[midx])
             scanners.append('3TA')
             taskIDsCSV.append('')
