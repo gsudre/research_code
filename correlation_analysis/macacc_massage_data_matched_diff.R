@@ -15,8 +15,8 @@ dsm = 5
 g1 = 'NV'
 g2 = 'persistent'
 g3 = 'remission'
-load(sprintf('~/data/structural/all_data_gf_1473_dsm%d_matchedDiff_on18_2to1.RData', dsm))
-gf = read.csv(sprintf('~/data/structural/gf_1473_dsm45_matched_on18_dsm%d_diff_2to1.csv', dsm))
+load(sprintf('~/data/structural/all_data_gf_1473_dsm%d_matchedDiff_on18_2to1_v2.RData', dsm))
+gf = read.csv(sprintf('~/data/structural/gf_1473_dsm45_matched_on18_dsm%d_diff_2to1_v2.csv', dsm))
 idx = gf$group==g1 | gf$group==g2 | gf$group==g3
 idx_base <- array(data=F,dim=length(idx))
 idx_last <- array(data=F,dim=length(idx))
@@ -44,6 +44,7 @@ brain_data = c('thalamusL', 'thalamusR', 'striatumL', 'striatumR',
 group = as.factor(gf[idx_last | idx_base,]$group)
 subject = as.factor(gf[idx_last | idx_base,]$subject)
 age = gf[idx_last | idx_base,]$age
+maskid = gf[idx_last | idx_base,]$maskid
 for (i in brain_data) {
     print(sprintf('Cleaning up %s', i))
     eval(parse(text=sprintf('data = %s[,idx_base | idx_last]', i)))
