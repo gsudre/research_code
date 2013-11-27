@@ -1,4 +1,4 @@
-fname = "~/data/results/structural/repeatedMeasuresANOVA_toLstriatum_matchedDiffDSM5_2to1_perVSnv_%s.txt"
+fname = "~/data/results/structural_v2/growth_MATCHDIFF_dsm5_ADHDvsNV_%s.txt"
 
 thresh = .05
 brain_data = c('thalamusL')
@@ -30,20 +30,20 @@ if (length(brain_data)>1) {
 }
 adj_pvals = p.adjust(pvals, method='fdr')
 nverts = length(pvals)
-Dim = c(sqrt(nverts),sqrt(nverts))
-sFWHM = 5
-resels = prod(Dim/c(sFWHM,sFWHM))
-Z = seq(0,5,.01)
-expEC = (resels*(4*log(2))*((2*pi)^(-3/2))*Z)*exp((Z^2)*(-0.5))
-rft = Z[which(expEC<thresh)[2]]
-frft = min(fvals[pvals < 2*pnorm(-abs(rft))])
-qf(max(pvals[adj_pvals < thresh])/2, 1, 58)
+# Dim = c(sqrt(nverts),sqrt(nverts))
+# sFWHM = 5
+# resels = prod(Dim/c(sFWHM,sFWHM))
+# Z = seq(0,5,.01)
+# expEC = (resels*(4*log(2))*((2*pi)^(-3/2))*Z)*exp((Z^2)*(-0.5))
+# rft = Z[which(expEC<thresh)[2]]
+# frft = min(fvals[pvals < 2*pnorm(-abs(rft))])
+# qf(max(pvals[adj_pvals < thresh])/2, 1, 58)
 cat('File: ', fname)
 cat('\nThreshold: p <', thresh)
-cat('\nMaximum F-val: ', max(fvals))
+cat('\nMaximum F-val: ', max(abs(fvals)))
 cat('\nGood uncorrected pvals:', sum(pvals<thresh), '/', length(pvals))
 cat('\nMinimum uncorrected F-val:', min(abs(fvals[pvals<thresh])))
-cat('\nGood RFT pvals:', sum(abs(fvals)>frft), '/', length(fvals))
-cat('\nMinimum RFT F-val:', frft, '(Z score:', rft, ')')
+# cat('\nGood RFT pvals:', sum(abs(fvals)>frft), '/', length(fvals))
+# cat('\nMinimum RFT F-val:', frft, '(Z score:', rft, ')')
 cat('\nGood FDR pvals:', sum(adj_pvals<thresh), '/', length(adj_pvals))
 cat('\nMinimum FDR F-val:', min(abs(fvals[adj_pvals<thresh])))
