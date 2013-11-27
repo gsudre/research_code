@@ -1,7 +1,7 @@
 dsm = 5
-g1 = 'persistent'
-g2 = 'remission'
-gf = read.csv(sprintf('~/data/structural/gf_1473_dsm45_matched_on18_dsm5_diff_2to1.csv', dsm))
+g1 = 'remission'
+g2 = 'persistent'
+gf = read.csv(sprintf('~/data/structural/gf_1473_dsm45_matched_on18_dsm5_diff_2to1_v2.csv', dsm))
 idx = gf$group==g1 | gf$group==g2
 age_diff = array()
 age_base = array()
@@ -21,6 +21,6 @@ for (subj in subjects) {
         cnt = cnt+1
     }
 }
-print(t.test(age_base ~ as.factor(groups)))
-print(t.test(age_fu ~ as.factor(groups)))
-print(t.test(age_diff ~ as.factor(groups)))
+print(t.test(age_base ~ as.factor(groups), var.equal=T))
+print(t.test(age_fu ~ as.factor(groups), var.equal=T))
+print(t.test(age_diff ~ as.factor(groups), var.equal=T))

@@ -1,7 +1,7 @@
 # script to grab volumetric data from gabrielle and create R files
-fname = '~/data/structural/cortical_volumes_gf_1473_dsm5_matchedDiff_on18_2to1.RData'
+fname = '~/data/structural/cortical_volumes_gf_1473_dsm5_matchedDiff_on18_2to1_v2.RData'
 
-mask_ids = read.csv('~/data/structural/gf_1473_dsm45_matched_on18_dsm5_diff_2to1.csv')$maskid
+mask_ids = read.csv('~/data/structural/gf_1473_dsm45_matched_on18_dsm5_diff_2to1_v2.csv')$maskid
 rootFiles = '/Volumes/v3/RAID1/CIVET-1.1.10/%05g/segment/nih_chp_%05g_fine_structures.dat'
 
 rois = read.csv('~/data/structural/useful_cortical_volume_labels.csv')

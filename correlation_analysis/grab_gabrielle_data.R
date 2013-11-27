@@ -1,8 +1,8 @@
 # script to grab data from armin_TO in gabrielle and create R files
-fname = '~/data/structural/all_data_TMP_gf_1473_dsm5_matchedDiff_on18_2to1.RData'
+fname = '~/data/structural/all_data_gf_1473_dsm5_matchedDiff_on18_2to1_v2.RData'
 grabCortex = T
 
-mask_ids = read.csv('~/data/structural/gf_1473_dsm45_matched_on18_dsm5_diff_2to1.csv')$maskid
+mask_ids = read.csv('~/data/structural/gf_1473_dsm45_matched_on18_dsm5_diff_2to1_v2.csv')$maskid
 rootFiles = '/Volumes/v3/armin_TO/nih_chp_'
 
 brain_data = c('thalamusL', 'thalamusR', 'striatumL', 'striatumR',
