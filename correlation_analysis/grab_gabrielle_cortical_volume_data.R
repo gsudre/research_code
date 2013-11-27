@@ -19,3 +19,13 @@ for (d in 1:dim(rois)[1]) {
 }
 
 save(cortexVol,file=fname)
+
+# this is not in gabrielle, but we need it for the analysis too
+a = read.csv('~/data/structural/VOLUMES_SA_SOOURCE_OCT_2012.csv')
+subcorticalVol = array(dim=c(length(maskid),28))
+colnames(subcorticalVol) = colnames(a)[c(2:7,14:35)]
+for (i in 1:length(maskid)) {
+    idx = which(a[,1]==maskid[i])
+    subcorticalVol[i,] = as.numeric(a[idx,c(2:7,14:35)])
+}
+save(subcorticalVol,file='~/data/structural/subcortical_volumes_gf_1473_dsm5_matchedDiff_on18_2to1_v2.RData')

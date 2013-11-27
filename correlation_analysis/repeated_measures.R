@@ -1,15 +1,27 @@
-fname_root = 'repeatedMeasuresANOVA_toRthalamus_matchedDiffDSM5_2to1_remVSper'
+fname_root = 'repeatedMeasuresANOVA_seed%s_matchedDiffDSM5_2to1'
+
+gLabels = sort(unique(c(g1,g2,g3)))
+if (gLabels[1]=='NV') {
+    if (gLabels[2]=='persistent') {
+        fname_root = paste(fname_root,'_perVSnv',sep='')
+    } else if (gLabels[2]=='remission') {
+        fname_root = paste(fname_root,'_remVSnv',sep='')
+    }
+} else {
+    fname_root = paste(fname_root,'_perVSrem',sep='')
+}
 
 # combine all the data ot get approximated MACAC
 library(nlme)
 # determining the seed region
 brain_data = c('thalamusR')
+fname_root = sprintf(fname_root,brain_data[1])
 txt = sprintf('%s[idx_base | idx_last,]', brain_data[1])
-if (length(brain_data) > 1) {
-    for (i in 2:length(brain_data)) {
-        txt = sprintf('%s, %s[idx_base | idx_last,]', txt, brain_data[i])
-    }
-}
+# if (length(brain_data) > 1) {
+#     for (i in 2:length(brain_data)) {
+#         txt = sprintf('%s, %s[idx_base | idx_last,]', txt, brain_data[i])
+#     }
+# }
 eval(parse(text=sprintf('data=cbind(%s)', txt)))
 # get approximate vector for all subjects and time points
 roi = 1:dim(data)[2]
@@ -19,7 +31,7 @@ visit <- array(data='baseline',dim=length(idx))
 visit[idx_last] = 'last'
 visit = as.factor(visit)
 # compute model for all brain regions
-brain_data = c('cortexR')
+brain_data = c('striatumR')
 fit_names = vector(length=length(brain_data))
 cnt = 1
 for (i in brain_data) {
@@ -47,7 +59,7 @@ for (i in brain_data) {
     }
     
     # save results to file
-    fname = sprintf('~/data/results/structural/%s_%s.txt', fname_root, i)
+    fname = sprintf('~/data/results/structural_v2/%s_%s.txt', fname_root, i)
     write_vertices(res, fname, c('Slope.Fval', 'Slope.pval'))
 }
-save(list=fit_names, file=sprintf('~/data/results/structural/%s_fits.RData',fname_root))
+save(list=fit_names, file=sprintf('~/data/results/structural_v2/%s_fits.RData',fname_root))

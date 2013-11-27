@@ -9,12 +9,13 @@ write_vertices <- function (data, filename, cnames)
 }
 
 
+library(nlme)
 
 # use only subjects with more than one scan
 dsm = 5
-g1 = 'NV'
-g2 = 'persistent'
-g3 = 'remission'
+g1 = 'remission'
+g2 = 'remission'
+g3 = 'persistent'
 load(sprintf('~/data/structural/all_data_gf_1473_dsm%d_matchedDiff_on18_2to1_v2.RData', dsm))
 gf = read.csv(sprintf('~/data/structural/gf_1473_dsm45_matched_on18_dsm%d_diff_2to1_v2.csv', dsm))
 idx = gf$group==g1 | gf$group==g2 | gf$group==g3
