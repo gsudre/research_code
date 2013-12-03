@@ -1,6 +1,6 @@
 fname = "~/data/results/structural_v2/growth_MATCHDIFF_dsm5_ADHDvsNV_%s.txt"
 
-thresh = .05
+thresh = .01
 brain_data = c('thalamusL')
 
 # trimmed down version of mni.compute.FDR
@@ -38,7 +38,7 @@ nverts = length(pvals)
 # rft = Z[which(expEC<thresh)[2]]
 # frft = min(fvals[pvals < 2*pnorm(-abs(rft))])
 # qf(max(pvals[adj_pvals < thresh])/2, 1, 58)
-cat('File: ', fname)
+cat('File: ', sprintf(fname, brain_data[1]))
 cat('\nThreshold: p <', thresh)
 cat('\nMaximum F-val: ', max(abs(fvals)))
 cat('\nGood uncorrected pvals:', sum(pvals<thresh), '/', length(pvals))

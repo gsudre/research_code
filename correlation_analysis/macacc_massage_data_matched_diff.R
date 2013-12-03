@@ -13,7 +13,7 @@ library(nlme)
 
 # use only subjects with more than one scan
 dsm = 5
-g1 = 'remission'
+g1 = 'NV'
 g2 = 'remission'
 g3 = 'persistent'
 load(sprintf('~/data/structural/all_data_gf_1473_dsm%d_matchedDiff_on18_2to1_v2.RData', dsm))

@@ -1,14 +1,13 @@
 # Converts the DTI sampling for TSA from the VTK format to R files
 import re
 import numpy as np
-import csv
 from rpy2.robjects import r
 from rpy2.robjects.numpy2ri import numpy2ri
 
 
-dir_name = '/Volumes/neuro/registration_to_tsa/'
-subj_file = 'subjs_diffeo.txt'
-r_output_file = 'mean_FA'
+dir_name = '/Volumes/neuro/registration_to_tsa_v2/'
+subj_file = 'subjs_tensor_diffeo.txt'
+r_output_file = 'max_sampling'
 tract_names = ['left_cst', 'left_ifo', 'left_ilf', 'left_slf', 'left_unc', 'right_cst', 'right_ifo', 'right_ilf', 'right_slf', 'right_unc', 'cc']
 var_names = ['FA', 'ADC', 'PD', 'AD', 'RD']
 
@@ -25,7 +24,7 @@ tract_var_names = []
 # for each tract file, read all variables
 for tract in tract_names:
     print 'opening', tract
-    fid = open(dir_name + 'ixi_template_' + tract + '_def3.med.mean.vtk','r')
+    fid = open(dir_name + 'ixi_template_' + tract + '_def3.med.maxFA.vtk','r')
     data = fid.read()
     # get rid of new lines
     data = data.replace('\n', '')

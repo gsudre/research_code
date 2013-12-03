@@ -14,7 +14,7 @@ if (gLabels[1]=='NV') {
 # combine all the data ot get approximated MACAC
 library(nlme)
 # determining the seed region
-brain_data = c('thalamusR')
+brain_data = c('cortexR')
 fname_root = sprintf(fname_root,brain_data[1])
 txt = sprintf('%s[idx_base | idx_last,]', brain_data[1])
 # if (length(brain_data) > 1) {
@@ -31,7 +31,7 @@ visit <- array(data='baseline',dim=length(idx))
 visit[idx_last] = 'last'
 visit = as.factor(visit)
 # compute model for all brain regions
-brain_data = c('striatumR')
+brain_data = c('thalamusR')
 fit_names = vector(length=length(brain_data))
 cnt = 1
 for (i in brain_data) {
