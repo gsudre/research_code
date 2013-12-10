@@ -59,3 +59,6 @@ idx[idx_last] = 2
 idx = idx[idx>0]
 idx_base = idx==1
 idx_last = idx==2
+visit <- array(data='baseline',dim=length(idx_base))
+visit[idx_last] = 'last'
+visit = as.factor(visit)
