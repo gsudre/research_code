@@ -36,6 +36,7 @@ for (g in groups) {
         esThalamusRcortexR = getESfromR(thalamusR[idx,], cortexR[idx,])        
         save(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR,
              file=sprintf('~/data/results/structural_v2/es_%s_%s.RData',g,v))
+        rm(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR)
     }
     # WE ASSUME THAT SUBJECTS ARE IN THE SAME ORDER FOR BASELINE AND LAST SCANS
     idx1 = group==g & visit=='baseline'
@@ -48,6 +49,7 @@ for (g in groups) {
     esThalamusRcortexR = getESfromR(thalamusR[idx2,]-thalamusR[idx1,], cortexR[idx2,]-cortexR[idx1,])
     save(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR,
          file=sprintf('~/data/results/structural_v2/es_%s_diff.RData',g))
+    rm(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR)
     
     # calculating delta (difference of correlations)
     cat('\t delta\n')
@@ -56,4 +58,5 @@ for (g in groups) {
     esThalamusRcortexR = getESfromDeltaInR(thalamusR[idx1,], cortexR[idx1,], thalamusR[idx2,], cortexR[idx2,])
     save(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR,
          file=sprintf('~/data/results/structural_v2/es_%s_delta.RData',g))
+    rm(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR)
 }
