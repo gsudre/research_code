@@ -1,14 +1,16 @@
 # Venn diagrams
-thresh = .8
-str = 'esThalamusRstriatumR'
+thresh = .6
+hemi = 'R'
+other = 'gp'
 
 library(venneuler)
 files = c('baseline','last','diff','delta')
 par(mfrow=c(2,2))
 for (f in files) {
     for (g in groups) {
-        load(sprintf('~/data/results/structural_v2/es_%s_%s.RData',g,f))
-        eval(parse(text=sprintf('%s = %s',g,str)))
+        load(sprintf('~/data/results/structural_v2/es%s_thalamus2%s_%s_%s.RData',
+                     hemi, other, f, g))
+        eval(parse(text=sprintf('%s = abs(es)',g)))
         eval(parse(text=sprintf('%s[%s<thresh] = 0',g,g)))
         eval(parse(text=sprintf('%s[%s>=thresh] = 1',g,g)))
     }
