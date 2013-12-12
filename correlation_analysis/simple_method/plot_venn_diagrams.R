@@ -1,7 +1,8 @@
 # Venn diagrams
-thresh = .6
+thresh = .5
 hemi = 'R'
 other = 'gp'
+groups = c('remission', 'persistent', 'NV')
 
 library(venneuler)
 files = c('baseline','last','diff','delta')

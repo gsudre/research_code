@@ -89,8 +89,12 @@ for (p in 1:nperms) {
 #         d1 = sum((bes1-bes2-bes3)==1)/sum(bes1==1)
 #         d2 = sum((bes2-bes1-bes3)==1)/sum(bes2==1)
 #         d3 = sum((bes3-bes2-bes1)==1)/sum(bes3==1)
-#         perm_dists[p,i] = max(d1,d2,d3)
+#         perm_dists[i] = max(d1,d2,d3)
 #     }
+#     write(perm_dists,
+#           file='~/data/results/structural_v2/perm_dists_thalamusRstriatumR_diff.txt',
+#           ncolumns=length(perm_dists),
+#           append=T)
 # }
 
 #### delta
@@ -114,6 +118,10 @@ for (p in 1:nperms) {
 #         d1 = sum((bes1-bes2-bes3)==1)/sum(bes1==1)
 #         d2 = sum((bes2-bes1-bes3)==1)/sum(bes2==1)
 #         d3 = sum((bes3-bes2-bes1)==1)/sum(bes3==1)
-#         perm_dists[p,i] = max(d1,d2,d3)
+#         perm_dists[i] = max(d1,d2,d3)
 #     }
+#     write(perm_dists,
+#           file='~/data/results/structural_v2/perm_dists_thalamusRstriatumR_delta.txt',
+#           ncolumns=length(perm_dists),
+#           append=T)
 # }
