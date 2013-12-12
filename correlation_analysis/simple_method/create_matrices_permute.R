@@ -2,6 +2,8 @@
 # the data. in the end we should have one matrix per time, and each matrix is
 # ESthresh by nperms
 
+source('~/research_code/correlation_analysis/macacc_massage_data_matched_diff.R')
+
 getESfromR <- function(m1, m2) {
     a = cbind(m1, m2)
     b = cor(a)
@@ -33,10 +35,10 @@ binarize <- function(m, t) {
 }
 
 set.seed( as.integer((as.double(Sys.time())*1000+Sys.getpid()) %% 2^31) )
-nperms = 300
+nperms = 30
 thresh = seq(.2,1,.1)
 nverts = dim(thalamusR)[2]
-perm_dists = array(dim=c(nperms,length(thresh)))
+perm_dists = vector(mode='numeric',length=length(thresh))
 
 #### baseline or last
 v = 'baseline'
@@ -57,8 +59,12 @@ for (p in 1:nperms) {
         d1 = sum((bes1-bes2-bes3)==1)/sum(bes1==1)
         d2 = sum((bes2-bes1-bes3)==1)/sum(bes2==1)
         d3 = sum((bes3-bes2-bes1)==1)/sum(bes3==1)
-        perm_dists[p,i] = max(d1,d2,d3)
+        perm_dists[i] = max(d1,d2,d3)
     }
+    write(perm_dists,
+          file=sprintf('~/data/results/structural_v2/perm_dists_thalamusRstriatumR_%s.txt', v),
+          ncolumns=length(perm_dists),
+          append=T)
 }
 
 #### diff
