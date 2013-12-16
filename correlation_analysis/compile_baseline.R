@@ -1,13 +1,16 @@
 # script ot compile baseline values from matched dataset and then the remaining ones from the original data
 
 # Star with the original baseline data.
+cat('Fetching all original baseline data\n')
 gf = read.csv('~/data/structural/gf_1473_dsm45.csv')
 load('~/data/structural/GP_1473.RData')
 load('~/data/structural/DATA_1473.RData')
 brain_data = c('dtL_thalamus_1473', 'dtR_thalamus_1473',
-               'dtL_gp', 'dtR_gp')
+               'dtL_gp', 'dtR_gp',
+               'dtL_striatum_1473', 'dtR_striatum_1473')
 brain_data_gm = c('thalamusL', 'thalamusR',
-                  'gpL', 'gpR')
+                  'gpL', 'gpR',
+                  'striatumL', 'striatumR')
 idx <- (gf$DX=="ADHD" | gf$DX=="NV") & gf$MATCH5==1
 idx2 <- array(data=FALSE,dim=length(idx))
 subjects = unique(gf[idx,]$PERSON.x) 
@@ -26,6 +29,7 @@ for (b in brain_data) {
 }
 
 # replace the data for all ADHD subjects that have a scan in the matchdiff data
+cat('Replacing data for ADHD subject by matched scans\n')
 gfm = read.csv(sprintf('~/data/structural/gf_1473_dsm45_matched_on18_dsm5_diff_2to1_v2.csv', dsm))
 load(sprintf('~/data/structural/all_data_gf_1473_dsm%d_matchedDiff_on18_2to1_v2.RData', dsm))
 for (s in 1:dim(gfBase)[1]) {
@@ -49,6 +53,7 @@ for (s in 1:dim(gfBase)[1]) {
 }
 
 # swap NV subjects that are in the matchdiff data but not in the original data
+cat('Swapping NV subjects that were not in original data\n')
 nvsInMatch = unique(gfm[gfm$group=='NV',]$subject)
 nvsInBase = unique(gfBase[gfBase$DX=='NV',]$PERSON.x)
 # people in match that are not in base
@@ -97,6 +102,7 @@ for (s in subjects2add) {
 }
 
 # finally, rename everything to their more descriptive names
+cat('Renaming and transposing matrices\n')
 for (b in 1:length(brain_data)) {
     eval(parse(text=sprintf('%sBase = t(%sBase)', 
                             brain_data_gm[b], brain_data[b])))

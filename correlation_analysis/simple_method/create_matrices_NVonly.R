@@ -41,7 +41,6 @@ thresh = seq(.2,1,.1)
 nverts = dim(thalamusR)[2]
 perm_dists = vector(mode='numeric',length=length(thresh))
 
-#### baseline or last
 for (p in 1:nperms) {
     cat(p,'\n')
     idx = which(gfBase$DX=='NV')
