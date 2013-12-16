@@ -18,8 +18,10 @@ for (subj in subjects) {
     all_subj_scans <- which(gf$PERSON.x == subj)
     ages <- gf[all_subj_scans,]$AGESCAN
     ages <- sort(ages, index.return=TRUE)
-    # makes the first scan true
-    idx2[all_subj_scans[ages$ix][1]] = TRUE
+    # makes the first scan true if it's a kid
+    if (ages$x[1]<18) {
+        idx2[all_subj_scans[ages$ix][1]] = TRUE
+    }
 }
 idx <- idx & idx2
 gfBase = gf[idx,]
