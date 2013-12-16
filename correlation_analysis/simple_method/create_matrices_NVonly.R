@@ -69,7 +69,7 @@ perm_dists = vector(mode='numeric',length=length(thresh))
 source('~/research_code/correlation_analysis/compile_last.R')
 for (p in 1:nperms) {
     cat(p,'\n')
-    idx = which(gfBase$DX=='NV')
+    idx = which(gfLast$DX=='NV')
     perm_labels <- sample.int(length(idx), replace = FALSE)
     gidx1 = idx[perm_labels[1:64]]
     es1 = getESfromR(thalamusRLast[gidx1,], striatumRLast[gidx1,])
