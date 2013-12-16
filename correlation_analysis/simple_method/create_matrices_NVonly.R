@@ -72,11 +72,11 @@ for (p in 1:nperms) {
     idx = which(gfBase$DX=='NV')
     perm_labels <- sample.int(length(idx), replace = FALSE)
     gidx1 = idx[perm_labels[1:64]]
-    es1 = getESfromR(thalamusRLast[gidx1,], gpRLast[gidx1,])
+    es1 = getESfromR(thalamusRLast[gidx1,], striatumRLast[gidx1,])
     gidx2 = idx[perm_labels[65:96]]
-    es2 = getESfromR(thalamusRLast[gidx2,], gpRLast[gidx2,])
+    es2 = getESfromR(thalamusRLast[gidx2,], striatumRLast[gidx2,])
     gidx3 = idx[perm_labels[97:128]]
-    es3 = getESfromR(thalamusRLast[gidx3,], gpRLast[gidx3,])
+    es3 = getESfromR(thalamusRLast[gidx3,], striatumRLast[gidx3,])
     for (i in 1:length(thresh)) {
         bes1 = binarize(abs(es1),thresh[i])
         bes2 = binarize(abs(es2),thresh[i])
@@ -87,7 +87,7 @@ for (p in 1:nperms) {
         perm_dists[i] = max(d1,d2,d3)
     }
     write(perm_dists,
-          file='~/data/results/structural_v2/perm_dists_NVAllLastOnly_thalamusRgpR.txt',
+          file='~/data/results/structural_v2/perm_dists_NVAllLastOnly_thalamusRstriatumR.txt',
           ncolumns=length(perm_dists),
           append=T)
 }
