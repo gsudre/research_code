@@ -3,12 +3,12 @@ other = 'gp'
 hemi = 'R'
 thresh = seq(.2,1,.1)
 drawCI = F
-groups = c('remission', 'persistent', 'NV')
+groups = c('NVonly1','NVonly2')#c('remission', 'persistent', 'NV')
 
 binarize <- function(m, t) {
-    bm = m    
-    bm[bm<t] = 0
-    bm[bm>=t] = 1
+    bm = matrix(data=F, nrow=dim(m)[1], ncol=dim(m)[2])
+    bm[m<t] = F
+    bm[m>=t] = T
     return(bm)
 }
 
@@ -28,8 +28,8 @@ getDiff <- function(g, t) {
     for (i in 1:length(thresh)) {
         bes1 = binarize(es1,thresh[i])
         bes2 = binarize(es2,thresh[i])
-        bes3 = binarize(es3,thresh[i])
-        sep[i] = sum((bes1-bes2-bes3)==1)/sum(bes1==1)
+#         bes3 = binarize(es3,thresh[i])
+        sep[i] = length(setdiff(which(bes1),which(bes2)))/sum(bes1)
     }
     return(sep)
 }

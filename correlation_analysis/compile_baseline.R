@@ -2,9 +2,12 @@
 
 # Star with the original baseline data.
 gf = read.csv('~/data/structural/gf_1473_dsm45.csv')
+load('~/data/structural/GP_1473.RData')
 load('~/data/structural/DATA_1473.RData')
-brain_data = c('dtL_thalamus_1473', 'dtR_thalamus_1473')
-brain_data_gm = c('thalamusL', 'thalamusR')
+brain_data = c('dtL_thalamus_1473', 'dtR_thalamus_1473',
+               'dtL_gp', 'dtR_gp')
+brain_data_gm = c('thalamusL', 'thalamusR',
+                  'gpL', 'gpR')
 idx <- (gf$DX=="ADHD" | gf$DX=="NV") & gf$MATCH5==1
 idx2 <- array(data=FALSE,dim=length(idx))
 subjects = unique(gf[idx,]$PERSON.x) 
@@ -91,4 +94,10 @@ for (s in subjects2add) {
                                 brain_data[b], brain_data_gm[b])))
     }
     cnt = cnt + 1
+}
+
+# finally, rename everything to their more descriptive names
+for (b in 1:length(brain_data)) {
+    eval(parse(text=sprintf('%sBase = %sBase', 
+                            brain_data_gm[b], brain_data[b])))
 }
