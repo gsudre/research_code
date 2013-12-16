@@ -98,6 +98,6 @@ for (s in subjects2add) {
 
 # finally, rename everything to their more descriptive names
 for (b in 1:length(brain_data)) {
-    eval(parse(text=sprintf('%sBase = %sBase', 
+    eval(parse(text=sprintf('%sBase = t(%sBase)', 
                             brain_data_gm[b], brain_data[b])))
 }

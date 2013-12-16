@@ -1,3 +1,10 @@
+# the goal is to find the maximum separation between the groups when we permute
+# the data. in the end we should have one matrix per time, and each matrix is
+# ESthresh by nperms
+
+source('~/research_code/correlation_analysis/macacc_massage_data_matched_diff.R')
+source('~/research_code/correlation_analysis/compile_baseline.R')
+
 getESfromR <- function(m1, m2) {
     a = cbind(m1, m2)
     b = cor(a)
@@ -21,43 +28,41 @@ getESfromDeltaInR <- function(m11, m12, m21, m22) {
     return(es)
 }
 
-groups = list(1:32, 33:64)
-visits = c('baseline','last')
+binarize <- function(m, t) {
+    bm = matrix(data=F, nrow=dim(m)[1], ncol=dim(m)[2])
+    bm[m<t] = F
+    bm[m>=t] = T
+    return(bm)
+}
 
-# creating the effect size matrices and saving to disk
+set.seed( as.integer((as.double(Sys.time())*1000+Sys.getpid()) %% 2^31) )
+nperms = 30
+thresh = seq(.2,1,.1)
 nverts = dim(thalamusR)[2]
-cnt = 1
-for (g in groups) {
-    for (v in visits) {
-        cat('\t',v,'\n')
-        idx = which(group=='NV' & visit==v)[g]
-        esThalamusRgpR = getESfromR(thalamusR[idx,], gpR[idx,])
-        esThalamusRstriatumR = 1#getESfromR(thalamusR[idx,], striatumR[idx,])
-        esThalamusRcortexR = 1#getESfromR(thalamusR[idx,], cortexR[idx,])        
-        save(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR,
-             file=sprintf('~/data/results/structural_v2/es_NVonly%d_%s.RData',cnt, v))
-        rm(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR)
+perm_dists = vector(mode='numeric',length=length(thresh))
+
+#### baseline or last
+for (p in 1:nperms) {
+    cat(p,'\n')
+    idx = which(gfBase$DX=='NV')
+    perm_labels <- sample.int(length(idx), replace = FALSE)
+    gidx1 = idx[perm_labels[1:64]]
+    es1 = getESfromR(thalamusRBase[gidx1,], striatumRBase[gidx1,])
+    gidx2 = idx[perm_labels[65:96]]
+    es2 = getESfromR(thalamusRBase[gidx2,], striatumRBase[gidx2,])
+    gidx3 = idx[perm_labels[97:128]]
+    es3 = getESfromR(thalamusRBase[gidx3,], striatumRBase[gidx3,])
+    for (i in 1:length(thresh)) {
+        bes1 = binarize(abs(es1),thresh[i])
+        bes2 = binarize(abs(es2),thresh[i])
+        bes3 = binarize(abs(es3),thresh[i])
+        d1 = length(setdiff(which(bes1),union(which(bes2),which(bes3))))/sum(bes1)
+        d2 = length(setdiff(which(bes2),union(which(bes1),which(bes3))))/sum(bes2)
+        d3 = length(setdiff(which(bes3),union(which(bes2),which(bes1))))/sum(bes3)
+        perm_dists[i] = max(d1,d2,d3)
     }
-    # WE ASSUME THAT SUBJECTS ARE IN THE SAME ORDER FOR BASELINE AND LAST SCANS
-    idx1 = which(group=='NV' & visit=='baseline')[g]
-    idx2 = which(group=='NV' & visit=='last')[g]
-    
-    # calculating diff (correlation of the difference)
-    cat('\t diff\n')
-    esThalamusRgpR = getESfromR(thalamusR[idx2,]-thalamusR[idx1,], gpR[idx2,]-gpR[idx1,])
-    esThalamusRstriatumR = 1#getESfromR(thalamusR[idx2,]-thalamusR[idx1,], striatumR[idx2,]-striatumR[idx1,])
-    esThalamusRcortexR = 1#getESfromR(thalamusR[idx2,]-thalamusR[idx1,], cortexR[idx2,]-cortexR[idx1,])
-    save(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR,
-         file=sprintf('~/data/results/structural_v2/es_NVonly%d_diff.RData',cnt))
-    rm(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR)
-    
-    # calculating delta (difference of correlations)
-    cat('\t delta\n')
-    esThalamusRgpR = getESfromDeltaInR(thalamusR[idx1,], gpR[idx1,], thalamusR[idx2,], gpR[idx2,])
-    esThalamusRstriatumR = 1#getESfromDeltaInR(thalamusR[idx1,], striatumR[idx1,], thalamusR[idx2,], striatumR[idx2,])
-    esThalamusRcortexR = 1#getESfromDeltaInR(thalamusR[idx1,], cortexR[idx1,], thalamusR[idx2,], cortexR[idx2,])
-    save(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR,
-         file=sprintf('~/data/results/structural_v2/es_NVonly%d_delta.RData',cnt))
-    rm(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR)
-    cnt = cnt+1
+    write(perm_dists,
+          file='~/data/results/structural_v2/perm_dists_NVAllBaseOnly_thalamusRstriatumR.txt',
+          ncolumns=length(perm_dists),
+          append=T)
 }
