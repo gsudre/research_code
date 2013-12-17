@@ -60,7 +60,7 @@ perm_dists = vector(mode='numeric',length=length(thresh))
 #         perm_dists[i] = max(d1,d2,d3)
 #     }
 #     write(perm_dists,
-#           file='~/data/results/structural_v2/perm_dists_NVLastOnly_thalamusRgpR.txt',
+#           file='~/data/results/structural_v2/perm_dists_NVOnly_last_thalamusRgpR.txt',
 #           ncolumns=length(perm_dists),
 #           append=T)
 # }
@@ -90,7 +90,7 @@ for (p in 1:nperms) {
         perm_dists[i] = max(d1,d2,d3)
     }
     write(perm_dists,
-          file='~/data/results/structural_v2/perm_dists_NVDistOnly_thalamusRgpR.txt',
+          file='~/data/results/structural_v2/perm_dists_NVOnly_diff_thalamusRgpR.txt',
           ncolumns=length(perm_dists),
           append=T)
 }
@@ -120,7 +120,7 @@ for (p in 1:nperms) {
 #         perm_dists[i] = max(d1,d2,d3)
 #     }
 #     write(perm_dists,
-#           file='~/data/results/structural_v2/perm_dists_NVDeltaOnly_thalamusRgpR.txt',
+#           file='~/data/results/structural_v2/perm_dists_NVOnly_delta_thalamusRgpR.txt',
 #           ncolumns=length(perm_dists),
 #           append=T)
 # }

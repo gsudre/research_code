@@ -4,8 +4,8 @@
 
 source('~/research_code/correlation_analysis/macacc_massage_data_matched_diff.R')
 set.seed( as.integer((as.double(Sys.time())*1000+Sys.getpid()) %% 2^31) )
-nperms = 10
-thresh=.5
+nperms = 30
+thresh=.2
 nverts = dim(thalamusR)[2]
 
 getESfromR <- function(m1, m2) {
@@ -32,9 +32,9 @@ getESfromDeltaInR <- function(m11, m12, m21, m22) {
 }
 
 binarize <- function(m, t) {
-    bm = m    
-    bm[m<t] = 0
-    bm[m>=t] = 1
+    bm = matrix(data=F, nrow=dim(m)[1], ncol=dim(m)[2])
+    bm[m<t] = F
+    bm[m>=t] = T
     return(bm)
 }
 

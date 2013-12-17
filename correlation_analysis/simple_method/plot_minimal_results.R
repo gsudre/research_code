@@ -2,7 +2,7 @@
 thresh = seq(.2,1,.1)
 
 getCI <- function(file, other) {
-    res = read.table(sprintf('~/data/results/structural_v2/perm_dists_NV%sOnly_thalamusR%sR.txt',
+    res = read.table(sprintf('~/data/results/structural_v2/perm_dists_NVOnly_%s_thalamusR%sR.txt',
                  file, other))
     ci = vector(mode='numeric',length=dim(res)[2])
     for (i in 1:length(ci)) {
@@ -19,7 +19,7 @@ getCI <- function(file, other) {
 
 par(mfrow=c(1,2))
 others = c('gp','striatum')
-files = c('Base', 'Last', 'Dist', 'Delta')
+files = c('baseline', 'last', 'diff', 'delta')
 colors = c('black','red','blue','green')
 for (o in 1:length(others)) {
     plot(thresh, getCI(files[1], others[o]), type='l', lwd=2, 

@@ -1,22 +1,29 @@
 thresh=.5
 hemi = 'R'
 other = 'striatum'
-time = 'baseline'
-g1 = 'remission'
-g2 = 'persistent'
+time = 'diff'
+g1 = 'persistent'
+g2 = 'remission'
 g3 = 'NV'
 
-str = sprintf('esThalamus%s%s%s',hemi,other,hemi)
-for (g in c(g1, g2, g3)) {
-    load(sprintf('~/data/results/structural_v2/es_%s_%s.RData',g,f,time))
-    eval(parse(text=sprintf('%s = %s',g,str)))
-    eval(parse(text=sprintf('%s[%s<thresh] = 0',g,g)))
-    eval(parse(text=sprintf('%s[%s>=thresh] = 1',g,g)))
+binarize <- function(m, t) {
+    bm = matrix(data=F, nrow=dim(m)[1], ncol=dim(m)[2])
+    bm[m<t] = F
+    bm[m>=t] = T
+    return(bm)
 }
 
-# eval(parse(text=sprintf('m = %s - %s', g3, g2))) # only in the first group (out of 2)
-eval(parse(text=sprintf('m = %s - %s - %s', g1, g2, g3))) # g1 only
-# eval(parse(text=sprintf('m = %s == %s', g1, g2))) # in g1 and g2
+cnt = 1
+for (g in c(g1, g2, g3)) {
+    load(sprintf('~/data/results/structural_v2/es%s_thalamus2%s_%s_%s.RData',
+                 hemi, other, time, g))
+    eval(parse(text=sprintf('es%d = abs(es)',cnt)))
+    eval(parse(text=sprintf('bes%d = binarize(es%d,thresh)',cnt, cnt)))
+    cnt = cnt + 1
+}
+m = matrix(data=F, nrow=dim(es1)[1], ncol=dim(es1)[2])
+conn_diff = setdiff(which(bes1),union(which(bes2),which(bes3)))
+m[conn_diff] = T
 
 # first dimension is the thalamus, so assign colors to it
 paint_voxels = which(rowSums(m)>0)
@@ -26,15 +33,17 @@ data = vector(mode='numeric',length=dim(m)[1])
 for (v in 1:length(paint_voxels)) {
     data[paint_voxels[v]] = sum(m[paint_voxels[v],])/dim(m)[2]
 }
-fname = sprintf('~/data/results/structural_v2/%sthalamus2%s_%s_%sOnly.txt', hemi, other, time, g1)
-write_vertices(data, fname, c('val'))
+fname = sprintf('~/data/results/structural_v2/%sthalamus2%s_%s_thresh%.2f_%sOnly.txt', 
+                hemi, other, time, thresh, g1)
+write_vertices(data, fname, c(g1))
 
 # then only plot the other region for parts connected to a specific roi in the thalamus
-roi = which(data>.1)
-paint_voxels = which(colSums(m[roi,])>0)
+roi = 1:dim(m)[2]#which(data>.1)
+paint_voxels = which(colSums(m[roi,]>0))
 data = vector(mode='numeric',length=dim(m)[2])
 for (v in 1:length(paint_voxels)) {
     data[paint_voxels[v]] = sum(m[roi, paint_voxels[v]])/length(roi)
 }
-fname = sprintf('~/data/results/structural_v2/%s%s_%s_%sOnly.txt', hemi, other, time, g1)
-write_vertices(data, fname, c('val'))
+fname = sprintf('~/data/results/structural_v2/%s%s_%s_thresh%.2f_%sOnly.txt', 
+                hemi, other, time, thresh, g1)
+write_vertices(data, fname, c(g1))
