@@ -1,10 +1,10 @@
 thresh=.5
 hemi = 'R'
-other = 'striatum'
+other = 'gp'
 time = 'diff'
-g1 = 'persistent'
-g2 = 'remission'
-g3 = 'NV'
+g1 = 'NV'
+g2 = 'persistent'
+g3 = 'remission'
 
 binarize <- function(m, t) {
     bm = matrix(data=F, nrow=dim(m)[1], ncol=dim(m)[2])
@@ -38,8 +38,9 @@ fname = sprintf('~/data/results/structural_v2/%sthalamus2%s_%s_thresh%.2f_%sOnly
 write_vertices(data, fname, c(g1))
 
 # then only plot the other region for parts connected to a specific roi in the thalamus
-roi = 1:dim(m)[2]#which(data>.1)
-paint_voxels = which(colSums(m[roi,]>0))
+roi = which(data>.3)
+roi = roi[roi>800]
+paint_voxels = which(colSums(m[roi,])>0)
 data = vector(mode='numeric',length=dim(m)[2])
 for (v in 1:length(paint_voxels)) {
     data[paint_voxels[v]] = sum(m[roi, paint_voxels[v]])/length(roi)
