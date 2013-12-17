@@ -66,52 +66,19 @@ perm_dists = vector(mode='numeric',length=length(thresh))
 # }
 
 # diff
-for (p in 1:nperms) {
-    cat(p,'\n')
-    bidx = which(gfLast$DX=='NV')
-    perm_labels <- sample.int(length(bidx), replace = FALSE)
-    gidx1 = idx[perm_labels[1:32]]
-    es1 = getESfromR(thalamusR[gidx1+1,] - thalamusR[gidx1,], 
-                     gpR[gidx1+1,] - gpR[gidx1,])
-    gidx2 = idx[perm_labels[33:48]]
-    es2 = getESfromR(thalamusR[gidx2+1,] - thalamusR[gidx2,], 
-                     gpR[gidx2+1,] - gpR[gidx2,])
-    gidx3 = idx[perm_labels[49:64]]
-    es3 = getESfromR(thalamusR[gidx3+1,] - thalamusR[gidx3,], 
-                     gpR[gidx3+1,] - gpR[gidx3,])
-    
-    for (i in 1:length(thresh)) {
-        bes1 = binarize(abs(es1),thresh[i])
-        bes2 = binarize(abs(es2),thresh[i])
-        bes3 = binarize(abs(es3),thresh[i])
-        d1 = length(setdiff(which(bes1),union(which(bes2),which(bes3))))/sum(bes1)
-        d2 = length(setdiff(which(bes2),union(which(bes1),which(bes3))))/sum(bes2)
-        d3 = length(setdiff(which(bes3),union(which(bes2),which(bes1))))/sum(bes3)
-        perm_dists[i] = max(d1,d2,d3)
-    }
-    write(perm_dists,
-          file='~/data/results/structural_v2/perm_dists_NVDistOnly_thalamusRgpR.txt',
-          ncolumns=length(perm_dists),
-          append=T)
-}
-
-#delta
-# source('~/research_code/correlation_analysis/compile_baseline.R')
-# source('~/research_code/correlation_analysis/macacc_massage_data_matched_diff.R')
-# source('~/research_code/correlation_analysis/compile_last.R')
 # for (p in 1:nperms) {
 #     cat(p,'\n')
-#     idx = which(gfLast$DX=='NV')
-#     perm_labels <- sample.int(length(idx), replace = FALSE)
-#     gidx1 = idx[perm_labels[1:64]]
-#     es1 = getESfromDeltaInR(thalamusRBase[gidx1,], gpRBase[gidx1,],
-#                             thalamusRLast[gidx1,], gpRLast[gidx1,])
-#     gidx2 = idx[perm_labels[65:96]]
-#     es2 = getESfromDeltaInR(thalamusRBase[gidx2,], gpRBase[gidx2,],
-#                             thalamusRLast[gidx2,], gpRLast[gidx2,])
-#     gidx3 = idx[perm_labels[97:128]]
-#     es3 = getESfromDeltaInR(thalamusRBase[gidx3,], gpRBase[gidx3,],
-#                             thalamusRLast[gidx3,], gpRLast[gidx3,])
+#     idx = which(group=='NV' & visit=='baseline')
+#     perm_labels <- sample.int(length(bidx), replace = FALSE)
+#     gidx1 = idx[perm_labels[1:32]]
+#     es1 = getESfromR(thalamusR[gidx1+1,] - thalamusR[gidx1,], 
+#                      gpR[gidx1+1,] - gpR[gidx1,])
+#     gidx2 = idx[perm_labels[33:48]]
+#     es2 = getESfromR(thalamusR[gidx2+1,] - thalamusR[gidx2,], 
+#                      gpR[gidx2+1,] - gpR[gidx2,])
+#     gidx3 = idx[perm_labels[49:64]]
+#     es3 = getESfromR(thalamusR[gidx3+1,] - thalamusR[gidx3,], 
+#                      gpR[gidx3+1,] - gpR[gidx3,])
 #     
 #     for (i in 1:length(thresh)) {
 #         bes1 = binarize(abs(es1),thresh[i])
@@ -123,7 +90,37 @@ for (p in 1:nperms) {
 #         perm_dists[i] = max(d1,d2,d3)
 #     }
 #     write(perm_dists,
-#           file='~/data/results/structural_v2/perm_dists_NVAllDeltaOnly_thalamusRgpR.txt',
+#           file='~/data/results/structural_v2/perm_dists_NVDistOnly_thalamusRgpR.txt',
 #           ncolumns=length(perm_dists),
 #           append=T)
 # }
+
+# delta
+for (p in 1:nperms) {
+    cat(p,'\n')
+    idx = which(group=='NV' & visit=='baseline')
+    perm_labels <- sample.int(length(idx), replace = FALSE)
+    gidx1 = idx[perm_labels[1:32]]
+    es1 = getESfromDeltaInR(thalamusR[gidx1,], striatumR[gidx1,],
+                            thalamusR[gidx1+1,], striatumR[gidx1+1,])
+    gidx2 = idx[perm_labels[33:48]]
+    es2 = getESfromDeltaInR(thalamusR[gidx2,], striatumR[gidx2,],
+                            thalamusR[gidx2+1,], striatumR[gidx2+1,])
+    gidx3 = idx[perm_labels[49:64]]
+    es3 = getESfromDeltaInR(thalamusR[gidx3,], striatumR[gidx3,],
+                            thalamusR[gidx3+1,], striatumR[gidx3+1,])
+    
+    for (i in 1:length(thresh)) {
+        bes1 = binarize(abs(es1),thresh[i])
+        bes2 = binarize(abs(es2),thresh[i])
+        bes3 = binarize(abs(es3),thresh[i])
+        d1 = length(setdiff(which(bes1),union(which(bes2),which(bes3))))/sum(bes1)
+        d2 = length(setdiff(which(bes2),union(which(bes1),which(bes3))))/sum(bes2)
+        d3 = length(setdiff(which(bes3),union(which(bes2),which(bes1))))/sum(bes3)
+        perm_dists[i] = max(d1,d2,d3)
+    }
+    write(perm_dists,
+          file='~/data/results/structural_v2/perm_dists_NVDeltaOnly_thalamusRgpR.txt',
+          ncolumns=length(perm_dists),
+          append=T)
+}
