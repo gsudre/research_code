@@ -37,49 +37,19 @@ binarize <- function(m, t) {
 set.seed( as.integer((as.double(Sys.time())*1000+Sys.getpid()) %% 2^31) )
 nperms = 30
 thresh = seq(.2,1,.1)
-nverts = dim(thalamusR)[2]
+nverts = dim(thalamusL)[2]
 perm_dists = vector(mode='numeric',length=length(thresh))
 
-# for (p in 1:nperms) {
-#     cat(p,'\n')
-#     idx = which(group=='NV' & visit=='last')
-#     perm_labels <- sample.int(length(idx), replace = FALSE)
-#     gidx1 = idx[perm_labels[1:32]]
-#     es1 = getESfromR(thalamusR[gidx1,], gpR[gidx1,])
-#     gidx2 = idx[perm_labels[33:48]]
-#     es2 = getESfromR(thalamusR[gidx2,], gpR[gidx2,])
-#     gidx3 = idx[perm_labels[49:64]]
-#     es3 = getESfromR(thalamusR[gidx3,], gpR[gidx3,])
-#     for (i in 1:length(thresh)) {
-#         bes1 = binarize(abs(es1),thresh[i])
-#         bes2 = binarize(abs(es2),thresh[i])
-#         bes3 = binarize(abs(es3),thresh[i])
-#         d1 = length(setdiff(which(bes1),union(which(bes2),which(bes3))))/sum(bes1)
-#         d2 = length(setdiff(which(bes2),union(which(bes1),which(bes3))))/sum(bes2)
-#         d3 = length(setdiff(which(bes3),union(which(bes2),which(bes1))))/sum(bes3)
-#         perm_dists[i] = max(d1,d2,d3)
-#     }
-#     write(perm_dists,
-#           file='~/data/results/structural_v2/perm_dists_NVOnly_last_thalamusRgpR.txt',
-#           ncolumns=length(perm_dists),
-#           append=T)
-# }
-
-# diff
 for (p in 1:nperms) {
     cat(p,'\n')
     idx = which(group=='NV' & visit=='baseline')
     perm_labels <- sample.int(length(idx), replace = FALSE)
     gidx1 = idx[perm_labels[1:32]]
-    es1 = getESfromR(thalamusR[gidx1+1,] - thalamusR[gidx1,], 
-                     gpR[gidx1+1,] - gpR[gidx1,])
+    es1 = getESfromR(thalamusL[gidx1,], cortexL[gidx1,])
     gidx2 = idx[perm_labels[33:48]]
-    es2 = getESfromR(thalamusR[gidx2+1,] - thalamusR[gidx2,], 
-                     gpR[gidx2+1,] - gpR[gidx2,])
+    es2 = getESfromR(thalamusL[gidx2,], cortexL[gidx2,])
     gidx3 = idx[perm_labels[49:64]]
-    es3 = getESfromR(thalamusR[gidx3+1,] - thalamusR[gidx3,], 
-                     gpR[gidx3+1,] - gpR[gidx3,])
-    
+    es3 = getESfromR(thalamusL[gidx3,], cortexL[gidx3,])
     for (i in 1:length(thresh)) {
         bes1 = binarize(abs(es1),thresh[i])
         bes2 = binarize(abs(es2),thresh[i])
@@ -90,10 +60,40 @@ for (p in 1:nperms) {
         perm_dists[i] = max(d1,d2,d3)
     }
     write(perm_dists,
-          file='~/data/results/structural_v2/perm_dists_NVOnly_diff_thalamusRgpR.txt',
+          file='~/data/results/simple/perm_dists_NVOnly_baseline_thalamusLcortexL.txt',
           ncolumns=length(perm_dists),
           append=T)
 }
+
+# diff
+# for (p in 1:nperms) {
+#     cat(p,'\n')
+#     idx = which(group=='NV' & visit=='baseline')
+#     perm_labels <- sample.int(length(idx), replace = FALSE)
+#     gidx1 = idx[perm_labels[1:32]]
+#     es1 = getESfromR(thalamusL[gidx1+1,] - thalamusL[gidx1,], 
+#                      cortexL[gidx1+1,] - cortexL[gidx1,])
+#     gidx2 = idx[perm_labels[33:48]]
+#     es2 = getESfromR(thalamusL[gidx2+1,] - thalamusL[gidx2,], 
+#                      cortexL[gidx2+1,] - cortexL[gidx2,])
+#     gidx3 = idx[perm_labels[49:64]]
+#     es3 = getESfromR(thalamusL[gidx3+1,] - thalamusL[gidx3,], 
+#                      cortexL[gidx3+1,] - cortexL[gidx3,])
+    
+#     for (i in 1:length(thresh)) {
+#         bes1 = binarize(abs(es1),thresh[i])
+#         bes2 = binarize(abs(es2),thresh[i])
+#         bes3 = binarize(abs(es3),thresh[i])
+#         d1 = length(setdiff(which(bes1),union(which(bes2),which(bes3))))/sum(bes1)
+#         d2 = length(setdiff(which(bes2),union(which(bes1),which(bes3))))/sum(bes2)
+#         d3 = length(setdiff(which(bes3),union(which(bes2),which(bes1))))/sum(bes3)
+#         perm_dists[i] = max(d1,d2,d3)
+#     }
+#     write(perm_dists,
+#           file='~/data/results/structural_v2/perm_dists_NVOnly_diff_thalamusLcortexL.txt',
+#           ncolumns=length(perm_dists),
+#           append=T)
+# }
 
 # delta
 # for (p in 1:nperms) {
@@ -101,14 +101,14 @@ for (p in 1:nperms) {
 #     idx = which(group=='NV' & visit=='baseline')
 #     perm_labels <- sample.int(length(idx), replace = FALSE)
 #     gidx1 = idx[perm_labels[1:32]]
-#     es1 = getESfromDeltaInR(thalamusR[gidx1,], striatumR[gidx1,],
-#                             thalamusR[gidx1+1,], striatumR[gidx1+1,])
+#     es1 = getESfromDeltaInR(thalamusL[gidx1,], striatumR[gidx1,],
+#                             thalamusL[gidx1+1,], striatumR[gidx1+1,])
 #     gidx2 = idx[perm_labels[33:48]]
-#     es2 = getESfromDeltaInR(thalamusR[gidx2,], striatumR[gidx2,],
-#                             thalamusR[gidx2+1,], striatumR[gidx2+1,])
+#     es2 = getESfromDeltaInR(thalamusL[gidx2,], striatumR[gidx2,],
+#                             thalamusL[gidx2+1,], striatumR[gidx2+1,])
 #     gidx3 = idx[perm_labels[49:64]]
-#     es3 = getESfromDeltaInR(thalamusR[gidx3,], striatumR[gidx3,],
-#                             thalamusR[gidx3+1,], striatumR[gidx3+1,])
+#     es3 = getESfromDeltaInR(thalamusL[gidx3,], striatumR[gidx3,],
+#                             thalamusL[gidx3+1,], striatumR[gidx3+1,])
 #     
 #     for (i in 1:length(thresh)) {
 #         bes1 = binarize(abs(es1),thresh[i])
@@ -120,7 +120,7 @@ for (p in 1:nperms) {
 #         perm_dists[i] = max(d1,d2,d3)
 #     }
 #     write(perm_dists,
-#           file='~/data/results/structural_v2/perm_dists_NVOnly_delta_thalamusRgpR.txt',
+#           file='~/data/results/structural_v2/perm_dists_NVOnly_delta_thalamusLcortexL.txt',
 #           ncolumns=length(perm_dists),
 #           append=T)
 # }

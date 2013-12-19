@@ -1,6 +1,6 @@
 # plots the 1-Dice coefficient, one plot per group difference
 other = 'striatum'
-hemi = 'R'
+hemi = 'L'
 thresh = seq(.2,1,.1)
 drawCI = T
 groups = c('remission', 'persistent', 'NV')
@@ -19,7 +19,7 @@ getDiff <- function(g, t) {
     # ensures that target group is first
     cnt = 1
     for (i in c(g,og)) {
-        load(sprintf('~/data/results/structural_v2/es%s_thalamus2%s_%s_%s.RData',
+        load(sprintf('~/data/results/simple/es%s_thalamus2%s_%s_%s.RData',
                      hemi, other, t, i))
         eval(parse(text=sprintf('es%d = abs(es)',cnt)))
         cnt = cnt + 1
@@ -35,7 +35,7 @@ getDiff <- function(g, t) {
 }
 
 getCI <- function(v) {
-    res = read.table(sprintf('~/data/results/structural_v2/perm_dists_NVOnly_%s_thalamus%s%s%s.txt',
+    res = read.table(sprintf('~/data/results/simple/perm_dists_NVOnly_%s_thalamus%s%s%s.txt',
                  v, hemi, other, hemi))
     ci = vector(mode='numeric',length=dim(res)[2])
     for (i in 1:length(ci)) {
