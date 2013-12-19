@@ -31,7 +31,7 @@ for (g in groups) {
     for (v in visits) {
         cat('\t',v,'\n')
         idx = group==g & visit==v
-        esThalamusLgpL = getESfromL(thalamusL[idx,], gpL[idx,])
+        esThalamusLgpL = getESfromR(thalamusL[idx,], gpL[idx,])
         esThalamusLstriatumL = getESfromR(thalamusL[idx,], striatumL[idx,])
         esThalamusLcortexL = getESfromR(thalamusL[idx,], cortexL[idx,])        
         save(esThalamusLstriatumL,esThalamusLgpL,esThalamusLcortexL,
