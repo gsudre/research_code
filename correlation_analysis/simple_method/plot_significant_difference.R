@@ -1,8 +1,9 @@
-# plots the 1-Dice coefficient, one plot per group difference
-other = 'gp'
-hemi = 'R'
+# plots the difference of 1-Dice coefficient and NVonly data
+
+others = c('gp','striatum')
+hemi = 'L'
 thresh = seq(.2,1,.1)
-drawCI = T
+file = 'diff'
 groups = c('remission', 'persistent', 'NV')
 
 binarize <- function(m, t) {
@@ -12,9 +13,7 @@ binarize <- function(m, t) {
     return(bm)
 }
 
-files = c('last','diff','delta')
-
-getDiff <- function(g, t) {
+getDiff <- function(g, t, other) {
     og = setdiff(groups,g)
     # ensures that target group is first
     cnt = 1
@@ -34,9 +33,9 @@ getDiff <- function(g, t) {
     return(sep)
 }
 
-getCI <- function(v) {
+getCI <- function(v, other) {
     res = read.table(sprintf('~/data/results/simple/perm_dists_NVOnly_%s_thalamus%s%s%s.txt',
-                 v, hemi, other, hemi))
+                             v, hemi, other, hemi))
     ci = vector(mode='numeric',length=dim(res)[2])
     for (i in 1:length(ci)) {
         tmp = sort(res[,i])
@@ -50,20 +49,16 @@ getCI <- function(v) {
     return(ci)
 }
 
-par(mfrow=c(1,3))
-colors = c('red','green','blue')
-for (g in groups) {
-    plot(thresh, getDiff(g,'baseline'), type='l', lwd=2, 
-         ylab='Independence', xlab='ES threshold', ylim=c(0,1))
-    if (drawCI) {
-        lines(thresh,getCI('baseline'),lwd=1,lty=2,col='black')
-    }
-    for (f in 1:length(files)) {
-        lines(thresh, getDiff(g,files[f]),lwd=2,col=colors[f])
-        if (drawCI) {
-            lines(thresh,getCI(files[f]),lwd=1,lty=2,col=colors[f])
-        }
-    }
-    title(sprintf('thalamus2%s(%s): %s', other, hemi, g))
-    legend('bottomright',c('baseline',files),lty=1,lwd=2,col=c('black',colors))
+par(mfrow=c(1,length(others)))
+for (o in others) {
+    rnd_dist = getCI(file, o)
+    dist = getDiff('persistent', file, o)
+    y = dist-rnd_dist
+    plot(thresh, y, type='l', lwd=2, ylab='Independence', xlab='ES threshold', 
+         ylim=c(0,.3), col='black')
+    dist = getDiff('remission', file, o)
+    y = dist-rnd_dist
+    lines(thresh,y,lwd=2,lty=1,col='red')
+    title(sprintf('thalamus2%s (%s)', o, hemi))
+    legend('topright',c('persistent','remission'),lty=1,lwd=2,col=c('black','red'))
 }
