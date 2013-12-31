@@ -2,8 +2,7 @@
 echo "Enter the subject mask ID (4 digits), followed by [ENTER]:"
 read subj
 
-subj_dir=/Volumes/neuro/data_by_maskID/$subj/afni
-stim_dir=/Volumeso/MR_behavioral/stim_files_analysis1
+subj_dir=/mnt/neuro/data_by_maskID/$subj/afni
 
 # start by running Joel's afni_proc, but we do regress out censor
 # outliers because for now we're dealing with adults. Also, we
