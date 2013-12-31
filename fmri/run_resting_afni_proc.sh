@@ -12,7 +12,7 @@ afni_proc.py -subj_id $subj     \
     -dsets ${subj_dir}/rest+orig.HEAD                          \
     -script ${subj_dir}/rest.proc.withPhysio.$subj               \
     -copy_anat $subj_dir/mprage+orig                           \
-    -out_dir $subj_dir/$subj.restWithPhysio.results \
+    -out_dir $subj_dir/$subj.rest.withPhysio.results \
     -blocks despike align tlrc volreg blur mask regress \
     -volreg_align_e2a                                          \
     -volreg_tlrc_warp                                          \
@@ -32,7 +32,7 @@ afni_proc.py -subj_id $subj     \
     -dsets ${subj_dir}/rest+orig.HEAD                          \
     -script ${subj_dir}/rest.proc.regressingOutPhysio.$subj               \
     -copy_anat $subj_dir/mprage+orig       \
-    -out_dir $subj_dir/$subj.regressingOutPhysio.results                     \
+    -out_dir $subj_dir/$subj.rest.regressingOutPhysio.results                     \
     -blocks despike ricor align tlrc volreg blur mask regress \
     -volreg_align_e2a                                          \
     -volreg_tlrc_warp                                          \
@@ -52,7 +52,7 @@ afni_proc.py -subj_id $subj                               \
     -dsets ${subj_dir}/rest+orig.HEAD                          \
     -script ${subj_dir}/rest.proc.whiteMatterCSF.$subj               \
     -copy_anat $subj_dir/mprage+orig       \
-    -out_dir $subj_dir/$subj.whiteMatterCSF.results                        \
+    -out_dir $subj_dir/$subj.rest.whiteMatterCSF.results               \
     -blocks despike ricor align tlrc volreg blur mask regress \
     -volreg_align_e2a                                   \
     -volreg_tlrc_warp                                   \
