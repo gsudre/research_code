@@ -1,22 +1,22 @@
 #!/bin/sh
-echo "Enter the subject mask ID (4 digits), followed by [ENTER]:"
-read subj
+subj=$1
 
 subj_dir=/mnt/neuro/data_by_maskID/$subj/afni
 
 # start by running Joel's afni_proc, but we do regress out censor
-# outliers because for now we're dealing with adults. Also, we
-# don't have dummy scans, so no need to remove TRs
+# outliers because for now we're dealing with adults, and reduce
+# motion threshold accordingly
 afni_proc.py -subj_id $subj     \
     -dsets ${subj_dir}/rest+orig.HEAD                          \
     -script ${subj_dir}/rest.proc.withPhysio.$subj               \
     -copy_anat $subj_dir/mprage+orig                           \
     -out_dir $subj_dir/$subj.rest.withPhysio.results \
-    -blocks despike align tlrc volreg blur mask regress \
+    -blocks despike tshift align tlrc volreg blur mask regress \
+    -tcat_remove_first_trs 3                \
     -volreg_align_e2a                                          \
     -volreg_tlrc_warp                                          \
     -regress_anaticor                                          \
-    -regress_censor_motion 0.3                                 \
+    -regress_censor_motion 0.2                                 \
     -regress_censor_outliers 0.1                               \
     -regress_bandpass 0.01 0.1                                 \
     -regress_apply_mot_types demean deriv                      \
@@ -32,11 +32,13 @@ afni_proc.py -subj_id $subj     \
     -script ${subj_dir}/rest.proc.regressingOutPhysio.$subj               \
     -copy_anat $subj_dir/mprage+orig       \
     -out_dir $subj_dir/$subj.rest.regressingOutPhysio.results                     \
-    -blocks despike ricor align tlrc volreg blur mask regress \
+    -blocks despike tshift ricor align tlrc volreg blur mask regress \
+    -tcat_remove_first_trs 3                \
+    -ricor_regs_nfirst 3                    \
     -volreg_align_e2a                                          \
     -volreg_tlrc_warp                                          \
     -regress_anaticor                                          \
-    -regress_censor_motion 0.3                                 \
+    -regress_censor_motion 0.2                                 \
     -regress_censor_outliers 0.1                               \
     -regress_bandpass 0.01 0.1                                 \
     -regress_apply_mot_types demean deriv                      \
@@ -46,17 +48,19 @@ afni_proc.py -subj_id $subj     \
 
 tcsh -xef $subj_dir/rest.proc.regressingOutPhysio.$subj | tee $subj_dir/output.rest.regressingOutPhysio.proc.$subj
 
-# Finally, we try Steve's approach, regressing out white matter and ventricles
+# Finally, we try Steve's approach, regressing out white matter and ventricles.
 afni_proc.py -subj_id $subj                               \
     -dsets ${subj_dir}/rest+orig.HEAD                          \
     -script ${subj_dir}/rest.proc.whiteMatterCSF.$subj               \
     -copy_anat $subj_dir/mprage+orig       \
     -out_dir $subj_dir/$subj.rest.whiteMatterCSF.results               \
-    -blocks despike ricor align tlrc volreg blur mask regress \
+    -blocks despike tshift ricor align tlrc volreg blur mask regress \
+    -tcat_remove_first_trs 3                \
+    -ricor_regs_nfirst 3                    \
     -volreg_align_e2a                                   \
     -volreg_tlrc_warp                                   \
     -mask_segment_anat yes                              \
-    -regress_censor_motion 0.3                          \
+    -regress_censor_motion 0.2                          \
     -regress_censor_outliers 0.1                        \
     -regress_bandpass 0.01 0.1                          \
     -regress_apply_mot_types demean deriv               \
