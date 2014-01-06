@@ -1,5 +1,5 @@
 # Venn diagrams
-thresh = .5
+thresh = 1
 hemi = 'R'
 other = 'gp'
 groups = c('remission', 'persistent', 'NV')

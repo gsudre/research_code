@@ -2,16 +2,16 @@ thresh=.5
 hemi = 'R'
 other = 'cortex'
 time = 'diff'
-g1 = 'remission'
-g2 = 'NV'
+g1 = 'NV'
+g2 = 'remission'
 g3 = 'persistent'
 
-fname = sprintf('~/data/results/simple/%sthalamus2%s_%s_thresh%.2f_%sOnly.txt', 
-                hemi, other, time, thresh, g1)
-res = read.table(fname, skip=3)
-roi = which(res[,1]>.18)
-roi = roi[roi>2000]
-# roi=0
+# fname = sprintf('~/data/results/simple/%sthalamus2%s_%s_thresh%.2f_%sOnly.txt', 
+#                 hemi, other, time, thresh, g1)
+# res = read.table(fname, skip=3)
+# roi = which(res[,1]>.18)
+# roi = roi[roi>2000]
+roi=0
 
 binarize <- function(m, t) {
     bm = matrix(data=F, nrow=dim(m)[1], ncol=dim(m)[2])

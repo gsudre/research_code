@@ -1,10 +1,10 @@
 thresh=.5
 hemi = 'R'
-other = 'gp'
+other = 'cortex'
 time = 'diff'
-g1 = 'remission'
-g2 = 'NV'
-g3 = 'persistent'
+g1 = 'NV'
+g2 = 'persistent'
+g3 = 'remission'
 
 
 mat = readMat('~/Documents/surfaces/IMAGING_TOOLS/thalamus.mat')
@@ -34,7 +34,7 @@ binarize <- function(m, t) {
 fname = sprintf('~/data/results/simple/%sthalamus2%s_diff_thresh0.50_%sOnly.txt', 
                 hemi, other, g1)
 res = read.table(fname, skip=3)
-roi = res[,1]>.21
+roi = res[,1]>.23
 
 clusters = vector(mode='numeric', length=length(roi))
 clusters[roi] = -1 # everything -1 needs to be painted
@@ -61,8 +61,9 @@ print(sorted_clusters)
 for (i in 2:(num_clusters+1)) {
     cl_rois[clusters==as.numeric(names(sorted_clusters)[i])] = i-1
 }
-fname = sprintf('~/data/results/simple/%sthalamus2%s_ROIs_%s_thresh%.2f_%sOnly.txt', 
-                hemi, other, time, thresh, g1)
+# fname = sprintf('~/data/results/simple/%sthalamus2%s_ROIs_%s_thresh%.2f_%s.txt', 
+#                 hemi, other, time, thresh, g1)
+fname = sprintf('~/data/results/simple/%sthalamus2%s_ROIs_%s_thresh%.2f_%sOnly.txt', hemi, other, time, thresh, g1)
 write_vertices(cl_rois, fname, c(g1))
 
 # finally, for each roi, create the a file for its connections
@@ -77,6 +78,7 @@ for (g in c(g1, g2, g3)) {
 m = matrix(data=F, nrow=dim(es1)[1], ncol=dim(es1)[2])
 conn_diff = setdiff(which(bes1),union(which(bes2),which(bes3)))
 m[conn_diff] = T
+# m = bes1
 for (i in 1:num_clusters) {
     myroi = which(cl_rois==i)
     paint_voxels = which(colSums(m[myroi,])>0)
@@ -84,7 +86,8 @@ for (i in 1:num_clusters) {
     for (v in 1:length(paint_voxels)) {
        data[paint_voxels[v]] = sum(m[myroi, paint_voxels[v]])/length(myroi)
     }
-    fname = sprintf('~/data/results/simple/%s%s_ROI%d_%s_thresh%.2f_%sOnly.txt', 
-                    hemi, other, i, time, thresh, g1)
+    # fname = sprintf('~/data/results/simple/%s%s_ROI%d_%s_thresh%.2f_%s.txt', 
+    #                 hemi, other, i, time, thresh, g1)
+    fname = sprintf('~/data/results/simple/%s%s_ROI%d_%s_thresh%.2f_%sOnly.txt', hemi, other, i, time, thresh, g1)
     write_vertices(data, fname, c(g1))
 }

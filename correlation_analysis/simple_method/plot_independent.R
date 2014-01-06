@@ -1,6 +1,6 @@
 # plots the 1-Dice coefficient, one plot per group difference
-other = 'gp'
-hemi = 'R'
+other = 'cortex'
+hemi = 'L'
 thresh = seq(.2,1,.1)
 drawCI = T
 groups = c('remission', 'persistent', 'NV')
@@ -42,7 +42,7 @@ getCI <- function(v) {
         tmp = sort(res[,i])
         # make sure I have at least 100 non-NA permutation values
         if (length(tmp)>100) {
-            ci[i] = tmp[ceiling(.95*length(tmp))]
+            ci[i] = tmp[ceiling(.99*length(tmp))]
         } else {
             ci[i] = NA
         }

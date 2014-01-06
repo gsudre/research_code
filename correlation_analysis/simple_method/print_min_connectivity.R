@@ -1,7 +1,7 @@
-other = 'striatum'
+other = 'cortex'
 files = c('diff')
 thresh = .5
-hemi = 'L'
+hemi = 'R'
 ci = vector(mode='numeric',length=length(files))
 cat('Threshold:', thresh,'-> thalamus to', other, sprintf('(%s)', hemi), '\n')
 for (f in 1:length(files)) {

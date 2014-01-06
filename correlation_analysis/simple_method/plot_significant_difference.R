@@ -1,6 +1,6 @@
 # plots the difference of 1-Dice coefficient and NVonly data
 
-others = c('gp','striatum')
+others = c('gp','striatum','cortex')
 hemi = 'L'
 thresh = seq(.2,1,.1)
 file = 'diff'
