@@ -1,7 +1,7 @@
-fname = "~/data/results/structural_v2/growth_MATCHDIFF_dsm5_ADHDvsNV_%s.txt"
+fname = "~/data/results/structural_v2/baselineTTest_ADHDvsNV_%s.txt"
 
 thresh = .01
-brain_data = c('thalamusL')
+brain_data = c('thalamusLBase','thalamusRBase')
 
 # trimmed down version of mni.compute.FDR
 getFDR <- function (p.values, df = Inf, fdr = 0.05) {

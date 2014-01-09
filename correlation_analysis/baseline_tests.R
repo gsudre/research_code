@@ -1,20 +1,20 @@
 # checking difference between NVs and ADHDs at baseline
 source('~/research_code/correlation_analysis/compile_baseline.R')
 
-fnameRoot = '~/data/results/structural_v2/baselineTTest_MATCH5_ADHDvsNV'
+fnameRoot = '~/data/results/structural_v2/baselineTTest_ADHDvsNV'
 
 # making sure there's no difference at baseline age and sex
 print(t.test(gfBase$AGESCAN ~ as.factor(gfBase$DX)))
 print(table(gfBase$DX,gfBase$SEX.x))
 
-brain_data = c('dtL_thalamus_1473Base','dtR_thalamus_1473Base')
+brain_data = c('thalamusLBase','thalamusRBase')
 for (b in brain_data) {
     eval(parse(text=sprintf('data=%s', b)))
-    num_voxels = dim(data)[1]
+    num_voxels = dim(data)[2]
     tsLinear <- array(dim=c(num_voxels, 2))
     for (v in 1:num_voxels) {
         print(sprintf('%d / %d', v, num_voxels))
-        d = data.frame(y=data[v,], dx=gfBase$DX)
+        d = data.frame(y=data[,v], dx=gfBase$DX)
         fit <- try(lm(y~dx, data=d), TRUE)
         if (length(fit) > 1) {  
             tsLinear[v,1] <- summary(fit)$coefficients[2,3]

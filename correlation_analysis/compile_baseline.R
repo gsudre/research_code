@@ -33,14 +33,16 @@ for (b in brain_data) {
 # balance the number of ADHD and NV subjects right away, because everything else
 # is just swapping. Hard-coding, that means removing 3 female NVs and 9 male NVs
 idx = which(gfBase$DX=='NV' & gfBase$SEX.x=='F')
-gfBase = gfBase[setdiff(1:dim(gfBase)[1],idx[1:3]),]
+nsubj = dim(gfBase)[1]
+gfBase = gfBase[setdiff(1:nsubj,idx[1:3]),]
 for (b in brain_data) {
-    eval(parse(text=sprintf('%sBase = %sBase[,setdiff(1:dim(gfBase)[1],idx[1:3])]', b, b)))
+    eval(parse(text=sprintf('%sBase = %sBase[,setdiff(1:nsubj,idx[1:3])]', b, b)))
 }
 idx = which(gfBase$DX=='NV' & gfBase$SEX.x=='M')
-gfBase = gfBase[setdiff(1:dim(gfBase)[1],idx[1:9]),]
+nsubj = dim(gfBase)[1]
+gfBase = gfBase[setdiff(1:nsubj,idx[1:9]),]
 for (b in brain_data) {
-    eval(parse(text=sprintf('%sBase = %sBase[,setdiff(1:dim(gfBase)[1],idx[1:9])]', b, b)))
+    eval(parse(text=sprintf('%sBase = %sBase[,setdiff(1:nsubj,idx[1:9])]', b, b)))
 }
 
 # replace the data for all ADHD subjects that have a scan in the matchdiff data
