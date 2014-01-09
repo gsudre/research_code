@@ -1,8 +1,8 @@
 thresh=.5
-hemi = 'R'
+hemi = 'L'
 other = 'gp'
 time = 'diff'
-g = 'persistent'
+g = 'remission'
 
 
 # fname = sprintf('~/data/results/simple/%sthalamus2%s_%s_thresh%.2f_%sOnly.txt', 
