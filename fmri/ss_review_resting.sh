@@ -3,7 +3,7 @@
 # This script is a shortened version of the standard @ss_review_drive,
 # but adapted to look at resting data.
 
-cd /mnt/neuro/data_by_maskID/${1}/afni/${1}.rest.withPhysio.results/
+cd /mnt/neuro/data_by_maskID/${1}/afni/${1}.rest.whiteMatterCSF.results/
 
 # ------------------------------------------------------------
 # try to avoid any oblique warnings throughout script
@@ -46,7 +46,7 @@ echo ------------------- outliers and motion --------------------
 echo ----------------- anat/EPI alignment check -----------------
 
 # start afni with anat and volreg datasets only
-afni anat_final.${1}+tlrc.HEAD pb03.${1}.r01.volreg+tlrc.HEAD &
+afni anat_final.${1}+tlrc.HEAD pb04.${1}.r01.volreg+tlrc.HEAD &
 
 
 echo -------------------- regession warnings --------------------
