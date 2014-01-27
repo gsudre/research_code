@@ -17,10 +17,14 @@ os.mkdir(tmp_dir)
 
 # get a list of the subjects in the server
 subjs = glob.glob(path + '/*')
+# filter the list for occurrences of eaDir
+subjs = [x for x in subjs if x.find('@eaDir')<0]
 
 for subj_dir in subjs:
     # look for all mask ids this subject has
     maskids = glob.glob(subj_dir + '/*')
+    maskids = [x for x in maskids if x.find('@eaDir')<0]
+    
     for maskid_dir in maskids:
         mask_id = int(maskid_dir.split('/')[-1])
 
