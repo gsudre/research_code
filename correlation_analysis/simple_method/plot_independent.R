@@ -1,5 +1,5 @@
 # plots the 1-Dice coefficient, one plot per group difference
-other = 'cortex'
+other = 'gp'
 hemi = 'L'
 thresh = seq(.2,1,.1)
 drawCI = T
@@ -12,7 +12,7 @@ binarize <- function(m, t) {
     return(bm)
 }
 
-files = c('last','diff','delta')
+files = c('last','diff')#,'delta')
 
 getDiff <- function(g, t) {
     og = setdiff(groups,g)
@@ -51,7 +51,8 @@ getCI <- function(v) {
 }
 
 par(mfrow=c(1,3))
-colors = c('red','green','blue')
+colors = c('red','green')#,'blue')
+str_legend = c('Baseline', 'Follow-up', 'Difference')
 for (g in groups) {
     plot(thresh, getDiff(g,'baseline'), type='l', lwd=2, 
          ylab='Independence', xlab='ES threshold', ylim=c(0,1))
@@ -65,5 +66,5 @@ for (g in groups) {
         }
     }
     title(sprintf('thalamus2%s(%s): %s', other, hemi, g))
-    legend('bottomright',c('baseline',files),lty=1,lwd=2,col=c('black',colors))
+    legend('bottomright',str_legend,lty=1,lwd=2,col=c('black',colors))
 }

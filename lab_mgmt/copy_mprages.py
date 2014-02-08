@@ -32,8 +32,9 @@ for maskid in fid:
                 mprage_dirs.append(date_dir + '/' + series_num + '/')
 
     # always copy the last scan
-    mprage = mprage_dirs[-1]
-    print 'Copying', maskid, 'to', copy_to%int(maskid)
-    shutil.copytree(mprage, copy_to%int(maskid))
+    if len(mprage_dirs)>0:
+        mprage = mprage_dirs[-1]
+        print 'Copying', maskid, 'to', copy_to%int(maskid)
+        shutil.copytree(mprage, copy_to%int(maskid))
 
 fid.close()

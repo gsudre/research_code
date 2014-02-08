@@ -15,6 +15,8 @@ else:
     # child-baseline tables
     tables = [['DICA', 'DICA'], ['NVInterview', 'NV Interview'], ['WJ', 'Woodcock-Johnson'], ['Beery', 'Beery VMI'], ['WASI1', 'WASI-I'], ['WASI2', 'WASI-II'], ['WISC', 'WISC'], ['WPPSI3', 'WPPSI-III'], ['WPPSI4', 'WPPSI-IV'], ['BRIEFChildrenSelf', 'BRIEF Children Self'], ['BRIEFParent', 'BRIEF Parent'], ['BRIEFTeacher', 'BRIEF Teacher'], ['ConnersParent', 'Conners Parent Rev '], ['ConnersTeacher', 'Conners Teacher Rev '], ['CAARS', 'CAARS Self Report '], ['DCDQ', 'DCDQ '], ['CBCL', 'CBCL'], ['TRF', 'TRF'], ['APSD', 'APSD'], ['SRS', 'SRS'], ['Wenders', 'Wenders '], ['FES', 'Family Enviro Scale '], ['ADHDRating', 'ADHD Rating '], ['SideEffectsRatingScale', 'Side effects rating scale'], ['Scanned','Scan']]
 
+    # add ADHD rating scale (teacher), SNAP teacher
+
 # some tables that are true for all subjects, and that don't use X
 subjInfo = [['Race', 'race'], ['Ethnicity', 'ethnicity'], ['DX', 'attribute_1'], ['Gender', 'sex']]
 
@@ -47,6 +49,7 @@ fid.write('\nDECLARE @SNAPon TABLE(id VARCHAR(100), res VARCHAR(1))\nINSERT INTO
 fid.write('\nDECLARE @SNAPoff TABLE(id VARCHAR(100), res VARCHAR(1))\nINSERT INTO @SNAPoff\nSELECT DISTINCT [MART_SubjectInformation].[subject_code], \'X\'\nFROM [MART_EX_FORM_SNAP-IV],[MART_SubjectInformation]\nWHERE [MART_EX_FORM_SNAP-IV].[subject_id]=[MART_SubjectInformation].[subject_id] AND [MART_EX_FORM_SNAP-IV].[date_collected]=@testingDate AND [MART_EX_FORM_SNAP-IV].[Meds] = \'No\'')
 fid.write('\nDECLARE @ARIself TABLE(id VARCHAR(100), res VARCHAR(1))\nINSERT INTO @ARIself\nSELECT DISTINCT [MART_SubjectInformation].[subject_code], \'X\'\nFROM [MART_EX_FORM_ARI],[MART_SubjectInformation]\nWHERE [MART_EX_FORM_ARI].[subject_id]=[MART_SubjectInformation].[subject_id] AND [MART_EX_FORM_ARI].[date_collected]=@testingDate AND [MART_EX_FORM_ARI].[000_ARI_Form_type] = \'S\'')
 if not adult:
+    fid.write('\nDECLARE @SNAPTeacher TABLE(id VARCHAR(100), res VARCHAR(1))\nINSERT INTO @SNAPTeacher\nSELECT DISTINCT [MART_SubjectInformation].[subject_code], \'X\'\nFROM [MART_EX_FORM_SNAP-IV],[MART_SubjectInformation]\nWHERE [MART_EX_FORM_SNAP-IV].[subject_id]=[MART_SubjectInformation].[subject_id] AND [MART_EX_FORM_SNAP-IV].[date_collected]=@testingDate AND [MART_EX_FORM_SNAP-IV].[000_SNAP-IV _Form-type] = \'Teacher\'')
     fid.write('\nDECLARE @ARIparent TABLE(id VARCHAR(100), res VARCHAR(1))\nINSERT INTO @ARIparent\nSELECT DISTINCT [MART_SubjectInformation].[subject_code], \'X\'\nFROM [MART_EX_FORM_ARI],[MART_SubjectInformation]\nWHERE [MART_EX_FORM_ARI].[subject_id]=[MART_SubjectInformation].[subject_id] AND [MART_EX_FORM_ARI].[date_collected]=@testingDate AND [MART_EX_FORM_ARI].[000_ARI_Form_type] = \'P\'')
     fid.write('\nDECLARE @MotorBatteryTMP TABLE(id INTEGER)\nINSERT INTO @MotorBatteryTMP\nSELECT subject_id from [MART_EX_FORM_Movement ABC 3-6yr] WHERE date_collected=@testingDate\nUNION\nSELECT subject_id from [MART_EX_FORM_Movement ABC 7-10yr] WHERE date_collected=@testingDate\nUNION\nSELECT subject_id from [MART_EX_FORM_Movement ABC 11-16yr] WHERE date_collected=@testingDate\nDECLARE @MotorBattery TABLE(id VARCHAR(100), res VARCHAR(1))\nINSERT INTO @MotorBattery\nSELECT DISTINCT [@MotorBatteryTMP].[id], \'X\'\nFROM @MotorBatteryTMP,[MART_SubjectInformation]\nWHERE [@MotorBatteryTMP].[id]=[MART_SubjectInformation].[subject_id]')
 
@@ -63,6 +66,7 @@ for table in tables:
     fid.write(', %s=[@%s].[res]' % (table[0], table[0]))
 fid.write(', SNAPon=[@SNAPon].[res], SNAPoff=[@SNAPoff].[res], ARIself=[@ARIself].[res]')
 if not adult:
+    fid.write(', SNAPteacher=[@SNAPTeacher].[res]')
     fid.write(', ARIparent=[@ARIparent].[res]')
     fid.write(', MotorBattery=[@MotorBattery].[res]')
 fid.write(', Specimen=[@Specimen].[res], Note=[@Note].[res]')
@@ -78,6 +82,7 @@ fid.write('\tLEFT JOIN @SNAPon ON [@SNAPon].[id] = [MART_SubjectInformation].[su
 fid.write('\tLEFT JOIN @SNAPoff ON [@SNAPoff].[id] = [MART_SubjectInformation].[subject_code]\n')
 fid.write('\tLEFT JOIN @ARIself ON [@ARIself].[id] = [MART_SubjectInformation].[subject_code]\n')
 if not adult:
+    fid.write('\tLEFT JOIN @SNAPTeacher ON [@SNAPTeacher].[id] = [MART_SubjectInformation].[subject_code]\n')
     fid.write('\tLEFT JOIN @ARIparent ON [@ARIparent].[id] = [MART_SubjectInformation].[subject_code]\n')
     fid.write('\tLEFT JOIN @MotorBattery ON [@MotorBattery].[id] = [MART_SubjectInformation].[subject_id]\n')
 fid.write('\tLEFT JOIN @Specimen ON [@Specimen].[id] = [MART_SubjectInformation].[subject_code]\n')

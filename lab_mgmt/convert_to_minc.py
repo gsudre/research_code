@@ -24,7 +24,7 @@ for subj_dir in subjs:
     # look for all mask ids this subject has
     maskids = glob.glob(subj_dir + '/*')
     maskids = [x for x in maskids if x.find('@eaDir')<0]
-    
+
     for maskid_dir in maskids:
         mask_id = int(maskid_dir.split('/')[-1])
 
@@ -39,7 +39,7 @@ for subj_dir in subjs:
             fid = open(txtfile[0])
             for line in fid:
                 # not all MPRages start with prage, and rage by itself can match Storage
-                if line.lower().find('rage_') > 0:
+                if (line.lower().find('rage_') > 0) or (line.lower().find('mprage') > 0):
                     m_obj = re.search("Series:(\S+)", line)
                     # ignore any commas we might end up selecting
                     if m_obj.group(1)[-1] == ',':
