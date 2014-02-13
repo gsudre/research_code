@@ -4,8 +4,8 @@ import sys
 
 if len(sys.argv)!=8:
     print '\nWrong number of arguments!\n'
-    print 'USAGE: python merge_on_closest_date.py file1.txt MRNColumn1', \
-            'DateColumn1 file2.txt MRNColumn2 DateColumn2', \
+    print 'USAGE: python merge_on_closest_date.py file1.txt DateColumn1', \
+            'MRNColumn1 file2.txt DateColumn2 MRNColumn2', \
             'mergedFileName.txt\n'
     print 'NOTE: \n(1) The TXT files should be Tab delimited files.', \
           '\n(2) The column numbers are 0-based (i.e. the first column is 0)'
