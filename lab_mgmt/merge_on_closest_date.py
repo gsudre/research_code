@@ -1,14 +1,32 @@
 import numpy as np
 import datetime as dt
+import sys
 
-# Use Tab-delimited files because we will evet
-fname1 = '/Users/sudregp/Documents/dan/CPTreformatted02122014.txt'
+if len(sys.argv)!=8:
+    print '\nWrong number of arguments!\n'
+    print 'USAGE: python merge_on_closest_date.py file1.txt MRNColumn1', \
+            'DateColumn1 file2.txt MRNColumn2 DateColumn2', \
+            'mergedFileName.txt\n'
+    print 'NOTE: \n(1) The TXT files should be Tab delimited files.', \
+          '\n(2) The column numbers are 0-based (i.e. the first column is 0)'
+    sys.exit()
+else:
+    fname1 = sys.argv[1]
+    date1 = int(sys.argv[2])
+    mrn1 = int(sys.argv[3])
+    fname2 = sys.argv[4]
+    date2 = int(sys.argv[5])
+    mrn2 = int(sys.argv[6])
+    out_file = sys.argv[7]
+
+# Use Tab-delimited files because we will evetually have notes section that include commas
+'''fname1 = '/Users/sudregp/Documents/dan/CPTreformatted02122014.txt'
 date1 = 8
 mrn1 = 0
 fname2 = '/Users/sudregp/Documents/dan/DICA 5-28-13 to go into labmatrix_fixed.txt'
 date2 = 2
 mrn2 = 0
-out_file = '/Users/sudregp/tmp/merged.txt'
+out_file = '/Users/sudregp/tmp/merged.txt' '''
 
 
 ''' Prints warnings to the screen when we found invalid MRNs in a data matrix, or invalid dates. Remove them from the data as well so we don't run into trouble later '''
