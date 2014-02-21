@@ -7,10 +7,10 @@ import numpy as np
 import os
 
 # these are changed often
-modes = ['TR', 'AD', 'RD']
+modes = ['FA','TR', 'AD', 'RD']
 nums = ['95', '99', '995', '999']
-comparison = '2'
-stat = 'nvVSper'
+comparison = '1'
+stat = 'inatt'
 clusters = ['vox','tfce']
 
 # these will likely not change
