@@ -7,12 +7,11 @@ import numpy as np
 import os
 
 # these are changed often
-modes = ['FA']#TR', 'AD', 'RD']
+modes = ['TR', 'AD', 'RD']
 nums = ['95', '99', '995', '999']
-comparison = '1'
+comparison = '2'
 stat = 'nvVSper'
-cluster = 'tfce'
-correct = 'corr'
+clusters = ['vox','tfce']
 
 # these will likely not change
 data_thresh = .5  # data threshold, >= 
@@ -113,28 +112,35 @@ def write_rows(fid, rows):
 
 for mode in modes:
     for num in nums:
-        print '=== Working on', mode, num, '==='
-        res_file = '%s/%s_%s_%s_%s_%sp+FMRIB58.nii.gz' % (data_dir, 
-                                                          stat, 
-                                                          mode, num,
-                                                          cluster, correct)
-        orig_res_file = '%s/tbss_10K_%s_%s_%s_%sp_tstat%s.nii.gz' % (data_dir, stat, mode, cluster, correct, comparison)
-        out_file = '%s/tract_stats_%s_%s_%s_%s_%sp.txt' % (data_dir, stat, mode, num, cluster, correct)
+        for cluster in clusters:
+            # we are only interested in the corrected version of TFCE
+            if cluster=='tfce':
+                mc = ['corr']
+            else:
+                mc = ['corr', '']
+            for correct in mc:
+                print '=== Working on', mode, num, cluster, correct, '==='
+                res_file = '%s/%s_%s_%s_%s_%sp+FMRIB58.nii.gz' % (data_dir, 
+                                                                  stat, 
+                                                                  mode, num,
+                                                                  cluster, correct)
+                orig_res_file = '%s/tbss_10K_%s_%s_%s_%sp_tstat%s.nii.gz' % (data_dir, stat, mode, cluster, correct, comparison)
+                out_file = '%s/tract_stats_%s_%s_%s_%s_%sp.txt' % (data_dir, stat, mode, num, cluster, correct)
 
-        if os.path.exists(res_file):
-            fid = open(out_file, 'w')
-            fid.write('TRACT\tVOXELS_SIG_DIFFERENT\tMNI_coordinates_of_peak_value\tP-value at peak\n')
-            # start with the 20 (compact) tracts
-            rows = get_image_stats('/Applications/fsl/data/atlases/JHU/JHU-ICBM-tracts-maxprob-thr25-1mm.nii.gz',
-                                   '/Applications/fsl/data/atlases/JHU-tracts-withUnclassified.xml',
-                                   res_file)
-            write_rows(fid, rows)
-            # then go for the 48 tracts
-            fid.write('\n\n\n')
-            rows = get_image_stats('/Applications/fsl/data/atlases/JHU/JHU-ICBM-labels-1mm.nii.gz',
-                                   '/Applications/fsl/data/atlases/JHU-labels.xml',
-                                   res_file)
-            write_rows(fid, rows)
-            fid.close()
-        else:
-            print 'File', res_file, 'does not exist.'
+                if os.path.exists(res_file):
+                    fid = open(out_file, 'w')
+                    fid.write('TRACT\tVOXELS_SIG_DIFFERENT\tMNI_coordinates_of_peak_value\tP-value at peak\n')
+                    # start with the 20 (compact) tracts
+                    rows = get_image_stats('/Applications/fsl/data/atlases/JHU/JHU-ICBM-tracts-maxprob-thr25-1mm.nii.gz',
+                                           '/Applications/fsl/data/atlases/JHU-tracts-withUnclassified.xml',
+                                           res_file)
+                    write_rows(fid, rows)
+                    # then go for the 48 tracts
+                    fid.write('\n\n\n')
+                    rows = get_image_stats('/Applications/fsl/data/atlases/JHU/JHU-ICBM-labels-1mm.nii.gz',
+                                           '/Applications/fsl/data/atlases/JHU-labels.xml',
+                                           res_file)
+                    write_rows(fid, rows)
+                    fid.close()
+                else:
+                    print 'File', res_file, 'does not exist.'
