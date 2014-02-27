@@ -13,7 +13,10 @@ def calculate_weights(forward, cov, reg=0, norm_weights=True):
 # Make sure cov only has MEG data in it!
 
     num_channels = cov.data.shape[0]
-    inv_Cb = np.linalg.pinv(cov.data + reg * np.eye(num_channels))
+    U, S, Vh = np.linalg.svd(cov.data)
+    # noise covariance is set to the smallest eigen value of data_cov
+    sigma = np.eye(num_channels) * S[-1]
+    inv_Cb = np.linalg.pinv(cov.data + reg * sigma)
     L = forward['sol']['data']
     nvectors = L.shape[1]
     # If we have more than one orientation per source, find the optimum
