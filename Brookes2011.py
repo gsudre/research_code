@@ -1,6 +1,8 @@
 import mne
 import numpy as np
-import virtual_electrode as ve
+from virtual_electrode import calculate_weights
+from scipy import stats
+from sklearn.decomposition import FastICA
 
 l_freq, h_freq = 13, 30
 reg = 4
@@ -32,20 +34,43 @@ fid.close()
 #     stc = mne.SourceEstimate(sol, [forward['src'][0]['vertno'], forward['src'][1]['vertno']], times[0], times[1]-times[0])
 #     stc.save('/Users/sudregp/data/meg/lcmv-beta-' + subj)
 
-# morph and concatenate all subjects
-init_sources = 25000
-init_time = 24100
-# create huge array so we can add all the data and thenresize it appropriately
-data = np.empty([init_sources, init_time])
-data[:] = np.nan
-cnt = 0
+# morph all subjects
 subject_to = 'fsaverage'
 for subj in subjs:
     fname = '/Users/sudregp/data/meg/lcmv-beta-' + subj
     stc_from = mne.read_source_estimate(fname)
     vertices_to = [np.arange(10242), np.arange(10242)]
     stc = mne.morph_data(subj, subject_to, stc_from, grade=vertices_to)
-    data[0:stc.data.shape[0], cnt:(cnt+stc.data.shape[1])] = stc.data
+    stc.save('/Users/sudregp/data/meg/morphed-lcmv-beta-' + subj)
+
+# concatenate all subjects
+print 'Concatenating sources'
+init_sources = 25000
+init_time = 24100
+# create huge array so we can add all the data and thenresize it appropriately
+data = np.empty([init_sources, init_time])
+data[:] = np.nan
+cnt = 0
+for subj in subjs:
+    fname = '/Users/sudregp/data/meg/morphed-lcmv-beta-' + subj
+    stc= mne.read_source_estimate(fname)
+    # mean correcting and normalizing variance
+    data[0:stc.data.shape[0], cnt:(cnt+stc.data.shape[1])] = \
+        stats.mstats.zscore(stc.data, axis=1)
     cnt += stc.data.shape[1]
-print 'Resizing matrix'
 data = data[:stc.data.shape[0], :cnt]
+
+# applying ICA and figuring out how each IC scores
+ica = FastICA(n_components=30, random_state=0)
+ICs = ica.fit_transform(data.T).T
+corr_ICs = []
+for i in range(ICs.shape[0]):
+    print 'Scoring IC', i+1, '/', ICs.shape[0]
+    corrs = np.empty(data.shape[0])
+    corrs[:] = np.nan
+    for s in range(data.shape[0]):
+        r, p = stats.pearsonr(ICs[i,:], data[s,:])
+        corrs[s] = r
+    corr_ICs.append(corrs)
+
+
