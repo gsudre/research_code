@@ -9,14 +9,14 @@ import pdb
 # job_num = int(multiprocessing.cpu_count()/2)
 
 
-def calculate_weights(forward, cov, reg=0, norm_weights=True):
-# Make sure cov only has MEG data in it!
+def calculate_weights(forward, covmat, reg=0, norm_weights=True):
+# Make sure cov is a data matrix of MEG channels x MEG channels!
 
-    num_channels = cov.data.shape[0]
-    U, S, Vh = np.linalg.svd(cov.data)
+    num_channels = covmat.shape[0]
+    U, S, Vh = np.linalg.svd(covmat)
     # noise covariance is set to the smallest eigen value of data_cov
     sigma = np.eye(num_channels) * S[-1]
-    inv_Cb = np.linalg.pinv(cov.data + reg * sigma)
+    inv_Cb = np.linalg.pinv(covmat + reg * sigma)
     L = forward['sol']['data']
     nvectors = L.shape[1]
     # If we have more than one orientation per source, find the optimum
