@@ -5,13 +5,15 @@ Gustavo Sudre, 02/2014 '''
 import nibabel as nib
 import numpy as np
 import os
+import re
+import operator
 
 # these are changed often
-modes = ['FA','TR', 'AD', 'RD']
+modes = ['FA']
 nums = ['95', '99', '995', '999']
 comparison = '1'
 stat = 'inatt'
-clusters = ['vox','tfce']
+clusters = ['tfce'] #'vox'
 
 # these will likely not change
 data_thresh = .5  # data threshold, >= 
@@ -62,13 +64,19 @@ def get_image_stats(label_file, desc_file, res_file):
 
     # read in the names of each labels
     fid = open(desc_file, 'r')
-    tract_names= []
+    tracts= {}
     for line in fid:
-        # we assume the labels are written in the same increasing order
+        # if it's a line describing a label
         if line.find('<label') == 0:
-            tract_names.append(line.split('>')[1].split('<')[0])
+            m_obj = re.search('>(.+)<\/label>$', line)
+            tname = m_obj.group(1)
+            m_obj = re.search('^<label index=\"(\d+)\"', line)
+            tval = int(m_obj.group(1))
+            tracts[tname] = tval
     fid.close()
-    num_tracts = len(tract_names)
+
+    # transforms the dictionary into a list of tuples sorted by key
+    tracts = sorted(tracts.iteritems(), key=operator.itemgetter(0))
 
     # read in results file
     img = nib.load(res_file)
@@ -82,13 +90,15 @@ def get_image_stats(label_file, desc_file, res_file):
     good_voxels = []
     peak_mni = []
     peak_p = []
-    for i in range(num_tracts):
-        label_voxels = np.multiply(labels==i, skel>=skel_thresh)
+    tract_names = []
+    for tname, tval in tracts:
+        label_voxels = np.multiply(labels==tval, skel>=skel_thresh)
         total, good, mni, p = get_row(data, label_voxels, orig_data)
         total_voxels.append(total)
         good_voxels.append(good)
         peak_mni.append(mni)
         peak_p.append(p)
+        tract_names.append(tname)
     # end with whole brain stats
     tract_names.append('Whole FA skeleton')
     label_voxels = skel>=skel_thresh
@@ -125,20 +135,20 @@ for mode in modes:
                                                                   mode, num,
                                                                   cluster, correct)
                 orig_res_file = '%s/tbss_10K_%s_%s_%s_%sp_tstat%s.nii.gz' % (data_dir, stat, mode, cluster, correct, comparison)
-                out_file = '%s/tract_stats_%s_%s_%s_%s_%sp.txt' % (data_dir, stat, mode, num, cluster, correct)
+                out_file = '%s/0pct/TMP_tract_stats_%s_%s_%s_%s_%sp.txt' % (data_dir, stat, mode, num, cluster, correct)
 
                 if os.path.exists(res_file):
                     fid = open(out_file, 'w')
                     fid.write('TRACT\tVOXELS_SIG_DIFFERENT\tMNI_coordinates_of_peak_value\tP-value at peak\n')
                     # start with the 20 (compact) tracts
-                    rows = get_image_stats('/Applications/fsl/data/atlases/JHU/JHU-ICBM-tracts-maxprob-thr25-1mm.nii.gz',
+                    rows = get_image_stats('/Applications/fsl/data/atlases/JHU/JHU-ICBM-tracts-maxprob-thr0-1mm.nii.gz',
                                            '/Applications/fsl/data/atlases/JHU-tracts-withUnclassified.xml',
                                            res_file)
                     write_rows(fid, rows)
                     # then go for the 48 tracts
                     fid.write('\n\n\n')
-                    rows = get_image_stats('/Applications/fsl/data/atlases/JHU/JHU-ICBM-labels-1mm.nii.gz',
-                                           '/Applications/fsl/data/atlases/JHU-labels.xml',
+                    rows = get_image_stats('/Users/sudregp/data/results/tbss/JHU-labels-combined3.nii.gz',
+                                           '/Users/sudregp/data/results/tbss/JHU-labels_combined.xml',
                                            res_file)
                     write_rows(fid, rows)
                     fid.close()
