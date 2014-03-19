@@ -135,11 +135,11 @@ set outfilep = {$infilem}{$cbfsuf}
     set nskloutp = {$infilem}{_v0_nskl}
     #echo $nskloutp
     if !(-e {$nskloutp}{+orig.BRIK}) then
-	echo -n skull stripping..be patient..
+	   echo -n skull stripping..be patient..
     	@ nslpad = 16 - $ns
     
     	if ($nslpad < 0) then
-		set nslpad = 0
+		  set nslpad = 0
     	endif
 
     	3dZeropad -S $nslpad -I $nslpad -prefix pcaslM0images_padded pcaslM0images+orig.BRIK >>& $logfile
@@ -152,7 +152,7 @@ set outfilep = {$infilem}{$cbfsuf}
 
     #Create binary mask if needed
     set binmaskoutp =  {$infilem}{_v0_binmsk}
-    if !(-e {$binmaskoutp}{+orig.BRIK}) then
+    if !(-e {$binmaskoutp}{+orig.BRIK.gz}) then
 	3dcalc -a {$nskloutp}{+orig.BRIK} -expr 'step(a)' -prefix $binmaskoutp >>& $logfile
     endif
 
