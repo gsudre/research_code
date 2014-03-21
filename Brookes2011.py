@@ -6,7 +6,7 @@ from sklearn.decomposition import FastICA
 
 bands = [[1, 4], [4, 8], [8, 13], [13, 30], [30, 50]]
 reg = 4
-subjs_fname = '/Users/sudregp/data/meg/subjs1.txt'
+subjs_fname = '/Users/sudregp/tmp/subjs.txt'
 data_dir = '/mnt/neuro/MEG_data/'
 dir_out = '/users/sudregp/data/meg/'
 fid = open(subjs_fname, 'r')

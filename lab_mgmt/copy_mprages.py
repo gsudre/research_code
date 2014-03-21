@@ -5,8 +5,8 @@ import re
 import shutil
 
 
-copy_to = '/mnt/v3/philip3T/raw_dicoms_NCR_MASKIDS/%04d'
-maskid_file = '/Users/sudregp/tmp/maskids.txt'
+copy_to = '/Users/sudregp/tmp/%04d'
+maskid_file = '/Users/sudregp/tmp/mm.txt'
 
 fid = open(maskid_file, 'r')
 for maskid in fid:

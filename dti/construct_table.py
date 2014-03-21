@@ -10,9 +10,9 @@ import operator
 
 # these are changed often
 modes = ['FA']
-nums = ['95', '99', '995', '999']
+nums = ['95', '995']
 comparison = '1'
-stat = 'inatt'
+stat = 'DXG8_2vs3'
 clusters = ['tfce'] #'vox'
 
 # these will likely not change
@@ -135,7 +135,7 @@ for mode in modes:
                                                                   mode, num,
                                                                   cluster, correct)
                 orig_res_file = '%s/tbss_10K_%s_%s_%s_%sp_tstat%s.nii.gz' % (data_dir, stat, mode, cluster, correct, comparison)
-                out_file = '%s/0pct/TMP_tract_stats_%s_%s_%s_%s_%sp.txt' % (data_dir, stat, mode, num, cluster, correct)
+                out_file = '%s/0pct/tract_stats_%s_%s_%s_%s_%sp.txt' % (data_dir, stat, mode, num, cluster, correct)
 
                 if os.path.exists(res_file):
                     fid = open(out_file, 'w')

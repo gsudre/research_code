@@ -12,8 +12,8 @@ for (i in 1:nsubj) {
         tmp = c(tmp, data[i])
     }
 }
-a = read.table('~/data/results/tbss/plotdata_inatt_FA_limbicLeft.txt')
-b = read.table('~/data/results/tbss/plotdata_inatt_FA_limbicRight.txt')
+a = read.table('~/data/results/tbss/plotdata_inatt_FA_commissural0th.txt')
+b = read.table('~/data/results/tbss/plotdata_inatt_FA_commissural0th.txt')
 data = colMeans(rbind(a[,4:dim(a)[2]], b[,4:dim(b)[2]]))
 fit = lm(data~tmp)
 plot(tmp,data,xlab='Inattention symptoms',ylab='Mean FA')

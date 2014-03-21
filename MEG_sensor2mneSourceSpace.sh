@@ -12,7 +12,7 @@ export MRI=$3 # 3D nifti MRI structural image
 # 3.3 Cortical surface reconstruction with FreeSurfer . . . . . . . . .                          20
 #./make_brain_surface.sh $SUBJECT $MRI
 # recon-all -i $MRI -subjid $SUBJECT | tee "$SUBJECT"_surface.log
-recon-all -i $MRI -subjid $SUBJECT -all | tee -a "$SUBJECT"_surface.log
+#recon-all -i $MRI -subjid $SUBJECT -all | tee -a "$SUBJECT"_surface.log
 
 # 3.4 Setting up the anatomical MR images for MRIlab . . . . . . . .                             20
 mne_setup_mri

@@ -4,8 +4,8 @@ import operator
 import numpy as np
 import matplotlib.pyplot as plt
 
-fname = '/Users/sudregp/tmp/log2.txt'
-title_str = '1336 resting'
+fname = '/Users/sudregp/data/results/asl/log_1317_2.txt'
+title_str = '1317 resting'
 
 thresh = []
 outliers = []
@@ -39,7 +39,7 @@ label_data = sorted(label_data.iteritems(), key=operator.itemgetter(0))
 num_points = len(label_data[0][1])
 num_labels = len(label_data)/2
 x = np.array(thresh)
-plt.figure(1, figsize=(10.2, 8.5))
+plt.figure(figsize=(10.2, 8.5))
 plt_cnt = 1
 for h in ('left','right'):
     y = np.empty([num_points, num_labels])
