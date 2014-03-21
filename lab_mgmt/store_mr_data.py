@@ -29,7 +29,7 @@ symlinkFolder = '/Volumes/neuro/data_by_maskID/'
 
 # type of modalities we scan
 # note that these names need to be found in the README file!
-modInReadme = ['rage', 'fmri', 'rest', 'edti', 'clinical', 'fat_sat']  
+modInReadme = ['prage', 'fmri', 'rest', 'edti', 'clinical', 'fat_sat']  
 # how they should be called in the Scan record (same order!)
 modInCSV = ['MPRAGE', 'stop task', 'rest', 'eDTI', 'clinical', 'T2']
 
@@ -72,8 +72,6 @@ datesCollected = []
 scanTypes = []
 scanners = []
 maskIDs = []
-taskIDsCSV = []
-mprageQuality = []
 notes = []
 
 # while we still have subjects to uncompress
@@ -151,8 +149,6 @@ for fidx, file in enumerate(dicoms):
             datesCollected.append(datetime.datetime.strftime(myDate,'%m/%d/%Y'))
             scanTypes.append(modInCSV[midx])
             scanners.append('3TA')
-            taskIDsCSV.append('')
-            mprageQuality.append('')
             if mod=='edti':
                 # checking the duration of cdi99 if any
                 edti99_file = targetFolder + '/E' + scanId + '/cdiflist99'
@@ -167,13 +163,13 @@ for fidx, file in enumerate(dicoms):
                 notes.append('')
 
 
-headers = 'MRN,Date,Type,Scanner,Mask ID,MPRAGE quality,Task / MEG ID,Notes\n'
+headers = 'MRN,Date,Type,Scanner,Mask ID,Task / MEG ID,Notes,MPRAGE quality\n'
 fid = open(csvOutput, 'w')
 fid.write(headers)
 for i in range(len(subjectMRNs)):
     fid.write(subjectMRNs[i] + ',' + datesCollected[i] + ',' + scanTypes[i]
               + ',' + scanners[i] + ',' + str(maskIDs[i]) + ','
-              + mprageQuality[i] + ',' + taskIDsCSV[i] + ',' + notes[i] + '\n')
+              + '' + ',' + notes[i] + ',' + ''+ '\n')
 fid.close()
 
 print 'Done storing files in server and outputting CSV.'
