@@ -29,7 +29,7 @@ symlinkFolder = '/Volumes/neuro/data_by_maskID/'
 
 # type of modalities we scan
 # note that these names need to be found in the README file!
-modInReadme = ['prage', 'fmri', 'rest', 'edti', 'clinical', 'fat_sat']  
+modInReadme = ['rage_', 'fmri', 'rest', 'edti', 'clinical', 'fat_sat']  
 # how they should be called in the Scan record (same order!)
 modInCSV = ['MPRAGE', 'stop task', 'rest', 'eDTI', 'clinical', 'T2']
 
