@@ -32,7 +32,7 @@ for (p in 1:nperms) {
     for (v in 1:nvoxels) {
         fit = lm(data[v,]~randtmp)
         # CHECK THIS FOR EVERY MODEL!
-        stats[v] = summary(fit)$coefficients[2,3]
+        stats[v] = abs(summary(fit)$coefficients[2,3])
     }
     out[,4] = stats
     fname = sprintf('%s_%s-%05f', out_mask, Sys.info()["nodename"], runif(1, 1, 99999))
