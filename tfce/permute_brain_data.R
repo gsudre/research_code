@@ -1,23 +1,23 @@
-out_mask='~/data/tmp/perms/perm'
+out_mask='~/data/tmp/perms7/perm'
 data_dir = '~/data/dti/'
-nii_template = 'nvVSpersistent_FA_skeletonised.nii.gz'
+nii_template = 'persistentVSremitted_FA_skeletonised.nii.gz'
 gf = read.csv('~/tmp/FINAL_TSA_allClean149.csv')
 nperms = 20
-brain_data = read.table('~/data/dti/nvVSpersistent_FA_skeletonised.txt')
-data = gf$DX_GROUP
+brain_data = read.table('~/data/dti/persistentVSremitted_FA_skeletonised.txt')
+data = gf$SX_inattb
 nsubj = dim(gf)[1]
 tmp = vector()
-for (i in 1:nsubj) {
-    if (gf[i,]$DX_GROUP=='NV') {
-        tmp = c(tmp, data[i])
-    }
-}
 for (i in 1:nsubj) {
     if (gf[i,]$DX_GROUP=='persistent') {
         tmp = c(tmp, data[i])
     }
 }
-tmp = as.factor(tmp)
+for (i in 1:nsubj) {
+    if (gf[i,]$DX_GROUP=='remitted') {
+        tmp = c(tmp, data[i])
+    }
+}
+# tmp = as.factor(tmp)
 # tmp = gf$SX_inattb
 
 ###
@@ -29,10 +29,10 @@ stats = vector(length=nvoxels, mode="numeric")
 for (p in 1:nperms) {
     print(sprintf('perm %d',p))
     perm_labels <- sample.int(length(tmp), replace = FALSE)
-    randtmp = as.factor(tmp[perm_labels])
+    randtmp = tmp[perm_labels]
     for (v in 1:nvoxels) {
         # CHECK THIS FOR EVERY MODEL!
-        stats[v] = t.test(data[v,] ~ tmp, alternative="greater")$statistic
+        stats[v] = cor.test(data[v,], randtmp)$statistic
     }
     out[,4] = stats
     fname = sprintf('%s_%s-%05f', out_mask, Sys.info()["nodename"], runif(1, 1, 99999))
