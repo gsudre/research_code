@@ -10,10 +10,10 @@ if (mode=='tfce') {
     pattern = '[0-9].txt$' # ends in a number
 }
 files = list.files(path, pattern=pattern)
-nperms = 10#length(files)
+nperms = length(files)
 nvoxels = 80689
 null_dist_corr = vector(length=nperms) 
-ps = vector(length=nperms, mode='integer')
+ps = vector(length=nvoxels, mode='integer')
 results = read.table(fname)
 out = results[,1:4]
 results = as.matrix(results[,4:dim(results)[2]])
@@ -22,7 +22,7 @@ for (f in 1:nperms) {
     data = read.table(sprintf("%s/%s", path, files[f]))
     data = as.matrix(data[,4:dim(data)[2]])
     null_dist_corr[f] = max(data)
-    idx = which(data > results) 
+    idx = data > results 
     ps[idx] = ps[idx] + 1
 }
 ps = ps/nperms
