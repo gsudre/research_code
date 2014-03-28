@@ -1,23 +1,28 @@
-out_mask='~/data/tmp/perms7/perm'
+out_mask='~/data/results/tfce/perms3/perm'
 data_dir = '~/data/dti/'
-nii_template = 'persistentVSremitted_FA_skeletonised.nii.gz'
+# nii_template = 'persistentVSremitted_FA_skeletonised.nii.gz'
+nii_template = 'nvVSpersistent_FA_skeletonised.nii.gz'
 gf = read.csv('~/tmp/FINAL_TSA_allClean149.csv')
 nperms = 20
-brain_data = read.table('~/data/dti/persistentVSremitted_FA_skeletonised.txt')
-data = gf$SX_inattb
+# brain_data = read.table('~/data/dti/persistentVSremitted_FA_skeletonised.txt')
+brain_data = read.table('~/data/dti/nvVSpersistent_FA_skeletonised.txt')
+# data = gf$SX_inattb
+data = gf$DX_GROUP
 nsubj = dim(gf)[1]
 tmp = vector()
 for (i in 1:nsubj) {
+#     if (gf[i,]$DX_GROUP=='persistent') {
+    if (gf[i,]$DX_GROUP=='NV') {
+        tmp = c(tmp, data[i])
+    }
+}
+for (i in 1:nsubj) {
+#     if (gf[i,]$DX_GROUP=='remitted') {
     if (gf[i,]$DX_GROUP=='persistent') {
         tmp = c(tmp, data[i])
     }
 }
-for (i in 1:nsubj) {
-    if (gf[i,]$DX_GROUP=='remitted') {
-        tmp = c(tmp, data[i])
-    }
-}
-# tmp = as.factor(tmp)
+tmp = as.factor(tmp)
 # tmp = gf$SX_inattb
 
 ###
@@ -32,7 +37,8 @@ for (p in 1:nperms) {
     randtmp = tmp[perm_labels]
     for (v in 1:nvoxels) {
         # CHECK THIS FOR EVERY MODEL!
-        stats[v] = cor.test(data[v,], randtmp)$statistic
+#         stats[v] = cor.test(data[v,], randtmp)$statistic
+        stats[v] = t.test(data[v,] ~ randtmp, alternative="greater")$statistic
     }
     out[,4] = stats
     fname = sprintf('%s_%s-%05f', out_mask, Sys.info()["nodename"], runif(1, 1, 99999))
