@@ -1,12 +1,13 @@
-''' Goes through all the MR data in a list of mask ids, and copy the MPRAGE data to a specific folder '''
+''' Goes through all the MR data in a list of mask ids, and copy the last MPRAGE data to a specific folder. Usage: copy_mprages.py list.txt out_dir/ '''
 
 import glob
 import re
 import shutil
+import sys
 
 
-copy_to = '/Users/sudregp/tmp/%04d'
-maskid_file = '/Users/sudregp/tmp/mm.txt'
+maskid_file = sys.argv[1]
+copy_to = sys.argv[2] + '/%04d/'
 
 fid = open(maskid_file, 'r')
 for maskid in fid:
