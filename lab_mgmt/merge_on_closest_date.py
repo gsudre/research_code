@@ -19,14 +19,14 @@ else:
     mrn2 = int(sys.argv[6])
     out_file = sys.argv[7]
 
-# Use Tab-delimited files because we will evetually have notes section that include commas
-'''fname1 = '/Users/sudregp/Documents/dan/CPTreformatted02122014.txt'
-date1 = 8
-mrn1 = 0
-fname2 = '/Users/sudregp/Documents/dan/DICA 5-28-13 to go into labmatrix_fixed.txt'
-date2 = 2
-mrn2 = 0
-out_file = '/Users/sudregp/tmp/merged.txt' '''
+# # Use Tab-delimited files because we will evetually have notes section that include commas
+# fname1 = '/Users/sudregp/data/motor/gf_tilApril3rd_scan.txt'
+# date1 = 3
+# mrn1 = 4
+# fname2 = '/Users/sudregp/data/motor/gf_tilApril3rd_mb.txt'
+# date2 = 11
+# mrn2 = 0
+# out_file = '/Users/sudregp/tmp/merged.txt'
 
 
 ''' Prints warnings to the screen when we found invalid MRNs in a data matrix, or invalid dates. Remove them from the data as well so we don't run into trouble later '''
@@ -40,7 +40,8 @@ def clean_up(data, mrn_idx, date_idx):
             remove_rows.append(i)
         else:   
             try:
-                dt.datetime.strptime(data[i][date_idx], '%m/%d/%y')
+                mydate = dt.datetime.strptime(data[i][date_idx], '%m/%d/%y')
+                data[i][date_idx] = dt.datetime.strftime(mydate,'%m/%d/%Y')
             except:
                 try:
                     dt.datetime.strptime(data[i][date_idx], '%m/%d/%Y')
@@ -67,11 +68,11 @@ for row in range(len(data1)):
     # store row indexes in data2 that match the current mrn
     matching_rows = [i for i in range(len(data2)) 
                        if int(data1[row][mrn1])==int(data2[i][mrn2])]
-    row_date = dt.datetime.strptime(data1[row][date1], '%m/%d/%y')
+    row_date = dt.datetime.strptime(data1[row][date1], '%m/%d/%Y')
     # if we find the current MRN in data2
     if len(matching_rows) > 0:
         # figure out which row has a date that's closest to data1's date
-        matching_dates = [dt.datetime.strptime(data2[i][date2], '%m/%d/%y')
+        matching_dates = [dt.datetime.strptime(data2[i][date2], '%m/%d/%Y')
                           for i in matching_rows]
         date_diffs = [abs(row_date-i) for i in matching_dates]
         selected_row = matching_rows[np.argmin(date_diffs)]
@@ -85,7 +86,7 @@ for row in range(len(data1)):
     else:
         print 'WARNING: Did not find any matching data for', \
                data1[row][mrn1], 'on', \
-               dt.datetime.strftime(row_date,'%m/%d/%y')
+               dt.datetime.strftime(row_date,'%m/%d/%Y')
 
 print '\n\nFound %d matching records.\nWriting to %s'%(len(merged_data),out_file)
 
