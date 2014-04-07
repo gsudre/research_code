@@ -23,9 +23,9 @@ csvOutput = '/Users/sudregp/tmp/scans.csv'
 # where to find .tar.gz with downloaded MR data
 tmpFolder = '/Users/sudregp/Downloads/'
 # target folder to upack the data
-mrFolder = '/Volumes/neuro/MR_data/'
+mrFolder = '/Users/sudregp/tmp/MR_data/'#'/Volumes/neuro/MR_data/'
 # where to place symbolic links
-symlinkFolder = '/Volumes/neuro/data_by_maskID/'
+symlinkFolder = '/Users/sudregp/tmp/data_by_maskID/'#'/Volumes/neuro/data_by_maskID/'
 
 # type of modalities we scan
 # note that these names need to be found in the README file!
@@ -67,6 +67,7 @@ for file in dicoms:
 raw_input('\nPress any key to start sorting, or Ctrl+C to quit...')
 
 # lists to store info for CSV
+subjectNames = []
 subjectMRNs = []
 datesCollected = []
 scanTypes = []
@@ -142,6 +143,7 @@ for fidx, file in enumerate(dicoms):
     # get the information we'll need for the CSV file
     for midx, mod in enumerate(modInReadme):
         if check_for_data(mod, targetFolder):
+            subjectNames.append(subjectName)
             subjectMRNs.append(mrn) 
             maskIDs.append(curMaskId)
             myDate = file.split('-')[2]
@@ -163,13 +165,13 @@ for fidx, file in enumerate(dicoms):
                 notes.append('')
 
 
-headers = 'MRN,Date,Type,Scanner,Mask ID,Task / MEG ID,Notes,MPRAGE quality\n'
+headers = 'Name,MRN,Date,Type,Scanner,Mask ID,Task / MEG ID,Notes,MPRAGE quality\n'
 fid = open(csvOutput, 'w')
 fid.write(headers)
 for i in range(len(subjectMRNs)):
-    fid.write(subjectMRNs[i] + ',' + datesCollected[i] + ',' + scanTypes[i]
-              + ',' + scanners[i] + ',' + str(maskIDs[i]) + ','
-              + '' + ',' + notes[i] + ',' + ''+ '\n')
+    fid.write(subjectNames[i] + ',' + subjectMRNs[i] + ',' + 
+              datesCollected[i] + ',' + scanTypes[i] + ',' + scanners[i] + 
+              ',' + str(maskIDs[i]) + ',' + '' + ',' + notes[i] + ',' + ''+ '\n')
 fid.close()
 
 print 'Done storing files in server and outputting CSV.'
