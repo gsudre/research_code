@@ -1,12 +1,19 @@
-# the goal is to find the maximum separation between the groups when we permute
-# the data. in the end we should have one matrix per time, and each matrix is
-# ESthresh by nperms
+# Finds the maximum connectiviy between a voxel in the thalamus and vertices in the other brain region. It appends to a text file so that we can run multiple instances of this script at the same time.
 
 source('~/research_code/correlation_analysis/macacc_massage_data_matched_diff.R')
 set.seed( as.integer((as.double(Sys.time())*1000+Sys.getpid()) %% 2^31) )
-nperms = 270
+nperms = 3
 thresh=.5
-nverts = dim(thalamusR)[2]
+hemi = 'R'
+other = 'gp'
+time = 'baseline'
+outdir = '~/data/results/simple/'
+fname = sprintf('%s/perm_conn_thresh%0.2f_thalamus%s%s%s_%s.txt',
+                outdir,thresh,hemi,other,hemi,time)
+
+eval(parse(text=sprintf('thalamus = thalamus%s', hemi)))
+eval(parse(text=sprintf('target = %s%s', other, hemi)))
+nverts = dim(thalamus)[2]
 
 getESfromR <- function(m1, m2) {
     a = cbind(m1, m2)
@@ -38,49 +45,39 @@ binarize <- function(m, t) {
     return(bm)
 }
 
-#### baseline or last
-# v = 'baseline'
-# for (p in 1:nperms) {
-#     cat(p,'\n')
-#     idx = which(visit==v)
-#     perm_labels <- sample.int(length(idx), replace = FALSE)
-#     perm_idx = idx[perm_labels]
-#     es = getESfromR(thalamusR[idx,], gpR[perm_idx,])
-#     bes = binarize(abs(es),thresh)
-#     perm_link = max(rowSums(es))/dim(es)[2]
-#     write(perm_link,
-#           file=sprintf('~/data/results/structural_v2/perm_conn_thresh%0.2f_thalamusRgpR_%s.txt',
-#                        thresh, v),
-#           append=T)
-# }
-
-
-#### diff
-for (p in 1:nperms) {
-    cat(p,'\n')
-    idx = which(visit=='baseline')
-    perm_labels <- sample.int(length(idx), replace = FALSE)
-    perm_idx = idx[perm_labels]
-    es = getESfromR(thalamusR[idx+1,] - thalamusR[idx,], 
-                    cortexR[perm_idx+1,] - cortexR[perm_idx,])
-    bes = binarize(abs(es),thresh)
-    perm_link = max(rowSums(es))/dim(es)[2]
-    write(perm_link,
-          file=sprintf('~/data/results/simple/perm_conn_thresh%0.2f_thalamusRcortexR_diff.txt', thresh),
-          append=T)
+if (time=='baseline' || time=='last') {
+    for (p in 1:nperms) {
+        cat(p,'\n')
+        idx = which(visit==time)
+        perm_labels <- sample.int(length(idx), replace = FALSE)
+        perm_idx = idx[perm_labels]
+        es = getESfromR(thalamus[idx,], target[perm_idx,])
+        bes = binarize(abs(es),thresh)
+        perm_link = max(rowSums(es))/dim(es)[2]
+        write(perm_link, file=fname, append=T)
+    }
+} else if (time=='diff') {
+    for (p in 1:nperms) {
+        cat(p,'\n')
+        idx = which(visit=='baseline')
+        perm_labels <- sample.int(length(idx), replace = FALSE)
+        perm_idx = idx[perm_labels]
+        es = getESfromR(thalamus[idx+1,] - thalamus[idx,], 
+                        target[perm_idx+1,] - target[perm_idx,])
+        bes = binarize(abs(es),thresh)
+        perm_link = max(rowSums(es))/dim(es)[2]
+        write(perm_link, file=fname, append=T)
+    }
+} else if (time=='delta') {
+    for (p in 1:nperms) {
+        cat(p,'\n')
+        idx = which(visit=='baseline')
+        perm_labels <- sample.int(length(idx), replace = FALSE)
+        perm_idx = idx[perm_labels]
+        es = getESfromDeltaInR(thalamus[idx,], target[perm_idx,],
+                               thalamus[idx+1,], target[perm_idx+1,])
+        bes = binarize(abs(es),thresh)
+        perm_link = max(rowSums(es))/dim(es)[2]
+        write(perm_link, file=fname, append=T)
+    }
 }
-
-#### delta
-# for (p in 1:nperms) {
-#     cat(p,'\n')
-#     idx = which(visit=='baseline')
-#     perm_labels <- sample.int(length(idx), replace = FALSE)
-#     perm_idx = idx[perm_labels]
-#     es = getESfromDeltaInR(thalamusR[idx,], gpR[perm_idx,],
-#                            thalamusR[idx+1,], gpR[perm_idx+1,])
-#     bes = binarize(abs(es),thresh)
-#     perm_link = max(rowSums(es))/dim(es)[2]
-#     write(perm_link,
-#           file=sprintf('~/data/results/structural_v2/perm_conn_thresh%0.2f_thalamusRgpR_delta.txt', thresh),
-#           append=T)
-# }
