@@ -1,11 +1,11 @@
 thresh=.5
 hemi = 'R'
-other = 'cortex'
-time = 'diff'
-g1 = 'NV'
+other = 'gp'
+time = 'baseline'
+g1 = 'remission'
 g2 = 'persistent'
-g3 = 'remission'
-
+g3 = 'NV'
+conn_thresh=.39
 
 mat = readMat('~/Documents/surfaces/IMAGING_TOOLS/thalamus.mat')
 if (hemi=='R') {
@@ -31,10 +31,10 @@ binarize <- function(m, t) {
 
 # the idea is to assign a number to each cluster of continuous good voxels.
 # then we can remove the clusters with smallest number of voxels
-fname = sprintf('~/data/results/simple/%sthalamus2%s_diff_thresh0.50_%sOnly.txt', 
-                hemi, other, g1)
+fname = sprintf('~/data/results/simple/%sthalamus2%s_%s_thresh0.50_%sOnly.txt', 
+                hemi, other, time, g1)
 res = read.table(fname, skip=3)
-roi = res[,1]>.23
+roi = res[,1]>conn_thresh
 
 clusters = vector(mode='numeric', length=length(roi))
 clusters[roi] = -1 # everything -1 needs to be painted

@@ -1,9 +1,9 @@
 thresh=.5
 hemi = 'R'
-other = 'cortex'
-time = 'diff'
-g1 = 'NV'
-g2 = 'remission'
+other = 'gp'
+time = 'baseline'
+g1 = 'remission'
+g2 = 'NV'
 g3 = 'persistent'
 
 # fname = sprintf('~/data/results/simple/%sthalamus2%s_%s_thresh%.2f_%sOnly.txt', 

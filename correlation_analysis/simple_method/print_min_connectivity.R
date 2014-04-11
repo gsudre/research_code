@@ -1,5 +1,5 @@
-other = 'cortex'
-files = c('diff')
+other = 'striatum'
+files = c('baseline')
 thresh = .5
 hemi = 'R'
 ci = vector(mode='numeric',length=length(files))
