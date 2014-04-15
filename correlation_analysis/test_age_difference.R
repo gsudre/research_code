@@ -1,6 +1,6 @@
 dsm = 5
-g1 = 'remission'
-g2 = 'persistent'
+g1 = 'NV'
+g2 = 'remission'
 gf = read.csv(sprintf('~/data/structural/gf_1473_dsm45_matched_on18_dsm5_diff_2to1_v2.csv', dsm))
 idx = gf$group==g1 | gf$group==g2
 age_diff = array()
@@ -21,6 +21,13 @@ for (subj in subjects) {
         cnt = cnt+1
     }
 }
+
+# # Uncomment this if only using the first 32 NV subjects!
+# groups = groups[1:64]
+# age_base = age_base[1:64]
+# age_fu = age_fu[1:64]
+# age_diff = age_diff[1:64]
+
 print(t.test(age_base ~ as.factor(groups), var.equal=T))
 print(t.test(age_fu ~ as.factor(groups), var.equal=T))
 print(t.test(age_diff ~ as.factor(groups), var.equal=T))
