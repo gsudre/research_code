@@ -2,14 +2,16 @@
 
 source('~/research_code/correlation_analysis/macacc_massage_data_matched_diff.R')
 set.seed( as.integer((as.double(Sys.time())*1000+Sys.getpid()) %% 2^31) )
-nperms = 3
-thresh=.5
-hemi = 'R'
-other = 'gp'
-time = 'baseline'
+nperms = 10
+thresh = .5
+hemi = 'L'
+other = 'cortex'
+time = 'diff'
 outdir = '~/data/results/simple/'
-fname = sprintf('%s/perm_conn_thresh%0.2f_thalamus%s%s%s_%s.txt',
-                outdir,thresh,hemi,other,hemi,time)
+fname = sprintf('%s/perm_conn_thresh%0.2f_%s%sthalamus%s_%s.txt',
+                outdir,thresh,other,hemi,hemi,time)
+# fname = sprintf('%s/perm_conn_thresh%0.2f_thalamus%s%s%s_%s.txt',
+                # outdir,thresh,hemi,other,hemi,time)
 
 eval(parse(text=sprintf('thalamus = thalamus%s', hemi)))
 eval(parse(text=sprintf('target = %s%s', other, hemi)))
@@ -53,7 +55,8 @@ if (time=='baseline' || time=='last') {
         perm_idx = idx[perm_labels]
         es = getESfromR(thalamus[idx,], target[perm_idx,])
         bes = binarize(abs(es),thresh)
-        perm_link = max(rowSums(es))/dim(es)[2]
+        # perm_link = max(rowSums(es))/dim(es)[2]
+        perm_link = max(colSums(es))/dim(es)[1]
         write(perm_link, file=fname, append=T)
     }
 } else if (time=='diff') {
@@ -65,7 +68,8 @@ if (time=='baseline' || time=='last') {
         es = getESfromR(thalamus[idx+1,] - thalamus[idx,], 
                         target[perm_idx+1,] - target[perm_idx,])
         bes = binarize(abs(es),thresh)
-        perm_link = max(rowSums(es))/dim(es)[2]
+        # perm_link = max(rowSums(es))/dim(es)[2]
+        perm_link = max(colSums(es))/dim(es)[1]
         write(perm_link, file=fname, append=T)
     }
 } else if (time=='delta') {
@@ -77,7 +81,8 @@ if (time=='baseline' || time=='last') {
         es = getESfromDeltaInR(thalamus[idx,], target[perm_idx,],
                                thalamus[idx+1,], target[perm_idx+1,])
         bes = binarize(abs(es),thresh)
-        perm_link = max(rowSums(es))/dim(es)[2]
+        # perm_link = max(rowSums(es))/dim(es)[2]
+        perm_link = max(colSums(es))/dim(es)[1]
         write(perm_link, file=fname, append=T)
     }
 }
