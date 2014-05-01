@@ -2,9 +2,9 @@
 thresh=.5
 hemi = 'R'
 other = 'cortex'
-time = 'diff'
+time = 'baseline'
 g = 'persistent'
-conn_thresh = .26
+conn_thresh = .36
 max_vertices = 100
 max_clusters = 5
 
@@ -85,18 +85,8 @@ for (i in 1:min(length(good_clusters),max_clusters)) {
 fname = sprintf('~/data/results/simple/%s%s2thalamus_ROIs_%s_thresh%.2f_%s.txt', hemi, other, time, thresh, g)
 write_vertices(cl_rois, fname, c(g))
 
-# finally, for each roi, create the a file for its connections
+# create a binary connection matrix for future use
 load(sprintf('~/data/results/simple/es%s_thalamus2%s_%s_%s.RData',
                  hemi, other, time, g))
 es = abs(es)
 bes = binarize(es,thresh)
-# for (i in 1:max_clusters) {
-#     myroi = which(cl_rois==i)
-#     paint_voxels = which(colSums(bes[myroi,])>0)
-#     data = vector(mode='numeric',length=dim(bes)[2])
-#     for (v in 1:length(paint_voxels)) {
-#        data[paint_voxels[v]] = i
-#     }
-#     fname = sprintf('~/data/results/simple/%s%s_ROI%d_%s_thresh%.2f_%s.txt', hemi, other, i, time, thresh, g)
-#     write_vertices(data, fname, c(g))
-# }

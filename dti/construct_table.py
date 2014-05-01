@@ -10,9 +10,9 @@ import operator
 
 # these are changed often
 modes = ['FA']
-nums = ['95', '995']
-comparison = '1'
-stat = 'DXG8_2vs3'
+nums = ['95']
+comparison = '2'
+stat = 'intersect_nvVSrem_nvVSper_comp1_covs'
 clusters = ['tfce'] #'vox'
 
 # these will likely not change
@@ -48,7 +48,9 @@ def get_row(data, voxels, orig_data):
     num_good_voxels = np.sum(np.multiply(voxels, data>=data_thresh))
     # if there's a voxel in the label, let's report some stuff
     if num_good_voxels > 0:
-        mni, p = get_voxel_stats(data, voxels, res_file, orig_data)
+        p = '-'
+        mni = '-'
+        # mni, p = get_voxel_stats(data, voxels, res_file, orig_data)
     else:
         p = '-'
         mni = '-'
@@ -82,8 +84,8 @@ def get_image_stats(label_file, desc_file, res_file):
     img = nib.load(res_file)
     data = img.get_data()
 
-    img = nib.load(orig_res_file)
-    orig_data = img.get_data()
+    # img = nib.load(orig_res_file)
+    orig_data = 0#img.get_data()
 
     # for each tract, figure out how many labels in the tract are significant
     total_voxels = []
@@ -119,6 +121,20 @@ def write_rows(fid, rows):
                        str(rows[3][i]), rows[4][i]]))
         fid.write('\n')
 
+''' Quick hack to write down the summary of all tracts in the compact atlas. It assumes that the tracts are in alphabetical order '''
+def write_summary(fid, rows):
+    tract_names = ['Projection L', 'Projection R', 'Cingulum L', 'Cingulum R', 'Commisural', 'Association L', 'Association R']
+    tracts_nums = [[0, 6], [1, 7], [2, 4], [3, 5], [8, 9], [10, 12, 14, 16, 18], [11, 13, 15, 17, 19]]
+    for i in range(len(tract_names)):
+        tot = 0
+        good = 0
+        for t in tracts_nums[i]:
+            tot += rows[1][t]
+            good += rows[2][t]
+        fid.write('\t'.join([tract_names[i], 
+                       '%d / %d (%.2f%%)'%(good, tot, 100.*good/tot),
+                       str(rows[3][i]), rows[4][i]]))
+        fid.write('\n')
 
 for mode in modes:
     for num in nums:
@@ -135,7 +151,7 @@ for mode in modes:
                                                                   mode, num,
                                                                   cluster, correct)
                 orig_res_file = '%s/tbss_10K_%s_%s_%s_%sp_tstat%s.nii.gz' % (data_dir, stat, mode, cluster, correct, comparison)
-                out_file = '%s/0pct/tract_stats_%s_%s_%s_%s_%sp.txt' % (data_dir, stat, mode, num, cluster, correct)
+                out_file = '%s/summary/tract_stats_%s_%s_%s_%s_%sp.txt' % (data_dir, stat, mode, num, cluster, correct)
 
                 if os.path.exists(res_file):
                     fid = open(out_file, 'w')
@@ -145,6 +161,8 @@ for mode in modes:
                                            '/Applications/fsl/data/atlases/JHU-tracts-withUnclassified.xml',
                                            res_file)
                     write_rows(fid, rows)
+                    fid.write('\n')
+                    write_summary(fid, rows)
                     # then go for the 48 tracts
                     fid.write('\n\n\n')
                     rows = get_image_stats('/Users/sudregp/data/results/tbss/JHU-labels-combined3.nii.gz',

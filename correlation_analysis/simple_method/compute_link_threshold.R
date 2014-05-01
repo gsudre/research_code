@@ -2,10 +2,10 @@
 
 source('~/research_code/correlation_analysis/macacc_massage_data_matched_diff.R')
 set.seed( as.integer((as.double(Sys.time())*1000+Sys.getpid()) %% 2^31) )
-nperms = 10
+nperms = 5
 thresh = .5
-hemi = 'R'
-other = 'cortex'
+hemi = 'L'
+other = 'striatum'
 time = 'diff'
 outdir = '~/data/results/simple/'
 fnameToThal = sprintf('%s/perm_conn_bin_thresh%0.2f_%s%sthalamus%s_%s.txt',

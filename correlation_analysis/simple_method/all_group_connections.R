@@ -1,6 +1,6 @@
 thresh=.5
 hemi = c('L','R')
-other = 'gp'
+other = 'cortex'
 time = c('baseline','last','diff')
 groups = c('NV', 'remission', 'persistent')
 
@@ -21,17 +21,16 @@ for (g in groups) {
             bes = binarize(es,thresh)
             
             # first dimension is the thalamus, so assign colors to it
-            paint_voxels = which(rowSums(bes)>0)
-            data = vector(mode='numeric',length=dim(bes)[1])
-            # paint each vertex in the thalamus with how many voxels it connects to
-            # this way we can get a sense of how sparse out plot willl be for the 
-            #other brain region
-            for (v in 1:length(paint_voxels)) {
-                data[paint_voxels[v]] = sum(bes[paint_voxels[v],])/dim(bes)[2]
-            }
+            thal_nverts = dim(bes)[1]
+            other_nverts = dim(bes)[2]
+            connectedness = rowSums(bes)/other_nverts
             fname = sprintf('~/data/results/simple/%sthalamus2%s_%s_thresh%.2f_%s.txt', 
                             h, other, t, thresh, g)
-            write_vertices(data, fname, c(g))
+            write_vertices(connectedness, fname, c(g))
+            connectedness = colSums(bes)/thal_nverts
+            fname = sprintf('~/data/results/simple/%s%s2thalamus_%s_thresh%.2f_%s.txt', 
+                            h, other, t, thresh, g)
+            write_vertices(connectedness, fname, c(g))
         }
     }
     

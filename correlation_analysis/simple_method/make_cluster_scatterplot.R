@@ -1,5 +1,12 @@
 # source('~/research_code/correlation_analysis/macacc_massage_data_matched_diff.R')
-my_roi = clusters==5  # get this from separate_other_rois_per_group.R
+
+# get this from separate_other_rois_per_group.R
+my_roi = b==4#paintme==2#clusters==1  
+
+# some extra ROI massaging
+# load('~/data/results/simple/clusterROIs')
+# my_roi = my_roi & cingulate
+
 cor = rowSums(cortexR[,my_roi])
 other_roi = which(rowSums(bes[,my_roi])>0)
 tha = rowSums(thalamusR[,other_roi])

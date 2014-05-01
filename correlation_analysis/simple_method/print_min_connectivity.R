@@ -17,16 +17,16 @@ get_min_connectivity <- function(other, time, hemi, pct, thresh, to_thalamus) {
     return(ci)
 }
 
-other = 'gp'
-files = c('baseline', 'last', 'diff')
+other = 'cortex'
+files = c('diff', 'last', 'baseline')
 thresh = .5
-hemi = 'R'
-pct = .99
+hemi = 'L'
+pct = .999
 for (f in files) {
-    ci = get_min_connectivity(other, f, hemi, pct, thresh, F)
-    cat('Threshold:', thresh,'-> thalamus to', other, sprintf('(%s)', hemi), '\n')
-    cat(f,':', ci,'\n')
-#     ci = get_min_connectivity(other, f, hemi, pct, thresh, T)
-#     cat('Threshold:', thresh,'->', other, sprintf('to thalamus (%s)', hemi), '\n')
+#     ci = get_min_connectivity(other, f, hemi, pct, thresh, F)
+#     cat('Threshold:', thresh,'-> thalamus to', other, sprintf('(%s)', hemi), '\n')
 #     cat(f,':', ci,'\n')
+    ci = get_min_connectivity(other, f, hemi, pct, thresh, T)
+    cat('Threshold:', thresh,'->', other, sprintf('to thalamus (%s)', hemi), '\n')
+    cat(f,':', ci,'\n')
 }

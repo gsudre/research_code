@@ -21,7 +21,7 @@ getESfromDeltaInR <- function(m11, m12, m21, m22) {
     return(es)
 }
 
-groups = c('NV','persistent','remission')
+groups = c('NV')#,'persistent','remission')
 visits = c('baseline','last')
 
 # creating the effect size matrices and saving to disk
@@ -31,12 +31,12 @@ for (g in groups) {
     for (v in visits) {
         cat('\t',v,'\n')
         idx = group==g & visit==v
-        esThalamusLgpL = getESfromR(thalamusL[idx,], gpL[idx,])
-        esThalamusLstriatumL = getESfromR(thalamusL[idx,], striatumL[idx,])
-        esThalamusLcortexL = getESfromR(thalamusL[idx,], cortexL[idx,])        
-        save(esThalamusLstriatumL,esThalamusLgpL,esThalamusLcortexL,
-             file=sprintf('~/data/results/structural_v2/es_%s_%s.RData',g,v))
-        rm(esThalamusLstriatumL,esThalamusLgpL,esThalamusLcortexL)
+        esThalamusRgpR = getESfromR(thalamusR[idx,], gpR[idx,])
+        esThalamusRstriatumR = getESfromR(thalamusR[idx,], striatumR[idx,])
+        esThalamusRcortexR = getESfromR(thalamusR[idx,], cortexR[idx,])        
+        save(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR,
+             file=sprintf('~/data/results/structural_1to1/es_%s_%s.RData',g,v))
+        rm(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR)
     }
     # WE ASSUME THAT SUBJECTS ARE IN THE SAME ORDER FOR BASELINE AND LAST SCANS
     idx1 = group==g & visit=='baseline'
@@ -44,19 +44,19 @@ for (g in groups) {
     
     # calculating diff (correlation of the difference)
     cat('\t diff\n')
-    esThalamusLgpL = getESfromR(thalamusL[idx2,]-thalamusL[idx1,], gpL[idx2,]-gpL[idx1,])
-    esThalamusLstriatumL = getESfromR(thalamusL[idx2,]-thalamusL[idx1,], striatumL[idx2,]-striatumL[idx1,])
-    esThalamusLcortexL = getESfromR(thalamusL[idx2,]-thalamusL[idx1,], cortexL[idx2,]-cortexL[idx1,])
-    save(esThalamusLstriatumL,esThalamusLgpL,esThalamusLcortexL,
-         file=sprintf('~/data/results/structural_v2/es_%s_diff.RData',g))
-    rm(esThalamusLstriatumL,esThalamusLgpL,esThalamusLcortexL)
+    esThalamusRgpR = getESfromR(thalamusR[idx2,]-thalamusR[idx1,], gpR[idx2,]-gpR[idx1,])
+    esThalamusRstriatumR = getESfromR(thalamusR[idx2,]-thalamusR[idx1,], striatumR[idx2,]-striatumR[idx1,])
+    esThalamusRcortexR = getESfromR(thalamusR[idx2,]-thalamusR[idx1,], cortexR[idx2,]-cortexR[idx1,])
+    save(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR,
+         file=sprintf('~/data/results/structural_1to1/es_%s_diff.RData',g))
+    rm(esThalamusRstriatumR,esThalamusRgpR,esThalamusRcortexR)
     
-    # calculating delta (difference of correlations)
-    cat('\t delta\n')
-    esThalamusLgpL = getESfromDeltaInR(thalamusL[idx1,], gpL[idx1,], thalamusL[idx2,], gpL[idx2,])
-    esThalamusLstriatumL = getESfromDeltaInR(thalamusL[idx1,], striatumL[idx1,], thalamusL[idx2,], striatumL[idx2,])
-    esThalamusLcortexL = getESfromDeltaInR(thalamusL[idx1,], cortexL[idx1,], thalamusL[idx2,], cortexL[idx2,])
-    save(esThalamusLstriatumL,esThalamusLgpL,esThalamusLcortexL,
-         file=sprintf('~/data/results/structural_v2/es_%s_delta.RData',g))
-    rm(esThalamusLstriatumL,esThalamusLgpL,esThalamusLcortexL)
+    # # calculating delta (difference of correlations)
+    # cat('\t delta\n')
+    # esThalamusLgpL = getESfromDeltaInR(thalamusL[idx1,], gpL[idx1,], thalamusL[idx2,], gpL[idx2,])
+    # esThalamusLstriatumL = getESfromDeltaInR(thalamusL[idx1,], striatumL[idx1,], thalamusL[idx2,], striatumL[idx2,])
+    # esThalamusLcortexL = getESfromDeltaInR(thalamusL[idx1,], cortexL[idx1,], thalamusL[idx2,], cortexL[idx2,])
+    # save(esThalamusLstriatumL,esThalamusLgpL,esThalamusLcortexL,
+    #      file=sprintf('~/data/results/structural_v2/es_%s_delta.RData',g))
+    # rm(esThalamusLstriatumL,esThalamusLgpL,esThalamusLcortexL)
 }

@@ -6,7 +6,7 @@ from sklearn.decomposition import FastICA
 
 bands = [[1, 4], [4, 8], [8, 13], [13, 30], [30, 50]]
 reg = 4
-subjs_fname = '/Users/sudregp/data/meg/usable_nv_pm2std.txt'
+subjs_fname = '/Users/sudregp/data/meg/usable_subjects_pm2std.txt'
 data_dir = '/mnt/neuro/MEG_data/'
 dir_out = '/Users/sudregp/data/meg/'
 fid = open(subjs_fname, 'r')
@@ -45,13 +45,14 @@ fid.close()
 #     stc = mne.morph_data(subj, subject_to, stc_from, grade=vertices_to)
 #     stc.save('/Users/sudregp/data/meg/morphed-lcmv-beta-' + subj)
 
+
 # concatenate all subjects and apply ICA
 band_ICs = []
 band_corr_ICs = []
 for l_freq, h_freq in bands:
     print 'Concatenating sources in band %d to %d Hz'%(l_freq, h_freq)
     init_sources = 20500
-    init_time = 22300
+    init_time = 38500
     # create huge array so we can add all the data and then resize it appropriately
     data = np.empty([init_sources, init_time])
     data[:] = np.nan
