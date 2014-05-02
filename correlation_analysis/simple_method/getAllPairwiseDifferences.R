@@ -20,38 +20,33 @@ noth = dim(oth)[2]
 nvVSper = matrix(nrow=ntha, ncol=noth)
 nvVSrem = matrix(nrow=ntha, ncol=noth)
 perVSrem = matrix(nrow=ntha, ncol=noth)
-for (i in 1:ntha) {
-    cat(i,'\n')
-    for (j in 1:noth) {
-        rs = vector()
-        for (gr in groups) {
-            idx = group==gr
-            x = tha[idx, i]
-            y = oth[idx, j]
-            if (time=='diff') {
-                x = x[seq(2,length(x),2)] - x[seq(1,length(x),2)]
-                y = y[seq(2,length(y),2)] - y[seq(1,length(y),2)]
-            } else if (time=='baseline') {
-                x = x[seq(1,length(x),2)]
-                y = y[seq(1,length(y),2)]
-            } else {
-                x = x[seq(2,length(x),2)]
-                y = y[seq(2,length(y),2)]
-            }
-            my_r = cor.test(y,x)
-            if (my_r$p.value < thresh) {
-                rs = c(rs, my_r$estimate)
-            }
-        }
-        # if we have as many good tests as the number of groups
-        if (length(rs)==length(groups)) {
-            nvVSper[i,j] = get_pval_from_Rs(rs[1],64,rs[2],32)
-            nvVSrem[i,j] = get_pval_from_Rs(rs[1],64,rs[3],32)
-            perVSrem[i,j] = get_pval_from_Rs(rs[2],32,rs[3],32)
-        } else {
-            nvVSper[i,j] = NA
-            nvVSrem[i,j] = NA
-            perVSrem[i,j] = NA
-        }
+cat('Checking groupwise r\n')
+for (gr in groups) {
+    idx = group==gr
+    x = tha[idx,]
+    y = oth[idx,]
+    if (time=='diff') {
+        x = x[seq(2,sum(idx),2)] - x[seq(1,sum(idx),2),]
+        y = y[seq(2,sum(idx),2)] - y[seq(1,sum(idx),2),]
+    } else if (time=='baseline') {
+        x = x[seq(1,sum(idx),2),]
+        y = y[seq(1,sum(idx),2),]
+    } else {
+        x = x[seq(2,sum(idx),2),]
+        y = y[seq(2,sum(idx),2),]
     }
+    # formulas from https://stat.ethz.ch/pipermail/r-help/2000-January/009758.html
+    r = cor(x, y)
+    dfr = dim(x)[1]-2
+    Fstat = r^2 * dfr / (1 - r^2)
+    p = 1 - pf(Fstat, 1, dfr)
+    eval(parse(text=sprintf('rMask_%s = p<thresh', gr)))
+    eval(parse(text=sprintf('r_%s = r', gr)))
+}
+eval(parse(text=sprintf('good_pairs = which(rMask_%s & rMask_%s & rMask_%s)', groups[1], groups[2], groups[3])))
+print('Evaluating good pairs')
+for (i in good_pairs) {
+    nvVSper[i] = get_pval_from_Rs(r_NV[i],64,r_persistent[i],32)
+    nvVSrem[i] = get_pval_from_Rs(r_NV[i],64,r_remission[i],32)
+    perVSrem[i] = get_pval_from_Rs(r_persistent[i],32,r_remission[i],32)
 }
