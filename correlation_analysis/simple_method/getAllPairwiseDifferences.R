@@ -1,6 +1,6 @@
 source('~/research_code/correlation_analysis/macacc_massage_data_matched_diff.R')
 thresh=.05
-hemi = 'L'
+hemi = 'R'
 other = 'cortex'
 time = 'diff'
 groups = c('NV', 'persistent', 'remission')
@@ -20,20 +20,21 @@ noth = dim(oth)[2]
 nvVSper = matrix(nrow=ntha, ncol=noth)
 nvVSrem = matrix(nrow=ntha, ncol=noth)
 perVSrem = matrix(nrow=ntha, ncol=noth)
-cat('Checking groupwise r\n')
 for (gr in groups) {
-    idx = group==gr
-    x = tha[idx,]
-    y = oth[idx,]
-    if (time=='diff') {
-        x = x[seq(2,sum(idx),2)] - x[seq(1,sum(idx),2),]
-        y = y[seq(2,sum(idx),2)] - y[seq(1,sum(idx),2),]
-    } else if (time=='baseline') {
-        x = x[seq(1,sum(idx),2),]
-        y = y[seq(1,sum(idx),2),]
+    cat('Checking groupwise r for', gr, '\n')
+    if (time=='last' || time=='baseline') {
+        idx = group==gr
+        idx2 = visit==time
+        x = tha[idx&idx2,]
+        y = oth[idx&idx2,]
     } else {
-        x = x[seq(2,sum(idx),2),]
-        y = y[seq(2,sum(idx),2),]
+        nobs = dim(tha)[1]
+        x = tha[seq(2,nobs,2),] - tha[seq(1,nobs,2),]
+        y = oth[seq(2,nobs,2),] - oth[seq(1,nobs,2),]
+        my_group = group[seq(1,nobs,2)]
+        idx = my_group==gr
+        x = x[idx,]
+        y = y[idx,]
     }
     # formulas from https://stat.ethz.ch/pipermail/r-help/2000-January/009758.html
     r = cor(x, y)
