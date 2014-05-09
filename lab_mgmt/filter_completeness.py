@@ -1,18 +1,18 @@
-''' Run in Qiagram completeness_v2 first, and change the column indexes below properly. Save the Qiagram results as a Tab delimited file. '''
+''' Run in Qiagram completeness_v3 first, and change the column indexes below properly. Save the Qiagram results as a Tab delimited file. '''
 
 import numpy as np
 import datetime as dt
 import csv
 
-fname = '/Users/sudregp/Downloads/Results 11.txt'
-scan_date_idx = 6
+fname = '/Users/sudregp/Downloads/Results 9.txt'
+scan_date_idx = 7
 # last column before tests and interviews
-last_clean_column_idx = 13
-test_dates = {'IQ': [15, 17, 30, 32, 34], 'ClinicalInterview': [20, 23, 28]}  
+last_clean_column_idx = 14
+test_dates = {'IQ': [15, 19, 23, 27, 32], 'ClinicalInterview': [38, 41, 46]}  
 # in the same order as specified in test_names, the the order according to test_data_names
-test_data = {'IQ': [[14], [16], [29], [31], [33]], 
-            'ClinicalInterview': [[18, 19], [21, 22], [24, 25, 26, 27]]}
-test_names = {'IQ': ['WASI-II', 'WASI-I', 'WTAR', 'WPPSI-IV', 'WPPSI-III'], 'ClinicalInterview': ['ClinicallyAdministeredSX', 'DICA', 'CAADID']}
+test_data = {'IQ': [[16], [20], [24], [28], [33]], 
+            'ClinicalInterview': [[39, 40], [42, 43, 44, 45], [47, 48]]}
+test_names = {'IQ': ['WASI-I', 'WASI-II', 'WTAR', 'WPPSI-III', 'WPPSI-IV'], 'ClinicalInterview': ['DICA', 'CAADID', 'ClinicallyAdministeredSX']}
 test_data_names = {'IQ': ['FSIQ'], 'ClinicalInterview': ['Inattention','HI','Inattention (past)','HI (past)']}
 
 
@@ -51,6 +51,7 @@ for m in maskids:
                 mask_data.append(d)
         # if there are no dates for any tests, add a blank string
         else:
+            mask_data.append('')
             mask_data.append('')
             mask_data.append('')
 
