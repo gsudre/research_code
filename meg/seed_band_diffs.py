@@ -4,7 +4,7 @@ import mne
 import numpy as np
 from scipy import stats
 
-seed = [10, -35, 2]  #JAMA, ACC
+# seed = [10, -35, 2]  #JAMA, ACC
 seed = [53, -48, 20]  #JAMA, TPJ
 bands = [[1, 4], [4, 8], [8, 13], [13, 30], [30, 50]]
 subjs_fname = '/Users/sudregp/data/meg/usable_subjects_pm2std.txt'
@@ -77,6 +77,8 @@ for l_freq, h_freq in bands:
     pvals_nvVSper = []
     pvals_nvVSrem = []
     pvals_perVSrem = []
+    hi_pvals = []
+    inatt_pvals = []
     for i in range(nverts):
         x = [p[i] for p in nv_corrs]
         y = [p[i] for p in adhd_corrs]
@@ -94,6 +96,11 @@ for l_freq, h_freq in bands:
         y = [p[i] for p in rem_corrs]
         pvals_perVSrem.append(stats.ttest_ind(x, y)[1])
 
+        # here we assume that hi and inatt were constructed in the same order as adhd_corrs, which uses the subjs order. So, as long as they are all in alphabetical order, we will be fine.
+        y = [p[i] for p in adhd_corrs]
+        hi_pvals.append(stats.pearsonr(y, hi)[1])
+        inatt_pvals.append(stats.pearsonr(y, inatt)[1])
+
     # save maps of pvalues
     res = mne.SourceEstimate(1-np.asarray([pvals]).T,[stc.lh_vertno,stc.rh_vertno],0,0,subject='fsaverage')
     res.save(dir_out + 'nvVSadhd-seed%d-%dto%d'%(seed_src,l_freq,h_freq))
@@ -103,49 +110,7 @@ for l_freq, h_freq in bands:
     res.save(dir_out + 'nvVSrem-seed%d-%dto%d'%(seed_src,l_freq,h_freq))
     res = mne.SourceEstimate(1-np.asarray([pvals_perVSrem]).T,[stc.lh_vertno,stc.rh_vertno],0,0,subject='fsaverage')
     res.save(dir_out + 'perVSrem-seed%d-%dto%d'%(seed_src,l_freq,h_freq))
-
-
-
-# res = env.load(ica_fname)
-# time_pts = 241
-
-# cnt = 0
-# # split the subjects into their respective groups
-# for s in subjs:
-#     subj_power = np.mean(res['band_ICs'][:,:,cnt:cnt+time_pts], axis=2)
-#     cnt += time_pts
-    
-
-# nbands = len(bands)
-# nICs = 25 #nv_power[0].shape[1]
-# # test each band / IC for group difference
-# pvals = np.ones([nbands, nICs])
-# pvals_nvVSper = np.ones([nbands, nICs])
-# pvals_nvVSrem = np.ones([nbands, nICs])
-# pvals_perVSrem = np.ones([nbands, nICs])
-# for b in range(nbands):
-#     for i in range(nICs):
-#         x = [p[b, i] for p in nv_power]
-#         y = [p[b, i] for p in adhd_power]
-#         pvals[b, i] = stats.ttest_ind(x, y)[1]
-
-#         x = [p[b, i] for p in nv_power]
-#         y = [p[b, i] for p in per_power]
-#         pvals_nvVSper[b, i] = stats.ttest_ind(x, y)[1]
-
-#         x = [p[b, i] for p in nv_power]
-#         y = [p[b, i] for p in rem_power]
-#         pvals_nvVSrem[b, i] = stats.ttest_ind(x, y)[1]
-
-#         x = [p[b, i] for p in per_power]
-#         y = [p[b, i] for p in rem_power]
-#         pvals_perVSrem[b, i] = stats.ttest_ind(x, y)[1]
-
-# # here we assume that hi and inatt were constructed in the same order as adhd_power
-# hi_pvals = np.ones([nbands, nICs])
-# inatt_pvals = np.ones([nbands, nICs])
-# for b in range(nbands):
-#     for i in range(nICs):
-#         y = [p[b, i] for p in adhd_power]
-#         hi_pvals[b,i] = stats.pearsonr(y, hi)[1]
-#         inatt_pvals[b,i] = stats.pearsonr(y, inatt)[1]
+    res = mne.SourceEstimate(1-np.asarray([hi_pvals]).T,[stc.lh_vertno,stc.rh_vertno],0,0,subject='fsaverage')
+    res.save(dir_out + 'hi-seed%d-%dto%d'%(seed_src,l_freq,h_freq))
+    res = mne.SourceEstimate(1-np.asarray([inatt_pvals]).T,[stc.lh_vertno,stc.rh_vertno],0,0,subject='fsaverage')
+    res.save(dir_out + 'inatt-seed%d-%dto%d'%(seed_src,l_freq,h_freq))
