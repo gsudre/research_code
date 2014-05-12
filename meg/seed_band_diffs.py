@@ -4,7 +4,8 @@ import mne
 import numpy as np
 from scipy import stats
 
-seed = [10, -35, 2]
+seed = [10, -35, 2]  #JAMA, ACC
+seed = [53, -48, 20]  #JAMA, TPJ
 bands = [[1, 4], [4, 8], [8, 13], [13, 30], [30, 50]]
 subjs_fname = '/Users/sudregp/data/meg/usable_subjects_pm2std.txt'
 nvs_fname = '/Users/sudregp/data/meg/usable_nv_pm2std.txt'
@@ -29,14 +30,19 @@ sx = np.recfromcsv(sx_fname)
 hi = [rec[2] for s in subjs for rec in sx if rec[0]==s]
 inatt = [rec[1] for s in subjs for rec in sx if rec[0]==s]
 
-# find closest vertex to seed
+# find closest source to seed
 if seed[0] < 0:
     hemis = 0  # LH
 else:
     hemis = 1  # RH
-coord = mne.vertex_to_mni(vertices=range(10242),hemis=hemis,subject='fsaverage')
+# important to do this by source, because not every vertex has a source
+fname = data_dir + 'morphed-lcmv-%dto%d-'%(bands[0][0],bands[0][1]) + subjs[0]
+stc = mne.read_source_estimate(fname)
+# this is what we get when we read in the fsaverage subject
+coord = mne.vertex_to_mni(vertices=stc.vertno[hemis],hemis=hemis,subject='fsaverage')
 dist = np.sqrt((coord[:,0] - seed[0])**2 + (coord[:,1] - seed[1])**2 + (coord[:,2] - seed[2])**2)
-seed_vertex = np.argmin(dist)
+seed_src = np.argmin(dist) + hemis*len(stc.lh_vertno)
+print 'Distance to seed: %.2fmm'%np.min(dist)
 
 # for each band, compute subject-based correlation map
 for l_freq, h_freq in bands:
@@ -55,7 +61,7 @@ for l_freq, h_freq in bands:
         # this loop is faster than computing the entire mirror matrix
         for j in range(nverts):
             # need to scale up the values so they don't result in numerical error when computing correlation
-            cor.append(stats.pearsonr(10**16*stc.data[seed_vertex,:], 10**16*stc.data[j,:])[0])
+            cor.append(stats.pearsonr(10**16*stc.data[seed_src,:], 10**16*stc.data[j,:])[0])
         if s in nvs:
             nv_corrs.append(cor)
         else:
@@ -89,14 +95,14 @@ for l_freq, h_freq in bands:
         pvals_perVSrem.append(stats.ttest_ind(x, y)[1])
 
     # save maps of pvalues
-    res = mne.SourceEstimate(np.asarray([pvals]).T,[stc.lh_vertno,stc.rh_vertno],0,0,subject='fsaverage')
-    res.save(dir_out + 'nvVSadhd-seed%d-%dto%d'%(seed_vertex,l_freq,h_freq))
-    res = mne.SourceEstimate(np.asarray([pvals_nvVSper]).T,[stc.lh_vertno,stc.rh_vertno],0,0,subject='fsaverage')
-    res.save(dir_out + 'nvVSper-seed%d-%dto%d'%(seed_vertex,l_freq,h_freq))
-    res = mne.SourceEstimate(np.asarray([pvals_nvVSrem]).T,[stc.lh_vertno,stc.rh_vertno],0,0,subject='fsaverage')
-    res.save(dir_out + 'nvVSrem-seed%d-%dto%d'%(seed_vertex,l_freq,h_freq))
-    res = mne.SourceEstimate(np.asarray([pvals_perVSrem]).T,[stc.lh_vertno,stc.rh_vertno],0,0,subject='fsaverage')
-    res.save(dir_out + 'perVSrem-seed%d-%dto%d'%(seed_vertex,l_freq,h_freq))
+    res = mne.SourceEstimate(1-np.asarray([pvals]).T,[stc.lh_vertno,stc.rh_vertno],0,0,subject='fsaverage')
+    res.save(dir_out + 'nvVSadhd-seed%d-%dto%d'%(seed_src,l_freq,h_freq))
+    res = mne.SourceEstimate(1-np.asarray([pvals_nvVSper]).T,[stc.lh_vertno,stc.rh_vertno],0,0,subject='fsaverage')
+    res.save(dir_out + 'nvVSper-seed%d-%dto%d'%(seed_src,l_freq,h_freq))
+    res = mne.SourceEstimate(1-np.asarray([pvals_nvVSrem]).T,[stc.lh_vertno,stc.rh_vertno],0,0,subject='fsaverage')
+    res.save(dir_out + 'nvVSrem-seed%d-%dto%d'%(seed_src,l_freq,h_freq))
+    res = mne.SourceEstimate(1-np.asarray([pvals_perVSrem]).T,[stc.lh_vertno,stc.rh_vertno],0,0,subject='fsaverage')
+    res.save(dir_out + 'perVSrem-seed%d-%dto%d'%(seed_src,l_freq,h_freq))
 
 
 
