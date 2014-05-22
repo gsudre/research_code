@@ -45,7 +45,7 @@ def get_head_motion(raw, plot=False):
 
     return fid_data
 
-
+# Returns the maximum head motion (sqrt(x2+y2+z2)) 
 def get_max_motion(raw, smin=0, smax=None):
     motion_data = get_head_motion(raw)
     if motion_data is None:
@@ -55,3 +55,44 @@ def get_max_motion(raw, smin=0, smax=None):
             smax = motion_data.shape[-1]
         movement = np.sqrt(np.sum(motion_data[:, smin:smax]**2, axis=0))
         return np.amax(movement)
+
+# Returns the difference in head motion between end eng start of recording 
+def get_delta_motion(raw):
+    motion_data = get_head_motion(raw)
+    if motion_data is None:
+        return np.Inf
+    else:
+        movement = np.sqrt(np.sum(motion_data**2, axis=0))
+        return movement[-1]-movement[0]
+
+# Returns the maximum head displacement across axes, and the axes in which it occurred 
+def get_max_axis(raw, smin=0, smax=None):
+    motion_data = get_head_motion(raw)
+    if motion_data is None:
+        return None
+    else:
+        if smax is None:
+            smax = motion_data.shape[-1]
+        movement = np.amax(motion_data[:, smin:smax], axis=1)
+        max_axis = np.argmax(movement)
+        if max_axis==0:
+            return [movement[0], 'X']
+        elif max_axis==1:
+            return [movement[1], 'Y']
+        else:
+            return [movement[2], 'Z']
+
+# Returns the difference in between end and start positions across axes, and the axes in which it occurred 
+def get_delta_axis(raw):
+    motion_data = get_head_motion(raw)
+    if motion_data is None:
+        return None
+    else:
+        delta = motion_data[:, -1] - motion_data[:, 0]
+        max_axis = np.argmax(delta)
+        if max_axis==0:
+            return [delta[max_axis], 'X']
+        elif max_axis==1:
+            return [delta[max_axis], 'Y']
+        else:
+            return [delta[max_axis], 'Z']
