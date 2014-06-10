@@ -4,15 +4,15 @@ import numpy as np
 import matplotlib.mlab as mlab
 
 # CSV file to read in
-csv_file = '/Users/sudregp/Documents/philip/merge10.csv'
+csv_file = 't3.csv'
 # Name of the column to be added to CSV
 var = 'matched'
 # Some other variables to limit usable scans
 rating_limit = 7  # qc ratings < this are included
-qc_column = 'global_rating'
+qc_column = 'raw_rating'
 min_age = 0
 max_age = 100
-use_twins = 1  # set to 0 if only using rows with column twin==0
+use_twins = 0  # set to 0 if only using rows with column twin==0
 
 gf = np.recfromcsv(csv_file)
 
@@ -38,10 +38,11 @@ num_scans = {}
 for subj in (adhd_subjects + nv_subjects):
     # use any age restrictions, or QC values, here
     good_scans = [i for i in range(len(gf)) if gf[i]['id'] == subj and
-                                               float(gf[i][qc_column]) < rating_limit and
+                                               float(gf[i][qc_column]) < 4 and
                                                (use_twins or not gf[i]['twin']) and
                                                gf[i]['agescan']>min_age and
-                                               gf[i]['agescan']<max_age]
+                                               gf[i]['agescan']<max_age and
+                                               gf[i]['race']=='W']
     if (len(good_scans) > 0):
         rows[subj] = good_scans
         age[subj] = gf[rows[subj]]['agescan']
@@ -65,11 +66,11 @@ for subj in adhd_subjects:
         target_num_scans = num_scans[subj]
         while True:
             # this needs to be >= because we might need to change target_num_scans if one group doesn't have the subject
-            nv_scan_candidates = [s for s, val in num_scans.iteritems() if val >= target_num_scans and s in nv_subjects]
+            nv_scan_candidates = [s for s, val in num_scans.iteritems() if val >= target_num_scans and s in nv_sex_candidates]
             if len(nv_scan_candidates) > 0:
                 found = True
                 # if we have subjects with the same number of scans, let's focus on those 
-                equal_scans = [s for s, val in num_scans.iteritems() if val == target_num_scans and s in nv_subjects]
+                equal_scans = [s for s, val in num_scans.iteritems() if val == target_num_scans and s in nv_scan_candidates]
                 if len(equal_scans)>0:
                     nv_scan_candidates = equal_scans
 
@@ -77,8 +78,11 @@ for subj in adhd_subjects:
                 target_age = np.min(age[subj])
                 candidates_age = [np.min(age[s]) for s in nv_scan_candidates]
                 closest = np.argmin(abs(candidates_age - target_age))
-                nv_matches.append(nv_scan_candidates[closest])
-                nv_subjects.remove(nv_scan_candidates[closest])
+                nv_match = nv_scan_candidates[closest]
+                nv_matches.append(nv_match)
+                nv_subjects.remove(nv_match)
+                print 'Matched ADHD %d (%d scans, %s) to NV %d (%d scans, %s).'%(subj,len(rows[subj]),gf[rows[subj][0]]['sex'],
+                    nv_match,len(rows[nv_match]),gf[rows[nv_match][0]]['sex'])
                 break
             else:
                 target_num_scans -= 1
@@ -86,6 +90,7 @@ for subj in adhd_subjects:
         rm.append(subj)
 
 # remove all subjects for whom we didn't find a match
+print 'ADHD subjects without matches:', rm
 for subj in rm:
     adhd_subjects.remove(subj)
 
