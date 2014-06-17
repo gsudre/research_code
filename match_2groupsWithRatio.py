@@ -4,12 +4,14 @@ import numpy as np
 import matplotlib.mlab as mlab
 
 # CSV file to read in
-csv_file = '/Users/sudregp/tmp/gf3t.csv'
+csv_file = '/Users/sudregp/tmp/gf1p5t.csv'
 # Name of the column to be added to CSV
 var = 'matched'
 
 # define the two groups
 groups = ['NV', 'ADHD']
+# for every individual in the smaller group, choose this many in the bigger group
+match_ratio = 2
 
 # Some other variables to limit usable scans
 qc_column = 'raw_rating'
@@ -68,36 +70,53 @@ matches = []
 rm = []
 # try to keep all the subjects in the smaller group, and match the subjects in the other group to it
 for subj in group_subjects[sg]:
-    found = False
-    # find subjects of the same gender first. If none left, discard this subject
-    sex_candidates = [s for s, val in sex.iteritems() if val == sex[subj] and s in group_subjects[bg]]
-    if len(sex_candidates) > 0:
-        # narrow it down to how many scans the subject has. If no matches, try the next best thing
-        target_num_scans = num_scans[subj]
-        while True:
-            # this needs to be >= because we might need to change target_num_scans if one group doesn't have the subject
-            scan_candidates = [s for s, val in num_scans.iteritems() if val >= target_num_scans and s in sex_candidates]
-            if len(scan_candidates) > 0:
-                found = True
-                # if we have subjects with the same number of scans, let's focus on those 
-                equal_scans = [s for s, val in num_scans.iteritems() if val == target_num_scans and s in scan_candidates]
-                if len(equal_scans)>0:
-                    scan_candidates = equal_scans
+    num_matched = 0
+    subj_matches = []
+    while num_matched < match_ratio:
+        # find subjects of the same gender first. If none left, discard this subject
+        sex_candidates = [s for s, val in sex.iteritems() if val == sex[subj] and s in group_subjects[bg]]
+        if len(sex_candidates) >= (match_ratio-num_matched):
+            # narrow it down to how many scans the subject has. If no matches, try the next best thing
+            target_num_scans = num_scans[subj]
+            while True:
+                # this needs to be >= because we might need to change target_num_scans if one group doesn't have the subject
+                scan_candidates = [s for s, val in num_scans.iteritems() if val >= target_num_scans and s in sex_candidates]
+                if len(scan_candidates) > 0:
+                    # if we have subjects with the same number of scans, let's focus on those 
+                    equal_scans = [s for s, val in num_scans.iteritems() if val == target_num_scans and s in scan_candidates]
+                    if len(equal_scans)>0:
+                        scan_candidates = equal_scans
 
-                # chose the subject with closest baseline age scan
-                target_age = np.min(age[subj])
-                candidates_age = [np.min(age[s]) for s in scan_candidates]
-                closest = np.argmin(abs(candidates_age - target_age))
-                match = scan_candidates[closest]
-                matches.append(match)
-                group_subjects[bg].remove(match)
-                print 'Matched %s %d (%d scans, %s) to %s %d (%d scans, %s).'%(groups[sg],subj,len(rows[subj]),gf[rows[subj][0]]['sex'],
-                    groups[bg],match,len(rows[match]),gf[rows[match][0]]['sex'])
-                break
-            else:
-                target_num_scans -= 1
-    if not found:
-        rm.append(subj)
+                    # chose the subject with closest baseline age scan
+                    target_age = np.min(age[subj])
+                    candidates_age = [np.min(age[s]) for s in scan_candidates]
+                    closest = np.argmin(abs(candidates_age - target_age))
+                    match = scan_candidates[closest]
+                    subj_matches.append(match)
+                    group_subjects[bg].remove(match)
+                    num_matched += 1
+                    
+                    # before we proceed, check whether getting a new subject is mandatory or not
+                    prob = match_ratio-num_matched
+                    if prob>0 and prob<1:
+                        if np.random.random() > prob:
+                            num_matched += 1
+
+                    break
+                else:
+                    if target_num_scans > 1:
+                        target_num_scans -= 1  
+                    else:
+                        rm.append(subj)
+                        break
+        else:
+            break
+    if num_matched >= match_ratio:
+        print 'Matched %s %d (%d scans, %s) to %s'%(
+                groups[sg],subj,len(rows[subj]),gf[rows[subj][0]]['sex'],
+                groups[bg]), subj_matches
+        [matches.append(s) for s in subj_matches]
+
 
 # remove all subjects for whom we didn't find a match
 print groups[sg], 'subjects without matches:', rm
@@ -109,4 +128,4 @@ match_bool = np.zeros(len(gf))
 for subj in (matches + group_subjects[sg]):
     match_bool[rows[subj]] = 1
 match_bool = mlab.rec_append_fields(gf, var, match_bool)
-mlab.rec2csv(match_bool, csv_file[:-4] + '_matched_onSex_onNumScan_onBaseAge.csv')
+mlab.rec2csv(match_bool, csv_file[:-4] + '_matched_onSex_onNumScan_onBaseAge_ratio1to%.1f.csv'%match_ratio)
