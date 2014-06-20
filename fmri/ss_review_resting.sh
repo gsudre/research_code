@@ -3,7 +3,7 @@
 # This script is a shortened version of the standard @ss_review_drive,
 # but adapted to look at resting data.
 
-cd /mnt/neuro/data_by_maskID/${1}/afni/${1}.rest.whiteMatterCSF.results/
+cd /mnt/neuro/data_by_maskID/${1}/afni/${1}.rest.withPhysio.results/
 
 # ------------------------------------------------------------
 # try to avoid any oblique warnings throughout script
@@ -12,24 +12,24 @@ setenv AFNI_NO_OBLIQUE_WARNING YES
 # ------------------------------------------------------------
 # if the expected "basic" script is here, run it
 
-if ( -f @ss_review_basic ) then
-   echo ------------------- @ss_review_basic --------------------
-   tcsh -ef @ss_review_basic
-   echo ---------------------------------------------------------
+# if ( -f @ss_review_basic ) then
+#    echo ------------------- @ss_review_basic --------------------
+#    tcsh -ef @ss_review_basic
+#    echo ---------------------------------------------------------
 
-   prompt_user -pause "                      \
-      review output from @ss_review_basic    \
-      (in terminal window) for anything that \
-      looks unreasonable                     \
-                                             \
-      --- click OK when finished ---         \
-      "
-   echo ""
-else
-   echo ""
-   echo "*** missing @ss_review_basic script ***"
-   echo ""
-endif
+#    prompt_user -pause "                      \
+#       review output from @ss_review_basic    \
+#       (in terminal window) for anything that \
+#       looks unreasonable                     \
+#                                              \
+#       --- click OK when finished ---         \
+#       "
+#    echo ""
+# else
+#    echo ""
+#    echo "*** missing @ss_review_basic script ***"
+#    echo ""
+# endif
 
 # ------------------------------------------------------------
 # possibly consider running the @epi_review script here
@@ -46,7 +46,7 @@ echo ------------------- outliers and motion --------------------
 echo ----------------- anat/EPI alignment check -----------------
 
 # start afni with anat and volreg datasets only
-afni anat_final.${1}+tlrc.HEAD pb04.${1}.r01.volreg+tlrc.HEAD &
+afni anat_final.${1}+tlrc.HEAD pb03.${1}.r01.volreg+tlrc.HEAD &
 
 
 echo -------------------- regession warnings --------------------
