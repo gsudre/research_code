@@ -10,7 +10,10 @@ maskid_file = sys.argv[1]
 copy_to = sys.argv[2] + '/%04d/'
 
 fid = open(maskid_file, 'r')
+copied_cnt = 0
+cnt = 0
 for maskid in fid:
+    cnt += 1
     maskid_dir = '/mnt/neuro/data_by_maskID/%04d/'%int(maskid)
     # we could have more than one date directory inside the same mask ID when there were two scan sessions (e.g. the first one was interrupted). Still they'll share the same date!
     date_dirs = glob.glob(maskid_dir + '/20*')
@@ -32,10 +35,27 @@ for maskid in fid:
                     series_num = m_obj.group(1)
                 mprage_dirs.append(date_dir + '/' + series_num + '/')
 
-    # always copy the last scan
-    if len(mprage_dirs)>0:
-        mprage = mprage_dirs[-1]
-        print 'Copying', maskid, 'to', copy_to%int(maskid)
+    num_mprages = len(mprage_dirs)
+    if num_mprages>0:
+        if num_mprages==1:
+            scan_num = 0
+        else:
+            print 'Found %d scans for %s.'%(num_mprages,maskid.rstrip())
+            scan_num = 0
+            while scan_num < 1:
+                try:
+                    scan_num=int(raw_input('Which scan to use?: '))
+                except ValueError:
+                    print "Not a number"
+            scan_num -= 1
+        mprage = mprage_dirs[scan_num]
+        print 'Copying', maskid.rstrip(), 'to', copy_to%int(maskid.rstrip())
         shutil.copytree(mprage, copy_to%int(maskid))
+        copied_cnt += 1
+    else:
+        print 'Did not find MPRAGE for', maskid
 
 fid.close()
+
+print '=== SUMMARY ==='
+print 'Copied %d mask ids, %d not found.'%(copied_cnt, cnt-copied_cnt)
