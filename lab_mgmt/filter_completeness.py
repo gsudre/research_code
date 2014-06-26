@@ -4,7 +4,7 @@ import numpy as np
 import datetime as dt
 import csv
 
-fname = '/Users/sudregp/Downloads/Results 9.txt'
+fname = '/Users/sudregp/Downloads/Results31.txt'
 scan_date_idx = 7
 # last column before tests and interviews
 last_clean_column_idx = 14

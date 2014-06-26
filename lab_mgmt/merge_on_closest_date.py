@@ -2,11 +2,11 @@ import numpy as np
 import datetime as dt
 import sys
 
-if len(sys.argv)!=8:
+if len(sys.argv)<8:
     print '\nWrong number of arguments!\n'
     print 'USAGE: python merge_on_closest_date.py file1.txt DateColumn1', \
             'MRNColumn1 file2.txt DateColumn2 MRNColumn2', \
-            'mergedFileName.txt\n'
+            'mergedFileName.txt [removeNonMatched]\n'
     print 'NOTE: \n(1) The TXT files should be Tab delimited files.', \
           '\n(2) The column numbers are 0-based (i.e. the first column is 0)'
     sys.exit()
@@ -18,6 +18,10 @@ else:
     date2 = int(sys.argv[5])
     mrn2 = int(sys.argv[6])
     out_file = sys.argv[7]
+    if len(sys.argv)==9:
+        removeNonMatched = bool(int(sys.argv[8]))
+    else:
+        removeNonMatched = True
 
 # # Use Tab-delimited files because we will evetually have notes section that include commas
 # fname1 = '/Users/sudregp/data/motor/gf_tilApril3rd_scan.txt'
@@ -39,16 +43,20 @@ def clean_up(data, mrn_idx, date_idx):
             print data[i][mrn_idx], 'is not a valid MRN! (row %d)'%(i+2)
             remove_rows.append(i)
         else:   
-            try:
-                mydate = dt.datetime.strptime(data[i][date_idx], '%m/%d/%y')
-                data[i][date_idx] = dt.datetime.strftime(mydate,'%m/%d/%Y')
-            except:
+            if len(data[i][date_idx])==0:
+                print 'Empty date field in (row %d)'%(i+2)
+                remove_rows.append(i)
+            else:
                 try:
-                    dt.datetime.strptime(data[i][date_idx], '%m/%d/%Y')
+                    mydate = dt.datetime.strptime(data[i][date_idx], '%m/%d/%y')
+                    data[i][date_idx] = dt.datetime.strftime(mydate,'%m/%d/%Y')
                 except:
-                    print data[i][date_idx], 'is not a valid date!',\
-                          ' (row %d)'%(i+2)
-                    remove_rows.append(i)
+                    try:
+                        dt.datetime.strptime(data[i][date_idx], '%m/%d/%Y')
+                    except:
+                        print data[i][date_idx], 'is not a valid date!',\
+                              ' (row %d)'%(i+2)
+                        remove_rows.append(i)
     data = np.delete(data, remove_rows, axis=0)
     return data
 
@@ -74,8 +82,8 @@ for row in range(len(data1)):
         # figure out which row has a date that's closest to data1's date
         matching_dates = [dt.datetime.strptime(data2[i][date2], '%m/%d/%Y')
                           for i in matching_rows]
-        date_diffs = [abs(row_date-i) for i in matching_dates]
-        selected_row = matching_rows[np.argmin(date_diffs)]
+        date_diffs = [row_date-i for i in matching_dates]
+        selected_row = matching_rows[np.argmin(np.abs(date_diffs))]
         date_difference = np.min(date_diffs).days/30.
 
         # now we merge the data from both spreadsheets
@@ -87,11 +95,13 @@ for row in range(len(data1)):
         print 'WARNING: Did not find any matching data for', \
                data1[row][mrn1], 'on', \
                dt.datetime.strftime(row_date,'%m/%d/%Y')
+        if not removeNonMatched:
+            merged_data.append([i for i in data1[row]])
 
 print '\n\nFound %d matching records.\nWriting to %s'%(len(merged_data),out_file)
 
 # writing output to TXT file
-hdr = [i for i in hdr1] + [i for i in hdr2] + ['Date difference (months)']
+hdr = [i for i in hdr1] + [i for i in hdr2] + ['File1Date - File2Date (months)']
 fid = open(out_file, 'w')
 fid.write('\t'.join(hdr))
 fid.write('\n')
