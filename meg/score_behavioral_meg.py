@@ -49,10 +49,10 @@ elif len(sys.argv) == 1:
 else:
     raise('Wrong number of arguments to script!')
 
-# files = ['/Volumes/neuro/MEG_behavioral/clean_behavioral/Exported/BSDZFFWU.txt']
+files = ['/Volumes/neuro/MEG_behavioral/clean_behavioral/Exported/BSDZFFWU.txt']
 # Creating the CSV file
 csv_fid = open(csv_filename, 'w')
-title_str = 'Mask ID,STG accuracy,STG mean RT,STG std RT,STI accuracy,STI mean duration,STI std duration,xth percentile STG RT,Corrected SSRT,Lowest block STG Acc,Lowest block STI accuracy,How many blocks under ' + str(qcSTGAcc) + '% STG accuracy'
+title_str = 'Mask ID,STG accuracy,STG mean RT,STG std RT,STI accuracy,STI mean duration,STI std duration,xth percentile STG RT,Corrected SSRT,Lowest block STG Acc,Lowest block STI accuracy,How many blocks under ' + str(qcSTGAcc) + '% STG accuracy' + ',Good blocks'
 block_title_str = ['B%d STG accuracy,B%d STG mean RT,B%d STG std RT,B%d STI accuracy,B%d STI mean dur,B%d STI std dur'%(i+1,i+1,i+1,i+1,i+1,i+1) for i in range(expectedBlockNum)]
 csv_fid.write(title_str + ',' + ','.join(block_title_str) + '\n')
 
@@ -101,6 +101,7 @@ for txtFile in files:
     slopeX = []
     slopeY = []
     trialOrder = []
+    goodBlocks = [False for i in range(len(blockStartRows))]
     for bidx, trials in enumerate(rowsPerBlock):
         # We only analyze blocks for which we have all expected trials
         if len(trials) == expectedTrialNum:
@@ -110,6 +111,8 @@ for txtFile in files:
 
             # compute percent accuracy. Again, here the indices correspond to GoTrials!
             stgAcc.append(100 * float(len(correctGoTrials)) / (len(correctGoTrials) + len(incorrectGoTrials)))
+            if stgAcc[-1] >= qcSTGAcc:
+                goodBlocks[bidx] = True
 
             # compute mean and std RT over the accurate trials
             stgBlockRTs = [int(i) for i in data[correctGoTrials, idjRTAcc]]
@@ -200,8 +203,11 @@ for txtFile in files:
                 block_stats.append(np.std(oldStiDur[b]))
                 b += 1
 
+        # formatting the good blocks string
+        good_blocks_str = ';'.join([str(i+1) for i, good in enumerate(goodBlocks) if good])
+
         csv_fid.write(subj + ',')
-        csv_fid.write(','.join([str(i) for i in [subjStgAcc, subjStgMeanRT, subjStgStdRT, subjStiAcc, subjStiMeanDur, subjStiStdDur, subjXthPercentile, subjSSRT, np.min(stgAcc), np.min(stiAcc), np.sum(np.array(stgAcc) < qcSTGAcc), block_stats]]))
+        csv_fid.write(','.join([str(i) for i in [subjStgAcc, subjStgMeanRT, subjStgStdRT, subjStiAcc, subjStiMeanDur, subjStiStdDur, subjXthPercentile, subjSSRT, np.min(stgAcc), np.min(stiAcc), np.sum(np.array(stgAcc) < qcSTGAcc), good_blocks_str, block_stats]]))
 
         csv_fid.write('\n')
 
