@@ -49,7 +49,7 @@ elif len(sys.argv) == 1:
 else:
     raise('Wrong number of arguments to script!')
 
-files = ['/Volumes/neuro/MEG_behavioral/clean_behavioral/Exported/BSDZFFWU.txt']
+# files = ['/Volumes/neuro/MEG_behavioral/clean_behavioral/Exported/BSDZFFWU.txt']
 # Creating the CSV file
 csv_fid = open(csv_filename, 'w')
 title_str = 'Mask ID,STG accuracy,STG mean RT,STG std RT,STI accuracy,STI mean duration,STI std duration,xth percentile STG RT,Corrected SSRT,Lowest block STG Acc,Lowest block STI accuracy,How many blocks under ' + str(qcSTGAcc) + '% STG accuracy' + ',Good blocks'
