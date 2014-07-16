@@ -3,20 +3,19 @@
 maskids=$1
 batchFile=~/tortoise_in_biowulf/tortoise.bat
 start_dir=`pwd`
+tmp_script=ssh_pipes.sh
 
 cp ~/tortoise_in_biowulf/tortoise_template.bat ${batchFile}
 suffix=''
 # for each mask id in the file
 while read m; do 
-    echo "Copying over eDTI files for ${m}"
-    # # copying over the necessary files
-    ssh -nq biowulf.nih.gov "mkdir ~/data/tortoise/${m}"
-    cd /mnt/neuro/data_by_maskID/${m}
-    # piping is not really working, so I'll just tar and copy it over. It'll will still be faster, I hope
-    tar czf tmp.tar.gz edti edti_proc
-    scp -q tmp.tar.gz biowulf.nih.gov:~/data/tortoise/${m}/
-    ssh -nq biowulf.nih.gov "cd ~/data/tortoise/${m}; tar xzf tmp.tar.gz; rm tmp.tar.gz"
-    rm tmp.tar.gz
+    echo "Working on ${m}"    
+
+    # piping inside the loop was breaking it. Will need to do it later. -n flag didn't work because I actually need the stdin pipe.
+    echo "echo \"Copying over eDTI files for ${m}\"" >> $tmp_script
+    echo "ssh -q biowulf.nih.gov \"mkdir ~/data/tortoise/${m}\"" >> $tmp_script
+    echo "cd /mnt/neuro/data_by_maskID/${m}" >> $tmp_script 
+    echo "tar czf - edti edti_proc | ssh -q biowulf.nih.gov \"cd ~/data/tortoise/${m}; tar xzf -\"" >> $tmp_script
 
     # setting up XML file
     cp ~/tortoise_in_biowulf/0000_template.xml ~/tortoise_in_biowulf/${m}.xml
@@ -35,4 +34,8 @@ echo "wait" >> ${batchFile}
 mv ${batchFile} ~/tortoise_in_biowulf/tortoise${suffix}.bat
 scp -q ~/tortoise_in_biowulf/tortoise${suffix}.bat bw:~/scripts/
 echo "Batch name: tortoise${suffix}.bat"
-cd $start_dir
+
+echo "cd ${start_dir}" >> $tmp_script
+bash ${tmp_script}
+rm $tmp_script
+
