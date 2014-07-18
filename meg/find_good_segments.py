@@ -207,7 +207,7 @@ def get_good_events(markers, time, seg_len):
         # otherwise, it's a sequence. Check if we're done to dump the entire heap
         else:
             heap.append(t)
-            if len(heap) == sample_size:
+            if len(heap) == np.int(sample_size):
                 # convert from time point to sample
                 sample = np.nonzero(original_time == heap[0])[0][0]
                 good_samples.append([sample, 0, 0])
