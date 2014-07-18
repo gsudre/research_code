@@ -167,9 +167,13 @@ def read_marker_files(dataDir='/Volumes/neuro/MEG_data/raw/'):
                 elif len(mrk_lines) % 2 == 1:
                     print dsname + ' has odd number of markers!'
                 else:
+                    # check if we already have that subject
+                    my_key = subj_code
+                    if markers.has_key(my_key):
+                        my_key = '%s_%03d'%(subj_code,np.random.randint(100))
                     # if we have an even number of events, collect them
-                    markers[subj_code] = [float(line.split()[-1]) for line in mrk_lines]
-                    print dsname + ': ' + str(len(markers[subj_code])) + ' markers'
+                    markers[my_key] = [float(line.split()[-1]) for line in mrk_lines]
+                    print dsname + ': ' + str(len(markers[my_key])) + ' markers'
     return markers
 
 
@@ -212,6 +216,21 @@ def get_good_events(markers, time, seg_len):
     events = np.array(good_samples)
 
     return events
+
+
+def get_good_indexes(markers, time):
+    ''' Returns a vector of indexes marking the time points with good data. Ideal for computation of covariance matrix. Receives markers (list with markers for artifacts), time (array with time vector).'''
+
+    good_samples = np.arange(len(time))
+    # first, we remove from the time vector all the bad segments
+    cur_event = 0
+    while cur_event < len(markers):
+        index = (time < markers[cur_event]) | (time > markers[cur_event + 1])
+        time = time[index]
+        good_samples = good_samples[index]
+        cur_event += 2
+
+    return good_samples
 
 
 def read_chl_events(raw, times, threshold=.5):
