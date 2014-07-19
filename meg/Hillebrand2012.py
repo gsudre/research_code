@@ -2,30 +2,33 @@ import mne
 import numpy as np
 import find_good_segments as fg
 import copy as cp
+from os.path import expanduser
 
 data_reg = .001
 noise_reg = .03
-method='pli'
+method=['pli','imcoh','plv','wpli','pli2_unbiased','wpli2_debiased']
+label_mode = 'pca_flip'
+home = expanduser('~')
 data_dir = '/mnt/neuro/MEG_data/'
-dir_out = '/Users/sudregp/data/meg_diagNoise_segments/connectivity/'
-empty_room_dir = '/Users/sudregp/data/meg_empty_room/'
+dir_out = home+'/data/meg/connectivity/'
+empty_room_dir = '/mnt/neuro/MEG_data/empty_room/'
+# empty_room_dir = '/Users/sudregp/data/meg_empty_room/'
 res = np.recfromtxt(empty_room_dir + 'closest_empty_room_data.csv',skip_header=0,delimiter=',')
-window_length=13.654  #s
+window_length=13.65  #s
 closest_empty_room = {}
-subjs = []
 for rec in res:
     closest_empty_room[rec[0]] = str(rec[2])
-    subjs.append(rec[0])
 
-subjs_fname = '/Users/sudregp/data/meg/usable_subjects_5segs13p654.txt'
+subjs_fname = home+'/data/meg/usable_subjects_5segs13p654.txt'
+markers_fname = home+'/data/meg/marker_data_clean.npy'
 
 fid = open(subjs_fname, 'r')
 subjs = [line.rstrip() for line in fid]
 
-markers = np.load('/Users/sudregp/data/meg/marker_data_clean.npy')[()]
+markers = np.load(markers_fname)[()]
 
 for subj in subjs:
-    er_fname = empty_room_dir+'empty_room_'+closest_empty_room[subj]+'.fif'
+    er_fname = empty_room_dir+'empty_room_'+closest_empty_room[subj]+'_raw.fif'
     raw_fname = data_dir + 'fifs/rest/%s_rest_LP100_CP3_DS300_raw.fif'%subj
     fwd_fname = data_dir + 'analysis/rest/%s_rest_LP100_CP3_DS300_raw-5-fwd.fif'%subj
     forward = mne.read_forward_solution(fwd_fname, surf_ori=True)
@@ -74,8 +77,8 @@ for subj in subjs:
     stcs = mne.beamformer.lcmv_epochs(epochs, forward, noise_cov.as_diag(), data_cov, reg=data_reg, pick_ori='max-power')
 
     labels, label_colors = mne.labels_from_parc(subj, parc='aparc')
-    label_ts = mne.extract_label_time_course(stcs, labels, forward['src'], mode='mean_flip')
+    label_ts = mne.extract_label_time_course(stcs, labels, forward['src'], mode=label_mode)
 
     # label_data is nlabels by time, so here we can use whatever connectivity method we fancy
-    con, freqs, times, n_epochs, n_tapers = mne.connectivity.spectral_connectivity(label_ts, method=method, mode='multitaper', sfreq=raw.info['sfreq'], fmin=[1,4,8,13,30], fmax=[4,8,13,30,50], faverage=True, n_jobs=2, mt_adaptive=False)
-    np.save(dir_out + method + '-' + subj, con)
+    con, freqs, times, n_epochs, n_tapers = mne.connectivity.spectral_connectivity(label_ts, method=method, mode='multitaper', sfreq=raw.info['sfreq'], fmin=[1,4,8,13,30], fmax=[4,8,13,30,50], faverage=True, n_jobs=3, mt_adaptive=False)
+    np.save(dir_out + subj + '-' + label_mode +'-' + '-'.join(method), con)
