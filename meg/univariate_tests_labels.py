@@ -4,7 +4,7 @@ import mne
 import numpy as np
 from scipy import stats
 
-bands = [[1, 4], [4, 8], [8, 13]]#, [13, 30], [30, 50]]
+bands = [[1, 4], [4, 8], [8, 13], [13, 30], [30, 50]]
 g1_fname = '/Users/sudregp/data/meg/nv_subjs.txt'
 g2_fname = '/Users/sudregp/data/meg/persistent_subjs.txt'
 g3_fname = '/Users/sudregp/data/meg/remitted_subjs.txt'
@@ -16,13 +16,13 @@ lmethod = 'pca_flip'
 cmethod = 5
 alpha=.05
 fdr = .05  # 0 for none
-mean = True
+mean = False
 ipsiOnly = True
 
 selected_labels = []
 # selected_labels = ['isthmuscingulate', 'inferiorparietal', 'superiorfrontal']  # DMN 
 # selected_labels = ['superiorparietal', 'precentral'] # dorsal attn
-selected_labels = ['supramarginal', 'insula'] # ventral attn
+# selected_labels = ['supramarginal', 'insula'] # ventral attn
 # selected_labels = ['isthmuscingulate', 'lateralorbitofrontal'] #affective
 # selected_labels = ['rostralmiddlefrontal', 'superiorfrontal', 'caudalmiddlefrontal', 'insula', 'superiorparietal'] #cognitivecontrol
 
@@ -120,30 +120,45 @@ for s in subjs:
                 g3_inatt.append(inatt[s])
                 g3_hi.append(hi[s])
 
-cnt=0
+inatt = g2_inatt + g3_inatt
+hi = g2_hi + g3_hi
 for b in range(len(bands)):
     # print bands[b]
     x = np.array(g1_data[b])
     y = np.array(g2_data[b])
     z = np.array(g3_data[b])
+    res = []
     if not mean:
         nfeats = x.shape[1]
-        val = []
+        print nfeats, 'connections'
+        val = [[] for i in range(10)]
         for i in range(nfeats):
+            f, pval = stats.f_oneway(x[:,i],y[:,i],z[:,i]) 
+            val[0].append(pval)
             f, pval = stats.kruskal(x[:,i],y[:,i],z[:,i]) 
-            val.append(pval) 
-            #= [stats.ttest_ind(x[:,i],y[:,i],equal_var=False)[1] for i in range(x.shape[1])]
-        print 'Sources < %.2f uncorrected:'%alpha, sum(np.array(val)<alpha)
-        cnt+=sum(np.array(val)<alpha)
-        best_connections = ['%s : %s (%.2g)'%(labels[il[0][idx]].name, labels[il[1][idx]].name, val[idx]) for idx in np.argsort(val) if val[idx]<alpha]
-        print best_connections[:3]
-        if fdr > 0:
-            reject_fdr, pval_fdr = mne.stats.fdr_correction(val, alpha=fdr, method='indep')
-            print 'Sources < %.2f (FDR-corrected):'%fdr, sum(np.array(pval_fdr)<fdr)
-        bf = alpha/len(val)
-        print 'Sources < %.2f (Bonferroni):'%bf, sum(np.array(val)<bf)
+            val[1].append(pval)
+            f, pval = stats.ttest_ind(x[:,i],y[:,i]) 
+            val[2].append(pval)
+            f, pval = stats.ttest_ind(x[:,i],z[:,i]) 
+            val[3].append(pval)
+            f, pval = stats.ttest_ind(y[:,i],z[:,i]) 
+            val[4].append(pval)
+            f, pval = stats.mannwhitneyu(x[:,i],y[:,i]) 
+            val[5].append(2*pval)
+            f, pval = stats.mannwhitneyu(x[:,i],z[:,i]) 
+            val[6].append(2*pval)
+            f, pval = stats.mannwhitneyu(y[:,i],z[:,i]) 
+            val[7].append(2*pval)
+            adhd = np.hstack([y[:, i], z[:,i]])
+            slope, intercept, r_value, pval, std_err = stats.linregress(adhd,inatt)
+            val[8].append(pval)
+            slope, intercept, r_value, pval, std_err = stats.linregress(adhd,hi)
+            val[9].append(pval)
+        for pvals in val:
+            reject_fdr, pval_fdr = mne.stats.fdr_correction(pvals, alpha=fdr, method='indep')
+            res.append('%d | %d | %d'%(sum(np.array(pvals)<alpha),sum(np.array(pval_fdr)<fdr), sum(np.array(pvals)<(alpha/nfeats))))
+        fid.write(','.join(str(i) for i in res) + ',,')
     else:
-        res = []
         f, pval = stats.f_oneway(np.mean(x,axis=1),np.mean(y,axis=1),np.mean(z,axis=1))
         res.append(pval) 
         f, pval = stats.kruskal(np.mean(x,axis=1),np.mean(y,axis=1),np.mean(z,axis=1))
@@ -161,8 +176,6 @@ for b in range(len(bands)):
         f, pval = stats.mannwhitneyu(np.mean(y,axis=1),np.mean(z,axis=1)) 
         res.append(2*pval)
         adhd = np.hstack([np.mean(y,axis=1),np.mean(z,axis=1)])
-        inatt = g2_inatt + g3_inatt
-        hi = g2_hi + g3_hi
         slope, intercept, r_value, pval, std_err = stats.linregress(adhd,inatt)
         res.append(pval)
         slope, intercept, r_value, pval, std_err = stats.linregress(adhd,hi)
