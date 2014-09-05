@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import os
 home = os.path.expanduser('~')
 
-maskid = '1362'
+maskid = '1378'
 log_dir = home + '/data/results/asl/'
 nvols = 23
 

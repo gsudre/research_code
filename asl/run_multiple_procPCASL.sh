@@ -1,4 +1,4 @@
-maskid=1362
+maskid=$1
 thresh=(.01 .015 .02 .025 .05 .075 .1 .125 .15 .175 .2 .225 .25 .275 .3)
 labels=(Caudate Putamen Thalamus Superior_Temporal_Gyrus Inferior_Parietal_Lobule Medial_Globus_Pallidus Lateral_Globus_Pallidus Medial_Frontal_Gyrus Superior_Occipital_Gyrus)
 
