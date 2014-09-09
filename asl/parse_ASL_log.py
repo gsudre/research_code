@@ -6,15 +6,16 @@ import matplotlib.pyplot as plt
 import os
 home = os.path.expanduser('~')
 
-maskid = '1378'
+maskid = '1389'
 log_dir = home + '/data/results/asl/'
 nvols = 23
+tasks = ['vid1','vid2','tfree1','tfree2']
 
 # the outer loop is based on the figure layout
 plt.figure(figsize=(10, 12))
 plt_cnt = 1
 task_outliers = []
-for task in ['vid1','vid2','tfree1','tfree2']:
+for task in tasks:
     fname = log_dir + '/log_%s_%s.txt'%(maskid,task) 
     thresh = []
     outliers = []
@@ -73,13 +74,14 @@ for task in ['vid1','vid2','tfree1','tfree2']:
 # plotting the bottom two subplots
 plt.subplot(5,2,plt_cnt)
 y2 = np.array(task_outliers).T
-plt.plot(x, y2)
+plt.plot(x, y2, linewidth=2)
 plt.ylabel('Pct of good volumes')
 plt.xlabel('Threshold')
 plt.title('Time points (data) used')
+plt.legend(tasks,loc='lower right',ncol=1,fontsize='x-small')
 
 plt.subplot(5,2,plt_cnt+1)
-plt.plot(x, y)
+plt.plot(x, y, linewidth=2)
 plt.legend(names,loc='center',ncol=2,fontsize='x-small')
 
 plt.show()
