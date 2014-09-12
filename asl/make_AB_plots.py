@@ -6,12 +6,13 @@ import os
 home = os.path.expanduser('~')
 
 # maskids = ['1362','1378','1380','1388','1389','1395','1463','1464','1474','1475'] #vid
-maskids = ['1362','1378','1380','1388','1389','1395','1464'] #tfree
+maskids = ['1362','1378','1380','1388','1389','1395','1474','1475'] #vid without people with more than 20cm mvmt
+# maskids = ['1362','1378','1380','1388','1389','1395','1464'] #tfree
 log_dir = home + '/data/results/asl/'
 nvols = 23
-task = 'tfree'
-plot_thresh = [.05, .1, .15, .2, .25, .3]
-plot_rois = ['Putamen','Thalamus','Caudate','Superior_Occipital_Gyrus']
+task = 'vid'
+plot_thresh = [.05, .3]
+plot_rois = ['Putamen','Thalamus','Caudate','Superior_Temporal_Gyrus','Superior_Occipital_Gyrus']
 # plot_rois = ['Medial_Globus_Pallidus','Putamen','Superior_Temporal_Gyrus','Thalamus','Medial_Frontal_Gyrus','Inferior_Parietal_Lobule','Lateral_Globus_Pallidus','Caudate','Superior_Occipital_Gyrus']
 plot_rois = [hemi+roi for roi in plot_rois for hemi in ['left-','right-']]
 
@@ -81,3 +82,49 @@ for t in plot_thresh:
             plt.ylabel('diff(s1,s2)')
     plt.tight_layout()
 
+# Plots for raw data, one plot per ROI
+for t in plot_thresh:
+    k = thresh.index(t)
+    plt.figure(figsize=(10, 12))
+    for r, roi in enumerate(plot_rois):
+        plt.subplot(len(plot_rois)/2,2,r+1)
+        data1 = [d[roi][k] for d in data[0]]
+        data2 = [d[roi][k] for d in data[1]]
+        y = np.vstack([data1, data2])
+        x = [1,2]
+        plt.plot(x,y,'.-',linewidth=2)
+        plt.xlim([.8, 2.2])
+        plt.title('%s (%s: %.2f)'%(roi,task,t))
+        if r==(len(plot_rois)-2):
+            plt.ylabel('CBF')
+            plt.xlabel('Observation')
+    plt.tight_layout()
+
+# # Plots for total movement and difference correlation
+# motion = []
+# for maskid in maskids:
+#     subj_motion = 0
+#     for obs in range(2):
+#         fname = home + '/data/asl/processed/%s/motion.%s%d.enorm.1D'%(maskid,task,obs+1)
+#         enorm = np.genfromtxt(fname)
+#         subj_motion += np.sum(enorm)
+#     motion.append(subj_motion)
+# from scipy import stats
+# for t in plot_thresh:
+#     k = thresh.index(t)
+#     plt.figure(figsize=(10, 12))
+#     for r, roi in enumerate(plot_rois):
+#         plt.subplot(len(plot_rois)/2,2,r+1)
+#         data1 = np.array([d[roi][k] for d in data[0]])
+#         data2 = np.array([d[roi][k] for d in data[1]])
+#         diff = np.abs(data1-data2)
+#         y = diff
+#         x = motion
+#         slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
+#         line = slope*np.array(x) + intercept
+#         plt.plot(x,line,'r-',x,y,'ok')
+#         plt.title('%s (%s: %.2f), r=%.2f'%(roi,task,t,r_value))
+#         if r==(len(plot_rois)-2):
+#             plt.ylabel('CBF abs difference (O1-O2)')
+#             plt.xlabel('Total movement (cm)')
+#     plt.tight_layout()
