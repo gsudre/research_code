@@ -32,9 +32,11 @@ for line in fid:
         mean_mvmt = np.mean(np.abs(data[good_idx, :6]), axis=0)
         translation = np.sqrt(np.sum(mean_mvmt[:3]**2))
         rotation = np.sqrt(np.sum(mean_mvmt[3:]**2))
-        subj_movement.append([maskid] + list(mean_mvmt) + [translation, rotation])
+        subj_movement.append([maskid] + list(mean_mvmt) + [translation, rotation, len(good)])
+    else:
+        print '\nWARNING: Did not find transformation file for', maskid, '\n'
 
-table = [['mask id', 'meanX trans', 'meanY trans', 'meanZ trans', 'meanX rot', 'meanY rot', 'meanZ rot', 'norm trans', 'norm rot']]
+table = [['mask id', 'meanX trans', 'meanY trans', 'meanZ trans', 'meanX rot', 'meanY rot', 'meanZ rot', 'norm trans', 'norm rot', 'numVolumes']]
 table = table + subj_movement
 fout = open('/Users/sudregp/tmp/mean_dti_movement.csv', 'w')
 wr = csv.writer(fout)
