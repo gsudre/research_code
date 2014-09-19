@@ -1,13 +1,13 @@
 # Reports important information about TRs censored so one can put it in a spreadsheet
 
 subjects_file=$1
-mot_limit=0.2
+mot_limit=0.3
 out_limit=0.1
 
 old_pwd=`pwd`
 echo "Mask ID, TRs above motion limit,TRs above outlier limit,TRs censored,Fraction of TRs censored,Pipeline successfull"
 while read subj; do 
-    res_dir=/mnt/neuro/data_by_maskID/${subj}/afni/${subj}.rest.regressingOutPhysio.results
+    res_dir=/mnt/neuro/data_by_maskID/${subj}/afni/${subj}.rest.withPhysio.results
     enorm_dset=motion_${subj}_enorm.1D
     censor_dset=censor_${subj}_combined_2.1D
 
@@ -21,7 +21,7 @@ while read subj; do
     # echo "num TRs above out limit   : $ocount"
 
     nruns=( `1d_tool.py -infile X.xmat.1D -show_num_runs` )
-    trs=( `1d_tool.py -infile X.xmat.1D -show_tr_run_counts trs_no_cen` )
+    trs=( `wc -l $enorm_dset` )
     # echo "num runs found            : $nruns"
     # echo "num TRs per run           : $trs"
 
