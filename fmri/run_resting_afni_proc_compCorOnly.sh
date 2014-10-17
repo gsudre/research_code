@@ -9,8 +9,11 @@ afni_proc.py -subj_id $subj                               \
     -script $subj_dir/rest.proc.compCor.$subj               \
     -copy_anat $subj_dir/mprage+orig       \
     -out_dir $subj_dir/$subj.rest.compCor.results               \
-    -blocks despike tshift align volreg blur mask regress tlrc \
+    -blocks despike tshift align tlrc volreg blur mask regress \
     -tcat_remove_first_trs 3                \
+    -tlrc_NL_warp                   \
+    -anat_uniform_method unifize    \
+    -volreg_tlrc_warp               \
     -volreg_align_e2a                                   \
     -mask_segment_anat yes                              \
     -regress_censor_motion 0.2                          \
