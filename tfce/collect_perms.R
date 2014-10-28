@@ -1,9 +1,11 @@
 mode = 'tfce' # 'vox' or 'tfce'
-nvoxels = 73360
-res_name = 'linear_growth_FA'
-nii_template = '~/data/dti_longitudinal/mean_FA_skeleton_mask.nii.gz'
-perm_dir='~/data/results/dti_longitudinal/perms/'
+property = 'RD'
+prefix = 'nv_boys_lt15'
 res_dir='~/data/results/dti_longitudinal/'
+data_dir='~/data/dti_longitudinal/'
+nii_template = sprintf('%s/%s_FA_skeleton_mask.nii.gz',data_dir,prefix)
+res_name = sprintf('linear_growth_%s_%s',prefix,property)
+perm_dir=sprintf('~/data/results/dti_longitudinal/perms/%s/',res_name)
 
 if (mode=='tfce') {
     fname = sprintf('%s/%s_tfce.txt', res_dir, res_name)
@@ -15,10 +17,11 @@ if (mode=='tfce') {
 files = list.files(perm_dir, pattern=pattern)
 nperms = length(files)
 null_dist_corr = vector(length=nperms) 
-ps = vector(length=nvoxels, mode='integer')
 results = read.table(fname)
 out = results[,1:4]
 results = as.matrix(results[,4:dim(results)[2]])
+nvoxels = dim(results)[1]
+ps = vector(length=nvoxels, mode='integer')
 for (f in 1:nperms) {
     cat(f, '/', nperms, '\n')
     data = read.table(sprintf("%s/%s", perm_dir, files[f]))
