@@ -6,7 +6,7 @@ property = 'RD'
 prefix = 'matchedByHand'
 nii_template = sprintf('%s/mean_FA_skeleton_mask.nii.gz',data_dir)
 data_name = sprintf('%s/%s_%s_skeletonised.txt', data_dir, prefix, property)
-out_name = sprintf('%s/inattCorr_%s_%s_perm', out_dir, prefix, property)
+out_name = sprintf('%s/hiCorr_%s_%s_perm', out_dir, prefix, property)
 nperms = 500
 set.seed( as.integer((as.double(Sys.time())*1000+Sys.getpid()) %% 2^31) )
 
@@ -22,7 +22,7 @@ for (p in 1:nperms) {
     perm_labels <- sample.int(nsubjs, replace = FALSE)
     rand_data = data[,perm_labels]
 
-    vs = mni.vertex.correlation(rand_data, changeInatt)
+    vs = mni.vertex.correlation(rand_data, changeHI)
     
     out[,4] = r2t(vs, nsubjs)
     

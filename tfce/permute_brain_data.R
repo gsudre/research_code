@@ -38,7 +38,7 @@ for (p in 1:nperms) {
     perm_labels <- sample.int(dim(data)[2], replace = FALSE)
     rand_data = data[,perm_labels]
 
-    vs = mni.vertex.mixed.model(gf, 'y~inatt*age', '~1|mrn', data)
+    vs = mni.vertex.mixed.model(gf, 'y~inatt*age', '~1|mrn', rand_data)
     
     # save the statistics to run through TFCE, taking into account the hack above
     out[,4] = vs$t.value[2:dim(data)[1],interestingTerm]
