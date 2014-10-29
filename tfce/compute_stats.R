@@ -3,16 +3,19 @@ load('~/research_code/mni_functions.RData')
 out_dir='~/data/results/dti_longitudinal/'
 data_dir = '~/data/dti_longitudinal/'
 prefix = 'matchedByHand'
-property = 'TR'
+property = 'FA'
 nii_template = sprintf('%s/mean_FA_skeleton_mask.nii.gz',data_dir)
 gf_name = sprintf('%s/merged_gf_clinical_neuropsych_clean_matchedByHand.txt', data_dir)
 data_name = sprintf('%s/%s_%s_skeletonised.txt', data_dir, prefix, property)
-out_name = sprintf('%s/dxAndAge_%s_%s', out_dir, prefix, property)
+out_name = sprintf('%s/hiPlusAge_%s_%s', out_dir, prefix, property)
+
 
 gf = read.table(gf_name, sep='\t', header=1)
 colnames(gf)[3]='age'
 colnames(gf)[2]='mrn'
 colnames(gf)[5]='dx'
+colnames(gf)[12]='inatt'
+colnames(gf)[13]='hi'
 
 brain_data = read.table(data_name)
 out = brain_data[,1:4]
@@ -24,8 +27,13 @@ data = as.matrix(brain_data[,4:dim(brain_data)[2]])
 good_voxel = which(rowSums(data)>0)[1]
 data = rbind(data[good_voxel,],data)
 
-vs = mni.vertex.mixed.model(gf, 'y~dx*age', '~1|mrn', data)
-interestingTerm = 4
+#####
+# change model parameters!!!
+idx = gf$dx=='ADHD'
+vs = mni.vertex.mixed.model(gf[idx,], 'y~hi+age', '~1|mrn', data[,idx])
+# vs = mni.vertex.mixed.model(gf, 'y~dx+age', '~1|mrn', data)
+interestingTerm = 2
+#####
 
 # save the statistics to run through TFCE, taking into account the hack above
 out[,4] = vs$t.value[2:dim(data)[1], interestingTerm]
