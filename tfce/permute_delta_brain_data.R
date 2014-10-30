@@ -2,19 +2,19 @@ library(nlme)
 load('~/research_code/mni_functions.RData')
 out_dir='~/data/results/dti_longitudinal/perms/'
 data_dir = '~/data/dti_longitudinal/'
-property = 'RD'
-prefix = 'matchedByHand'
+property = 'FA'
+prefix = 'all'
 nii_template = sprintf('%s/mean_FA_skeleton_mask.nii.gz',data_dir)
 data_name = sprintf('%s/%s_%s_skeletonised.txt', data_dir, prefix, property)
-out_name = sprintf('%s/hiCorr_%s_%s_perm', out_dir, prefix, property)
-nperms = 500
+out_name = sprintf('%s/hiCorrWithNVs_%s_%s_perm', out_dir, prefix, property)
+nperms = 75
 set.seed( as.integer((as.double(Sys.time())*1000+Sys.getpid()) %% 2^31) )
 
 
 brain_data = read.table(data_name)
 out = brain_data[,1:4]
 
-load(sprintf('%s/deltas_%s_%s_.RData', data_dir, prefix, property))
+load(sprintf('%s/deltasWithNVs_%s_%s.RData', data_dir, prefix, property))
 nsubjs = dim(changeBrain)[2]
 
 for (p in 1:nperms) {

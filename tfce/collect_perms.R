@@ -1,10 +1,10 @@
 modes = c('tfce','vox')
-property = 'FA'
+property = 'RD'
 prefix = 'matchedByHand'
 res_dir='~/data/results/dti_longitudinal/'
 data_dir='~/data/dti_longitudinal/'
 nii_template = sprintf('%s/mean_FA_skeleton_mask.nii.gz',data_dir)
-res_name = sprintf('inattAndAge_%s_%s',prefix, property)
+res_name = sprintf('hiCorr_%s_%s',prefix, property)
 perm_dir=sprintf('~/data/results/dti_longitudinal/perms/%s/',res_name)
 
 for (mode in modes) {

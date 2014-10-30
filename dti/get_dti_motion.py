@@ -5,9 +5,9 @@ import csv
 import numpy as np
 
 
-path = '/mnt/neuro/data_by_maskID/%04d/edti_proc/'
+path = '/Users/sudregp/data/dti_longitudinal/transformation_files/'#'/mnt/neuro/data_by_maskID/%04d/edti_proc/'
 
-fname = '/mnt/neuro/dti_longitudinal/nv_boys.txt'#sys.argv[1]
+fname = '/Users/sudregp/tmp/maskids.txt'#'/mnt/neuro/dti_longitudinal/nv_boys.txt'#sys.argv[1]
 fid = open(fname, 'r')
 
 subj_movement = []
@@ -15,13 +15,13 @@ subj_movement = []
 for line in fid:
     maskid = int(line)
     # find what's the name of the transformations folder
-    trans_file = glob.glob(path%maskid + '/*_rpd.transformations')
+    trans_file = glob.glob(path + '/%04d.transformations'%maskid)# + '/*_rpd.transformations')
     if len(trans_file) > 0:
         print 'Working on', trans_file[-1]
         data = np.genfromtxt(trans_file[-1])
         nvolumes = data.shape[0]
         # look for the path to all slices
-        path_file = glob.glob(path%maskid + '/*_N1.path')
+        path_file = glob.glob(path + '/%04d_R1.path'%maskid)
         slices = np.recfromtxt(path_file[-1])
         # we only need to look at the first directory to figure out what slices are missing. It's repeated across directories
         good = [int(sl.split('.')[-1]) for sl in slices if sl.find('SL0001')>0]
