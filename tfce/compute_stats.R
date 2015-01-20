@@ -2,12 +2,12 @@ library(nlme)
 load('~/research_code/mni_functions.RData')
 out_dir='~/data/results/dti_longitudinal/'
 data_dir = '~/data/dti_longitudinal/'
-prefix = 'matchedByHand'
+prefix = 'tfce_test'
 property = 'FA'
 nii_template = sprintf('%s/mean_FA_skeleton_mask.nii.gz',data_dir)
-gf_name = sprintf('%s/merged_gf_clinical_neuropsych_clean_matchedByHand.txt', data_dir)
+gf_name = sprintf('%s/merged_gf_clinical_neuropsych_clean.txt', data_dir)
 data_name = sprintf('%s/%s_%s_skeletonised.txt', data_dir, prefix, property)
-out_name = sprintf('%s/hiPlusAge_%s_%s', out_dir, prefix, property)
+out_name = sprintf('%s/TFCE_ttest_%s_%s', out_dir, prefix, property)
 
 
 gf = read.table(gf_name, sep='\t', header=1)
@@ -29,14 +29,16 @@ data = rbind(data[good_voxel,],data)
 
 #####
 # change model parameters!!!
-idx = gf$dx=='ADHD'
-vs = mni.vertex.mixed.model(gf[idx,], 'y~hi+age', '~1|mrn', data[,idx])
+# idx = gf$dx=='ADHD'
+# vs = mni.vertex.mixed.model(gf[idx,], 'y~hi+age', '~1|mrn', data[,idx])
 # vs = mni.vertex.mixed.model(gf, 'y~dx+age', '~1|mrn', data)
+vs = mni.vertex.statistics(gf, 'y~dx', data)
 interestingTerm = 2
 #####
 
 # save the statistics to run through TFCE, taking into account the hack above
-out[,4] = vs$t.value[2:dim(data)[1], interestingTerm]
+# out[,4] = vs$t.value[2:dim(data)[1], interestingTerm]
+out[,4] = vs$tstatistic[2:dim(data)[1], interestingTerm]
 
 # write the t-stats and convert to nifti
 write.table(out, file=sprintf('%s.txt',out_name), col.names=F, row.names=F)
@@ -49,7 +51,8 @@ system(sprintf('3dmaskdump -o %s_tfce.txt -overwrite -mask %s %s_tfce.nii.gz',
                out_name, nii_template, out_name), wait=T)
 
 # save the actual coefficients (for later visualization)
-out[,4] = vs$value[2:dim(data)[1],interestingTerm]
+# out[,4] = vs$value[2:dim(data)[1],interestingTerm]
+out[,4] = vs$slope[2:dim(data)[1],interestingTerm]
 write.table(out, file=sprintf('%s_coefs.txt',out_name), col.names=F, row.names=F)
 system(sprintf('cat %s_coefs.txt | 3dUndump -master %s -datum float -prefix %s_coefs.nii.gz -overwrite -',
                out_name, nii_template, out_name), wait=T)

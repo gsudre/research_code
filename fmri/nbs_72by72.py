@@ -12,10 +12,10 @@ g2_fname = home+'/data/fmri/joel_persistent.txt'
 g3_fname = home+'/data/fmri/joel_remission.txt'
 inatt_fname = home+'/data/fmri/inatt.txt'
 hi_fname = home+'/data/fmri/hi.txt'
-subjs_fname = home+'/data/fmri/joel_all.txt'
-data_dir = home+'/data/results/fmri_72ROIsJoel/'
+subjs_fname = home+'/data/fmri/joel_all_clean.txt'
+data_dir = home+'/data/results/fmri_72ROIsCompCor/'
 thresh = [.95, .99, .995, .999]
-nperms = 1000
+nperms = 100
 
 fid = open(subjs_fname, 'r')
 subjs = [line.rstrip() for line in fid]

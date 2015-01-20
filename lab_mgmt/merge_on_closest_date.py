@@ -84,7 +84,8 @@ for row in range(len(data1)):
                           for i in matching_rows]
         date_diffs = [row_date-i for i in matching_dates]
         selected_row = matching_rows[np.argmin(np.abs(date_diffs))]
-        date_difference = np.min(date_diffs).days/30.
+        selected_date_diff = np.min(np.abs(date_diffs))
+        date_difference = selected_date_diff.days/30.
 
         # now we merge the data from both spreadsheets
         merged_row = [i for i in data1[row]] + \

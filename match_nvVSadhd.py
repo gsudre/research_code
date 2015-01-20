@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.mlab as mlab
 
 # CSV file to read in
-csv_file = 't3.csv'
+csv_file = '/Users/sudregp/tmp/gf_1p5.csv'
 # Name of the column to be added to CSV
 var = 'matched'
 # Some other variables to limit usable scans

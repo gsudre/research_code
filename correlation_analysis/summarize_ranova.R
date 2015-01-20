@@ -1,7 +1,7 @@
-fname = "~/data/results/structural_v2/baselineTTest_ADHDvsNV_%s.txt"
+fname = "~/data/results/structural_v2/growth_correlationCohort_perVSrem_%s.txt"
 
-thresh = .01
-brain_data = c('thalamusLBase','thalamusRBase')
+thresh = .05
+brain_data = c('thalamusL','thalamusR')
 
 # trimmed down version of mni.compute.FDR
 getFDR <- function (p.values, df = Inf, fdr = 0.05) {
@@ -38,7 +38,11 @@ nverts = length(pvals)
 # rft = Z[which(expEC<thresh)[2]]
 # frft = min(fvals[pvals < 2*pnorm(-abs(rft))])
 # qf(max(pvals[adj_pvals < thresh])/2, 1, 58)
-cat('File: ', sprintf(fname, brain_data[1]))
+if (length(brain_data)>1) {
+    cat('File: ', sprintf(fname, 'BOTH HEMISPHERES'))
+} else {
+    cat('File: ', sprintf(fname, brain_data[1]))
+}
 cat('\nThreshold: p <', thresh)
 cat('\nMaximum F-val: ', max(abs(fvals)))
 cat('\nGood uncorrected pvals:', sum(pvals<thresh), '/', length(pvals))

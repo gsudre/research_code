@@ -4,13 +4,14 @@ import mne
 import numpy as np
 from scipy import stats
 
-bands = [[1, 4], [4, 8], [8, 13], [13, 30], [30, 50]]
+bands = [[1, 4]]#, [4, 8], [8, 13], [13, 30], [30, 50]]
 g1_fname = '/Users/sudregp/data/meg/nv_subjs.txt'
-g2_fname = '/Users/sudregp/data/meg/persistent_subjs.txt'
+g2_fname = '/Users/sudregp/data/meg/persistent_subjs_unmed.txt'
 subjs_fname = '/Users/sudregp/data/meg/usable_subjects_5segs13p654.txt'
 data_dir = '/Users/sudregp/data/meg/connectivity/'
-lmethod = 'meanFlip'
+lmethod = 'pca_flip'
 cmethod = 5
+fdr = 0  # 0 for none
 
 selected_labels = []
 # selected_labels = ['isthmuscingulate-rh', 'superiorfrontal-rh', 'inferiorparietal-rh', 'isthmuscingulate-lh', 'superiorfrontal-lh', 'inferiorparietal-lh']
@@ -28,8 +29,8 @@ print 'g2 =',g2_fname
 m = ['pli','imcoh','plv','wpli','pli2_unbiased','wpli2_debiased']
 print lmethod, '-', m[cmethod]
 
-# labels, label_colors = mne.labels_from_parc(subjs[0], parc='aparc')
-nlabels=68#len(labels)
+labels, label_colors = mne.labels_from_parc(subjs[0], parc='aparc')
+nlabels=len(labels)
 il = np.tril_indices(nlabels, k=-1)
 if len(selected_labels)>0:
     label_names = [l.name for l in labels]
@@ -43,6 +44,8 @@ if len(selected_labels)>0:
 
 g1_data = [[] for b in range(len(bands))]
 g2_data = [[] for b in range(len(bands))]
+g1_subjs=[]
+g2_subjs=[]
 for s in subjs:
     fname = data_dir + '%s-%s-pli-imcoh-plv-wpli-pli2_unbiased-wpli2_debiased.npy'%(s,lmethod)
     conn = np.load(fname)[()]
@@ -51,17 +54,25 @@ for s in subjs:
         data = data[il]
         if s in g1:
             g1_data[b].append(data.T)
+            g1_subjs.append(s)
         elif s in g2:
             g2_data[b].append(data.T)
+            g2_subjs.append(s)
 
 cnt=0
 for b in range(len(bands)):
     x = np.array(g1_data[b])
     y = np.array(g2_data[b])
-    val = [stats.ttest_ind(x[:,i],y[:,i])[1] for i in range(x.shape[1])]
+    val = [stats.ttest_ind(x[:,i],y[:,i],equal_var=False)[1] for i in range(x.shape[1])]
     print bands[b]
     print 'Sources < .05 uncorrected:', sum(np.array(val)<.05)
     cnt+=sum(np.array(val)<.05)
+    best_connections = ['%s : %s (%.2g)'%(labels[il[0][idx]].name, labels[il[1][idx]].name, val[idx]) for idx in np.argsort(val) if val[idx]<.05]
+    # print best_connections[:5]
+    if fdr > 0:
+        reject_fdr, pval_fdr = mne.stats.fdr_correction(val, alpha=fdr, method='indep')
+        print 'Sources < %.2f (FDR-corrected):'%fdr, sum(np.array(pval_fdr)<fdr)
+
 
 n1 = len(g1_data[0])
 n2 = len(g2_data[0])

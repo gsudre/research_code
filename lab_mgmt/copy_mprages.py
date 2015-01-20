@@ -41,6 +41,7 @@ for maskid in fid:
             scan_num = 0
         else:
             print 'Found %d scans for %s.'%(num_mprages,maskid.rstrip())
+            print mprage_dirs
             scan_num = 0
             while scan_num < 1:
                 try:

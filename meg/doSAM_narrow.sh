@@ -26,7 +26,7 @@ else
     if [ -e $ds/bad.segments ]; then 
         mv $ds/bad.segments $ds/bad.segments.old
     fi
-    Vecwarp -apar ${mri_path}/${subj_name}/ortho+tlrc -input tlrc_seeds_targets.txt -backward > tmp
+    Vecwarp -apar ${mri_path}/${subj_name}/ortho+tlrc -input tlrc_seeds_targets_RAI.txt -backward > tmp
     Vecwarp -matvec toPRI.txt -input tmp > ${ds}/SAM/targets
     for b in "${bands[@]}"; do
         split_band=(`echo $b | tr '-' ' '`)

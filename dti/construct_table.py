@@ -9,16 +9,16 @@ import re
 import operator
 
 # these are changed often
-modes = ['FA']
+modes = ['FA','TR','AD','RD']
 nums = ['95']
 comparison = '2'
-stat = 'intersect_nvVSrem_nvVSper_comp1_covs'
+stat = 'inatt109'
 clusters = ['tfce'] #'vox'
 
 # these will likely not change
 data_thresh = .5  # data threshold, >= 
 skel_thresh = .5  # skeleton threshold, >=
-data_dir = '/Users/sudregp/data/results/tbss/'
+data_dir = '/Users/sudregp/data/results/dti_longitudinal/'
 mean_file = '%s/mean_FA.nii.gz' % data_dir
 trans_file = '%s/FMRIB582mean.mat' % data_dir
 skel_file = '%s/mean_FA_skeleton_mask+FMRIB58.nii.gz' % data_dir

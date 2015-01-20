@@ -3,7 +3,7 @@
 # This script is a shortened version of the standard @ss_review_drive,
 # but adapted to look at resting data.
 
-cd /mnt/neuro/data_by_maskID/${1}/afni/${1}.rest.withPhysio.results/
+cd /mnt/neuro/data_by_maskID/${1}/afni/${1}.rest.whiteMatterCSF.results/
 
 # ------------------------------------------------------------
 # try to avoid any oblique warnings throughout script

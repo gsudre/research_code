@@ -6,8 +6,8 @@ import os
 home = os.path.expanduser('~')
 
 # maskids = ['1362','1378','1380','1388','1389','1395','1463','1464','1474','1475'] #vid
-maskids = ['1362','1378','1380','1388','1389','1395','1474','1475'] #vid without people with more than 20cm mvmt
-# maskids = ['1362','1378','1380','1388','1389','1395','1464'] #tfree
+# maskids = ['1362','1378','1380','1388','1389','1395','1474','1475'] #vid without people with more than 20cm mvmt
+maskids = ['1362','1378','1380','1388','1389','1395','1464'] #tfree
 log_dir = home + '/data/results/asl/'
 nvols = 23
 task = 'vid'
@@ -30,6 +30,11 @@ def bland_altman_plot(data1, data2, title_str, *args, **kwargs):
     plt.axhline(md + 2*sd, color='gray', linestyle='--')
     plt.axhline(md - 2*sd, color='gray', linestyle='--')
     plt.title(title_str)
+    #output subject order in each plot
+    ordered_subjs = []
+    for k in np.argsort(mean):
+        ordered_subjs.append(maskids[k])
+    # print ordered_subjs
 
 
 # Because of how the log files are created, it's cheaper to read all logs first, organize them, and create the plots later
@@ -80,6 +85,8 @@ for t in plot_thresh:
         if r==(len(plot_rois)-2):
             plt.xlabel('mean(s1,s2)')
             plt.ylabel('diff(s1,s2)')
+        print data1
+        print data2
     plt.tight_layout()
 
 # Plots for raw data, one plot per ROI

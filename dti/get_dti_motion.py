@@ -7,7 +7,7 @@ import numpy as np
 
 path = '/Users/sudregp/data/dti_longitudinal/transformation_files/'#'/mnt/neuro/data_by_maskID/%04d/edti_proc/'
 
-fname = '/Users/sudregp/tmp/maskids.txt'#'/mnt/neuro/dti_longitudinal/nv_boys.txt'#sys.argv[1]
+fname = '/Users/sudregp/tmp/all.txt'#'/mnt/neuro/dti_longitudinal/nv_boys.txt'#sys.argv[1]
 fid = open(fname, 'r')
 
 subj_movement = []

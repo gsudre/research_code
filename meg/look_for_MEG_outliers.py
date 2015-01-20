@@ -4,12 +4,13 @@ import matplotlib.pyplot as plt
 
 
 bands = [[1, 4], [4, 8], [8, 13], [13, 30], [30, 50]]
-subjs_fname = '/Users/sudregp/data/meg/aligned_subjs.txt'
-data_dir = '/mnt/neuro/MEG_data/'
-dir_out = '/users/sudregp/data/meg/'
+# bands = [[1, 4]]
+subjs_fname = '/Users/sudregp/data/meg/good_subjects.txt'
+subjs_fname = '/Users/sudregp/data/meg/usable_subjects_pm2std_withFamily.txt'
+data_dir = '/Users/sudregp/data/meg_diagNoise_noiseRegp03_dataRegp001/'
 fid = open(subjs_fname, 'r')
 subjs = [line.rstrip() for line in fid]
-
+# subjs = ['MJKDJCWN', 'AKMNQNHX', 'CVKRVURL', 'EADHVJIM', 'ZSQTKJSC', 'APYSWYFP']
 x = range(len(subjs))
 plt.figure(figsize=(10.2, 8.5))
 bad_subjs = []
@@ -19,7 +20,7 @@ for l_freq, h_freq in bands:
     print 'Loading all subjects; band %d to %d Hz'%(l_freq, h_freq)
     mean_power = []
     for subj in subjs:
-        fname = dir_out + 'lcmv-%dto%d-'%(l_freq,h_freq) + subj
+        fname = data_dir + 'lcmv-%dto%d-'%(l_freq,h_freq) + subj
         stc = mne.read_source_estimate(fname)
         mean_power.append(np.mean(stc.data))
     plt.subplot(3,2,plt_cnt)

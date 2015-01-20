@@ -10,7 +10,7 @@ method=['pli','imcoh','plv','wpli','pli2_unbiased','wpli2_debiased']
 label_mode = 'pca_flip'
 home = expanduser('~')
 data_dir = '/mnt/neuro/MEG_data/'
-dir_out = home+'/data/meg/connectivity/'
+dir_out = home+'/data/meg/connectivity/Yeo-Hillebrand/'
 empty_room_dir = '/mnt/neuro/MEG_data/empty_room/'
 # empty_room_dir = '/Users/sudregp/data/meg_empty_room/'
 res = np.recfromtxt(empty_room_dir + 'closest_empty_room_data.csv',skip_header=0,delimiter=',')
@@ -76,7 +76,7 @@ for subj in subjs:
     epochs = mne.Epochs(raw, events, None, 0, window_length, preload=True, baseline=None, detrend=0, picks=picks)
     stcs = mne.beamformer.lcmv_epochs(epochs, forward, noise_cov.as_diag(), data_cov, reg=data_reg, pick_ori='max-power')
 
-    labels, label_colors = mne.labels_from_parc(subj, parc='aparc')
+    labels, label_colors = mne.labels_from_parc(subj, parc='Yeo2011_7Networks_N1000')
     label_ts = mne.extract_label_time_course(stcs, labels, forward['src'], mode=label_mode)
 
     # label_data is nlabels by time, so here we can use whatever connectivity method we fancy

@@ -4,8 +4,13 @@ import mne
 import numpy as np
 from scipy import stats
 
-# seed = [10, -35, 2]  #JAMA, ACC
+seed = [10, -35, 2]  #JAMA, ACC
 seed = [53, -48, 20]  #JAMA, TPJ
+seed = [37, -18, 1]  #JAMA, VFC
+seed = [27, -58, 49]  #JAMA, IPS
+seed = [24, -13, 51]  #JAMA, FEF
+seed = [36, 27, 29]  #JAMA, DLPFC
+seed = [7, -60, 21]  #JAMA, precuneus
 bands = [[1, 4], [4, 8], [8, 13], [13, 30], [30, 50]]
 subjs_fname = '/Users/sudregp/data/meg/usable_subjects_pm2std.txt'
 nvs_fname = '/Users/sudregp/data/meg/usable_nv_pm2std.txt'

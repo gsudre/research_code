@@ -5,11 +5,12 @@ batchFile=~/tortoise_in_biowulf/tortoise.bat
 start_dir=`pwd`
 tmp_script=ssh_pipes.sh
 
-cp ~/tortoise_in_biowulf/tortoise_template.bat ${batchFile}
-suffix=''
 # for each mask id in the file
 while read m; do 
     echo "Working on ${m}"    
+
+    cp ~/tortoise_in_biowulf/tortoise_template.bat ${batchFile}
+    suffix=''
 
     # piping inside the loop was breaking it. Will need to do it later. -n flag didn't work because I actually need the stdin pipe.
     echo "echo \"Copying over eDTI files for ${m}\"" >> $tmp_script
@@ -28,12 +29,11 @@ while read m; do
 
     # setup batch file suffix
     suffix=${suffix}'_'${m}
-done < $maskids
 
-echo "wait" >> ${batchFile}
-mv ${batchFile} ~/tortoise_in_biowulf/tortoise${suffix}.bat
-scp -q ~/tortoise_in_biowulf/tortoise${suffix}.bat bw:~/scripts/
-echo "Batch name: tortoise${suffix}.bat"
+    echo "wait" >> ${batchFile}
+    mv ${batchFile} ~/tortoise_in_biowulf/tortoise${suffix}.bat
+    scp -q ~/tortoise_in_biowulf/tortoise${suffix}.bat bw:~/scripts/
+done < ${maskids}
 
 echo "cd ${start_dir}" >> $tmp_script
 bash ${tmp_script}

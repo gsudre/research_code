@@ -3,8 +3,8 @@ library(nlme)
 load('~/research_code/mni_functions.RData')
 data_dir = '~/data/dti_longitudinal/'
 prefix = 'all'
-property = 'RD'
-gf_name = sprintf('%s/merged_gf_clinical_neuropsych_clean.txt', data_dir)
+property = 'FA'
+gf_name = sprintf('%s/merged_gf_clinical_neuropsych_clean_matchedByHand.txt', data_dir)
 data_name = sprintf('%s/%s_%s_skeletonised.txt', data_dir, prefix, property)
 
 
@@ -46,8 +46,8 @@ for (s in unique(gf$mrn)) {
         change = lm(gf[idx,]$hi ~ gf[idx,]$age)$coefficients[2]
         changeHI = c(changeHI, change)
     }
-    change = mni.vertex.statistics(gf[idx,], 'y~age', data[,idx])$slope[,2]
-    changeBrain = cbind(changeBrain,as.matrix(change))
+    # change = mni.vertex.statistics(gf[idx,], 'y~age', data[,idx])$slope[,2]
+    # changeBrain = cbind(changeBrain,as.matrix(change))
     dx = c(dx, unique(gf[idx,]$dx))
     baseAge = c(baseAge, min(gf[idx,]$age))
     lastAge = c(lastAge, max(gf[idx,]$age))
@@ -55,11 +55,11 @@ for (s in unique(gf$mrn)) {
 }
 changeHI = changeHI[2:length(changeHI)]
 changeInatt = changeInatt[2:length(changeInatt)]
-changeBrain = changeBrain[,2:dim(changeBrain)[2]]
+# changeBrain = changeBrain[,2:dim(changeBrain)[2]]
 dx = dx[2:length(dx)]
 baseAge = baseAge[2:length(baseAge)]
 lastAge = lastAge[2:length(lastAge)]
 subjOrder = subjOrder[2:length(subjOrder)]
 
 out_name = sprintf('%s/deltasWithNVs_%s_%s.RData', data_dir, prefix, property)
-save(changeHI,changeInatt,changeBrain,dx,baseAge,lastAge,subjOrder,file=out_name)
+# save(changeHI,changeInatt,changeBrain,dx,baseAge,lastAge,subjOrder,file=out_name)

@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 import datetime as dt
 
 
-fname = '/Users/sudregp/dan/family study questionaire and iq data expanded2.xlsx'
+fname = '/Users/sudregp/dan/familystudyiqsandquestionairesexpanded08142014.xlsx'
 # this is the last column that is not in the format Title - Test
 last_column = 'Last Name - Subjects'
 mrn_column = 'Medical Record - MRN - Subjects'
@@ -27,9 +27,12 @@ first_idx = column_headers.index(last_column) + 1
 test_names = [' - '.join(title.split(' - ')[1:]) for title in column_headers[3:]]
 test_names = np.unique(test_names)
 test_data = {}
+test_date = {}
 for test in test_names:
     data_cols = [i+1 for i in range(last_idx) if column_headers[i].find(test)>=0]
     test_data[test] = data_cols
+    # also get the column that has the test date
+
 
 # the process of getting unique test names screws up the column order, so let's re-write it the same way we'll be outputting the data
 column_headers = [ws.cell(row=1,column=i+1).value for i in range(first_idx)]

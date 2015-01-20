@@ -4,8 +4,8 @@ import mne
 import numpy as np
 from scipy import stats
 
-bands = [[1, 4], [4, 8], [8, 13], [13, 30], [30, 50]]
-sx_fname = '/Users/sudregp/data/meg/hi.txt'
+bands = [[1, 4]]#, [4, 8], [8, 13], [13, 30], [30, 50]]
+sx_fname = '/Users/sudregp/data/meg/inatt.txt'
 subjs_fname = '/Users/sudregp/data/meg/usable_subjects_5segs13p654.txt'
 data_dir = '/Users/sudregp/data/meg/connectivity/'
 lmethod = 'pca_flip'
@@ -50,14 +50,22 @@ for s in subjs:
             data = conn[cmethod][:,:,b]
             data = data[il]
             subj_data[b].append(data.T)
+    else:
+        sx_data.append(0)
+        fname = data_dir + '%s-%s-pli-imcoh-plv-wpli-pli2_unbiased-wpli2_debiased.npy'%(s,lmethod)
+        conn = np.load(fname)[()]
+        for b in range(len(bands)):
+            data = conn[cmethod][:,:,b]
+            data = data[il]
+            subj_data[b].append(data.T)
 
 cnt=0
 for b in range(len(bands)):
     x = np.array(subj_data[b])
     val = []
     for i in range(x.shape[1]):
-        r, p = stats.pearsonr(x[:,i], sx_data)
-        val.append(p)
+        slope, intercept, r_value, p_value, std_err = stats.linregress(x[:,i],sx_data)
+        val.append(p_value)
     print bands[b]
     print 'Sources < .05 uncorrected:', sum(np.array(val)<.05)
     cnt+=sum(np.array(val)<.05)

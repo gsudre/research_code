@@ -4,7 +4,7 @@ import mne
 import numpy as np
 from scipy import stats
 
-bands = [[1, 4], [4, 8], [8, 13], [13, 30], [30, 50]]
+bands = [[1, 4]]#, [4, 8]]#, [8, 13], [13, 30]]#, [30, 50]]
 g1_fname = '/Users/sudregp/data/meg/nv_subjs.txt'
 g2_fname = '/Users/sudregp/data/meg/persistent_subjs.txt'
 g3_fname = '/Users/sudregp/data/meg/remitted_subjs.txt'
@@ -22,9 +22,12 @@ ipsiOnly = True
 selected_labels = []
 # selected_labels = ['isthmuscingulate', 'inferiorparietal', 'superiorfrontal']  # DMN 
 # selected_labels = ['superiorparietal', 'precentral'] # dorsal attn
+# selected_labels = ['superiorparietal', 'precentral'] # dorsal attn Philip
 # selected_labels = ['supramarginal', 'insula'] # ventral attn
-# selected_labels = ['isthmuscingulate', 'lateralorbitofrontal'] #affective
+selected_labels = ['isthmuscingulate', 'lateralorbitofrontal'] #affective
 # selected_labels = ['rostralmiddlefrontal', 'superiorfrontal', 'caudalmiddlefrontal', 'insula', 'superiorparietal'] #cognitivecontrol
+# selected_labels = ['precentral', 'postcentral'] #sensorimotor
+# selected_labels = ['superiorfrontal', 'isthmuscingulate', 'parstriangularis', 'bankssts', 'insula'] #social
 
 fid = open(subjs_fname, 'r')
 subjs = [line.rstrip() for line in fid]
@@ -51,7 +54,7 @@ print lmethod, '-', m[cmethod]
 
 fid = open('/Users/sudregp/tmp/u.csv','w')
 
-# labels, label_colors = mne.labels_from_parc(subjs[0], parc='aparc')
+labels, label_colors = mne.labels_from_parc(subjs[0], parc='aparc')
 nlabels=len(labels)
 il = np.tril_indices(nlabels, k=-1)
 label_names = [l.name for l in labels]
@@ -190,5 +193,4 @@ n3 = len(g3_data[0])
 print 'size1 =', n1
 print 'size2 =', n2
 print 'size3 =', n3
-print cnt
 

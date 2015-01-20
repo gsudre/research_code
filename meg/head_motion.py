@@ -26,7 +26,7 @@ def get_head_motion(raw, plot=False):
             return None
         else:
             start, stop = raw.time_as_index([0, 240])  # read the first 15s of data
-            data, times = raw[picks[:3], start:(stop + 1)]
+            data, times = raw[picks[:3], :]#start:(stop + 1)]
             data = data.T * 100  # m -> cm
             o = np.inner(data[0, :], r) + t  # set the origin to the first data point
             data = np.inner(data, r) + t - o  # rotate and translate

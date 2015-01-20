@@ -2,7 +2,6 @@
 # by Gustavo Sudre, March 2013
 import mne
 import numpy as np
-import env
 import head_motion as hm
 import pdb
 
@@ -13,7 +12,7 @@ def group_consecutives(vals, step=1):
     result = [run]
     expect = None
     for v in vals:
-        if (v == expect) or (expect is None):
+        if (v <= expect) or (expect is None):
             run.append(v)
         else:
             run = [v]
@@ -22,7 +21,7 @@ def group_consecutives(vals, step=1):
     return result
 
 
-def find_good_segments(subj, data_path=env.data+'/MEG_data/fifs/',
+def find_good_segments(subj, data_path='/MEG_data/fifs/',
                        threshold=4000e-13, window=5, good_chan_limit=250):
 
     raw_fname = data_path + subj + '_rest_LP100_HP0.6_CP3_DS300_raw.fif'

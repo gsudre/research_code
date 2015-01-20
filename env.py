@@ -16,7 +16,7 @@ def load(file):
 import sys
 
 if sys.platform.find('linux') == 0:
-    data = '/data/sudregp/'
+    data = '/home/sudregp/data/'
     maps = '/home/sudregp/research_code/maps/'
     results = '/data/sudregp/results/'
     tmp = '/data/sudregp/tmp/'

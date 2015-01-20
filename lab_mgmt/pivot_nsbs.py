@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 import datetime as dt
 
 
-fname = '/Users/sudregp/dan/mergedfam07172014.xlsx'
+fname = '/Users/sudregp/dan/merged_aspdata_nsbs07232014.xlsx'
 nsb_column = 'SAMPLE NSB'
 mrn_column = 'MRN'
 
