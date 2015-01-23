@@ -1,7 +1,8 @@
 import mne
 import numpy as np
 import glob
-
+import os
+home = os.path.expanduser('~')
 
 data_dir = '/mnt/neuro/MEG_data/fifs/stop/'
 dir_out = '/mnt/neuro/MEG_data/analysis/stop/parsed/'
@@ -9,11 +10,12 @@ dir_out = '/mnt/neuro/MEG_data/analysis/stop/parsed/'
 tmin = -.5
 tmax = 1.5
 
-# subjs_fname = home+'/data/meg/usable_subjects_5segs13p654.txt'
-# fid = open(subjs_fname, 'r')
-# subjs = [line.rstrip() for line in fid]
+subjs_fname = home+'/data/meg/subjs_stop.txt'
+fid = open(subjs_fname, 'r')
+subjs = [line.rstrip() for line in fid]
+fid.close()
 
-subjs = ['GOMPBCFD']
+# subjs = ['ABUTRIKQ']
 
 for subj in subjs:
     # figure out how many files the subject has
@@ -43,8 +45,7 @@ for subj in subjs:
                 (events[cnt,2]==3) and (events[cnt+1,2]==2)):
                 filtered_events.append(np.array([events[cnt,0],0,1]))
                 event_order.append('STG')
-            elif ((events[cnt,2]==1) and (events[cnt+1,2]==4)) or (
-                (events[cnt,2]==3) and (events[cnt+1,2]==4)):
+            elif events[cnt+1,2]==4:
                 filtered_events.append(np.array([events[cnt,0],0,3]))
                 event_order.append('STI')
             elif events[cnt,2]==5:
@@ -52,17 +53,33 @@ for subj in subjs:
                 event_order.append('STB')
             cnt += 1
         filtered_events = np.array(filtered_events)
-
         event_id = {'STG': 1, 'STI':3, 'STB': 5}
+
+        # checking that we have at least 8 blocks of data
+        if np.sum(filtered_events[:,2]==1)<352:
+            print '\nERROR: Unexpected number of STG trials!'
+            raw_input('Waiting for input...')
+        if np.sum(filtered_events[:,2]==3)<160:
+            print '\nERROR: Unexpected number of STI trials!'
+            raw_input('Waiting for input...')
+        if np.sum(filtered_events[:,2]==5)<176:
+            print '\nERROR: Unexpected number of STB trials!'
+            raw_input('Waiting for input...')
+           
+
+        picks = mne.pick_types(raw.info, meg=True, ref_meg=True)
         if f==0:
             epochs = mne.Epochs(raw, filtered_events, event_id, tmin, tmax,
-                    baseline=(None, 0), proj=False, preload=True)
+                    baseline=(None, 0), proj=False, preload=True, picks=picks)
         else:
             epochs2 = mne.Epochs(raw, filtered_events, event_id, tmin, tmax,
-                    baseline=(None, 0), proj=False, preload=True)
+                    baseline=(None, 0), proj=False, preload=True, picks=picks)
             epochs = epochs + epochs2
+
+    print 'Downsampling...'
     epochs.resample(300)
-    epochs.save(dir_out + subj + '_stop_parsed_DS300_raw.fif')
+    print 'Saving to disk...'
+    epochs.save(dir_out + subj + '_stop_parsed_DS300-epo.fif.gz')
     fid = open(dir_out + subj + '_event_order.txt','w')
     for ev in event_order:
         fid.write(ev + '\n')
