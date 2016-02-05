@@ -1,3 +1,4 @@
+HELLO!
 subjs_fname = '/mnt/shaw/MEG_behavioral/roi_analysis/meg_subject_list.txt'
 data_dir = '/mnt/shaw/MEG_data/analysis/stop/'
 conds = ['STI-correct', 'STI-incorrect']
