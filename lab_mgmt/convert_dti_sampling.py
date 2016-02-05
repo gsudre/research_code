@@ -5,11 +5,12 @@ from rpy2.robjects import r
 from rpy2.robjects.numpy2ri import numpy2ri
 
 
-dir_name = '/Volumes/neuro/dtitk2tbss_clean/'
-subj_file = 'subjs_normalized.txt'
+dir_name = '/mnt/shaw/dti_robust_tsa/analysis/'
+dir_name = '/Users/sudregp/tmp/dti/'
+subj_file = 'subjs_diffeo.txt'
 r_output_file = 'mean_sampling'
 tract_names = ['left_cst', 'left_ifo', 'left_ilf', 'left_slf', 'left_unc', 'right_cst', 'right_ifo', 'right_ilf', 'right_slf', 'right_unc', 'cc']
-var_names = ['FA', 'ADC', 'PD', 'AD', 'RD']
+var_names = ['FA', 'ADC', 'PD', 'AD', 'RD', 'eig1', 'eig2', 'eig3']
 
 # find out the subject names so we can have nice names on the table rows
 subj_names = []
@@ -24,7 +25,8 @@ tract_var_names = []
 # for each tract file, read all variables
 for tract in tract_names:
     print 'opening', tract
-    fid = open(dir_name + 'ixi_template_' + tract + '_def3.med.mean.vtk','r')
+    # .mean. or .maxFA.
+    fid = open(dir_name + 'ixi_template_' + tract + '_def3.med.mean.vtk', 'r')
     data = fid.read()
     # get rid of new lines
     data = data.replace('\n', '')
@@ -37,7 +39,7 @@ for tract in tract_names:
         # make sure the number of subjects matches the list of names
         m_obj = re.search(var + " (\d+) (\d+) float", data)
         thisSubjects = int(m_obj.group(1))
-        if var=='PD':
+        if var == 'PD':
             # this is a special case because it's a vector field, so we have 3 points per subject
             goal_subjects = num_subjects * 3
         else:
@@ -53,7 +55,7 @@ for tract in tract_names:
             cnt = 0
             all_points = []
             for p in range(num_points):
-                # convert all the values for each subject in this point 
+                # convert all the values for each subject in this point
                 point_val = [float(num) for num in numbers[cnt:cnt+thisSubjects]]
                 cnt += thisSubjects
                 # add the data for this point to all the other points

@@ -1,7 +1,8 @@
 #!/bin/sh
 subj=$1
 
-subj_dir=/mnt/neuro/data_by_maskID/$subj/afni
+# subj_dir=/mnt/shaw/data_by_maskID/$subj/afni
+subj_dir=~/data/fmri/$subj
 
 # This one is based on Joel's latest paipeline (see his e-mail). Afterwards, we still need to regress out first 3 PCs of a combined CSFe/WMe mask (CompCor)
 afni_proc.py -subj_id $subj                               \

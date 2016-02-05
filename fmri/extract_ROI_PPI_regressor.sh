@@ -4,13 +4,13 @@
 subj=0498
 subj_dir=~/tmp/${subj}/afni/${subj}.stop.results/
 mask_dir=~/tmp/masks/
-# waver -dt 2 -GAM -inline 1@1 > masks/GammaHRF.1D
+# waver -dt .1 -GAM -inline 1@1 > masks/GammaHRF.1D
 gamma_1d=~/tmp/masks/GammaHRF.1D
 out_dir=${subj_dir}/gPPI
 # upsampled TR
 up_tr=0.1
 nruns=4
-nup=20  # TR * $up_tr
+nup=20  # TR / $up_tr
 runTRs=(98 98 98 98)
 # make sure a file called ROI_stop_mask exist for each of those ROIs in mask_dir. If not, do something like: 3dcalc -a 'TT_Daemon:l:amygdala' -expr 'step(a)' -prefix ~/tmp/junk and then 3dresample -overwrite -dxyz 3.5 3.5 3.5 -prefix amygdala_stop_mask -inset junk+tlrc
 # rois=(brodmannArea44 brodmannArea45 brodmannArea47 putamen accumbens caudate brodmannArea24 brodmannArea32 brodmannArea33)

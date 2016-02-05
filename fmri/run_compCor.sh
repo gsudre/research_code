@@ -3,8 +3,10 @@
 # Note that all these computations need to be performed in +orig because we have to keep the aparc and binary values in masks. We convert it to TLRC in the end
 
 subj=$1
-subj_dir=/mnt/neuro/data_by_maskID/$subj/afni/${subj}.rest.compCor.results
-freesurfer_dir=/mnt/neuro/freesurfer_subjects/$subj
+# subj_dir=/mnt/shaw/data_by_maskID/$subj/afni/${subj}.rest.compCor.results
+# freesurfer_dir=/mnt/shaw/freesurfer5.3_subjects/$subj
+subj_dir=~/data/fmri/$subj/${subj}.rest.compCor.results
+freesurfer_dir=~/data/MEG_structural/freesurfer/$subj
 old_pwd=`pwd`
 # only go through if there is a compCor run
 if [ -d $subj_dir ]; then

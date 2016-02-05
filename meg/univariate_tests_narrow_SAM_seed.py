@@ -43,6 +43,24 @@ def hi_linreg(*args):
     my_stats[np.isnan(my_stats)] = np.nanmin(my_stats)
     return my_stats
 
+def total_linreg(*args):
+    my_total = np.array(total)
+    if len(args)==2:
+        X = np.vstack([args[0],args[1]])
+    else:
+        X = np.vstack([args[0],args[1],args[2]])
+    nfeats = X.shape[1]
+    my_stats = []
+    for i in range(nfeats):
+        vec = X[:,i]
+        keep = ~np.isnan(vec)
+        # 2-tailed p-value by default
+        my_stats.append(1-stats.pearsonr(my_total[keep], vec[keep])[1])
+    my_stats = np.array(my_stats)
+    # might not be necessary... It doesn't (tested), but nice to see output with correct min and max, so let's leave it this way 
+    my_stats[np.isnan(my_stats)] = np.nanmin(my_stats)
+    return my_stats
+
 def group_comparison(*args):
     if len(args)==2:
         my_stats = 1-stats.f_oneway(args[0],args[1])[1]
@@ -52,7 +70,7 @@ def group_comparison(*args):
     my_stats[np.isnan(my_stats)] = np.nanmin(my_stats)
     return my_stats
 
-def write2afni(vals, fname, resample=True):
+def write2afni(vals, fname, resample=False):
     data = np.genfromtxt(home+'/data/meg/sam_narrow_5mm/voxelsInBrain.txt', delimiter=' ')
     # only keep i,j,k and one column for data
     data = data[:, :4]
@@ -154,6 +172,7 @@ for bidx, band in enumerate(bands):
 
 inatt = g2_inatt + g3_inatt
 hi = g2_hi + g3_hi
+total = [i+j for i,j in zip(inatt,hi)]
 
 for bidx, band in enumerate(bands):
     print band
@@ -172,6 +191,10 @@ for bidx, band in enumerate(bands):
             n = Y.shape[0]+Z.shape[0]
             stat_obs, clusters, p_values, H0 = \
             mne.stats.spatio_temporal_cluster_test([Y,Z], n_jobs=njobs, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=hi_linreg, n_permutations=nperms, verbose=True)
+        elif my_test=='total':
+            n = Y.shape[0]+Z.shape[0]
+            stat_obs, clusters, p_values, H0 = \
+            mne.stats.spatio_temporal_cluster_test([Y,Z], n_jobs=njobs, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=total_linreg, n_permutations=nperms, verbose=True)
         elif my_test=='nvVSper':
             n = X.shape[0]+Y.shape[0]
             stat_obs, clusters, p_values, H0 = \
@@ -203,6 +226,11 @@ for bidx, band in enumerate(bands):
             hi = len(g1_subjs)*[0] + g2_hi + g3_hi
             stat_obs, clusters, p_values, H0 = \
             mne.stats.spatio_temporal_cluster_test([X,Y,Z], n_jobs=njobs, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=hi_linreg, n_permutations=nperms, verbose=True)
+        elif my_test=='totalWithNVs':
+            n = Y.shape[0]+Z.shape[0]+X.shape[0]
+            total = len(g1_subjs)*[0] + total
+            stat_obs, clusters, p_values, H0 = \
+            mne.stats.spatio_temporal_cluster_test([X,Y,Z], n_jobs=njobs, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=total_linreg, n_permutations=nperms, verbose=True)
 
         output_results(clusters,p_values,'%s_%dto%d'%(my_test,band[0],band[1]),thresh)
 

@@ -43,6 +43,24 @@ def hi_linreg(*args):
     my_stats[np.isnan(my_stats)] = np.nanmin(my_stats)
     return my_stats
 
+def total_linreg(*args):
+    my_total = np.array(total)
+    if len(args)==2:
+        X = np.vstack([args[0],args[1]])
+    else:
+        X = np.vstack([args[0],args[1],args[2]])
+    nfeats = X.shape[1]
+    my_stats = []
+    for i in range(nfeats):
+        vec = X[:,i]
+        keep = ~np.isnan(vec)
+        # 2-tailed p-value by default
+        my_stats.append(1-stats.pearsonr(my_total[keep], vec[keep])[1])
+    my_stats = np.array(my_stats)
+    # might not be necessary... It doesn't (tested), but nice to see output with correct min and max, so let's leave it this way 
+    my_stats[np.isnan(my_stats)] = np.nanmin(my_stats)
+    return my_stats
+
 def group_comparison(*args):
     if len(args)==2:
         my_stats = 1-stats.f_oneway(args[0],args[1])[1]
@@ -52,7 +70,7 @@ def group_comparison(*args):
     my_stats[np.isnan(my_stats)] = np.nanmin(my_stats)
     return my_stats
 
-def write2afni(vals, fname, resample=True):
+def write2afni(vals, fname, resample=False):
     data = np.genfromtxt(home+'/data/meg/sam_narrow_5mm/voxelsInBrain.txt', delimiter=' ')
     # only keep i,j,k and one column for data
     data = data[:, :4]
@@ -65,7 +83,7 @@ def write2afni(vals, fname, resample=True):
         os.system('3dresample -inset '+fname+'+tlrc -prefix '+fname+'_upsampled -master '+home+'/data/meg/sam_narrow_5mm/TT_N27+tlrc -rmode NN')
         os.system('3dcalc -prefix '+fname+'_upsampled+tlrc -overwrite -a '+fname+'_upsampled+tlrc -b '+data_dir+'anat_mask+tlrc -expr \'a*b\'')
 
-def output_results(clusters,pvalues,fname):
+def output_results(clusters,pvalues,fname,thresh):
     for alpha in alphas:
         good_clusters = [k for k in range(len(pvalues)) if pvalues[k]<alpha]
         print 'Found %d good clusters at %.2f'%(len(good_clusters),alpha)
@@ -93,6 +111,7 @@ if len(sys.argv)>1:
 # for a single connection to be good, higher the better
 p_threshold = [.95, .99]
 nperms = 5000
+njobs = 4
 dist = 5   # distance between voxels to be considered connected (mm)
 alphas = [.05, .01]
 
@@ -156,6 +175,7 @@ for s in subjs:
 
 inatt = g2_inatt + g3_inatt
 hi = g2_hi + g3_hi
+total = [i+j for i,j in zip(inatt,hi)]
 all_ps = []
 all_clusters = []
 
@@ -167,57 +187,68 @@ Z = np.arctanh(np.array(g3_data)).reshape([len(g3_subjs),1,nfeats])
 for thresh in p_threshold:
     if my_test=='inatt':
         n = Y.shape[0]+Z.shape[0]
-        T_obs, clusters, p_values, H0 = \
-        mne.stats.spatio_temporal_cluster_test([Y,Z], n_jobs=2, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=inatt_linreg, n_permutations=nperms, verbose=True)
+        stat_obs, clusters, p_values, H0 = \
+        mne.stats.spatio_temporal_cluster_test([Y,Z], n_jobs=njobs, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=inatt_linreg, n_permutations=nperms, verbose=True)
     # tail=1 because we use 1-pvalue as threshold for correlations
     elif my_test=='hi':
         n = Y.shape[0]+Z.shape[0]
-        T_obs, clusters, p_values, H0 = \
-        mne.stats.spatio_temporal_cluster_test([Y,Z], n_jobs=2, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=hi_linreg, n_permutations=nperms, verbose=True)
+        stat_obs, clusters, p_values, H0 = \
+        mne.stats.spatio_temporal_cluster_test([Y,Z], n_jobs=njobs, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=hi_linreg, n_permutations=nperms, verbose=True)
+    elif my_test=='total':
+        n = Y.shape[0]+Z.shape[0]
+        stat_obs, clusters, p_values, H0 = \
+        mne.stats.spatio_temporal_cluster_test([Y,Z], n_jobs=njobs, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=total_linreg, n_permutations=nperms, verbose=True)
     elif my_test=='nvVSper':
         n = Y.shape[0]+X.shape[0]
-        T_obs, clusters, p_values, H0 = \
-        mne.stats.spatio_temporal_cluster_test([X,Y], n_jobs=2, threshold=thresh, stat_fun=group_comparison, connectivity=connectivity, tail=1, n_permutations=nperms, verbose=True)
+        stat_obs, clusters, p_values, H0 = \
+        mne.stats.spatio_temporal_cluster_test([X,Y], n_jobs=njobs, threshold=thresh, stat_fun=group_comparison, connectivity=connectivity, tail=1, n_permutations=nperms, verbose=True)
     elif my_test=='nvVSrem':
         n = X.shape[0]+Z.shape[0]
-        T_obs, clusters, p_values, H0 = \
-        mne.stats.spatio_temporal_cluster_test([X,Z], n_jobs=2, threshold=thresh, stat_fun=group_comparison, connectivity=connectivity, tail=1, n_permutations=nperms, verbose=True)
+        stat_obs, clusters, p_values, H0 = \
+        mne.stats.spatio_temporal_cluster_test([X,Z], n_jobs=njobs, threshold=thresh, stat_fun=group_comparison, connectivity=connectivity, tail=1, n_permutations=nperms, verbose=True)
     elif my_test=='perVSrem':
         n = Y.shape[0]+Z.shape[0]
-        T_obs, clusters, p_values, H0 = \
-        mne.stats.spatio_temporal_cluster_test([Y,Z], n_jobs=2, threshold=thresh, stat_fun=group_comparison, connectivity=connectivity, tail=1, n_permutations=nperms, verbose=True)
+        stat_obs, clusters, p_values, H0 = \
+        mne.stats.spatio_temporal_cluster_test([Y,Z], n_jobs=njobs, threshold=thresh, stat_fun=group_comparison, connectivity=connectivity, tail=1, n_permutations=nperms, verbose=True)
     elif my_test=='nvVSadhd':
         n = Y.shape[0]+Z.shape[0]+X.shape[0]
         ADHD = np.vstack([Y,Z])
-        T_obs, clusters, p_values, H0 = \
-        mne.stats.spatio_temporal_cluster_test([X,ADHD], n_jobs=2, threshold=thresh, stat_fun=group_comparison, connectivity=connectivity, tail=1, n_permutations=nperms, verbose=True)
+        stat_obs, clusters, p_values, H0 = \
+        mne.stats.spatio_temporal_cluster_test([X,ADHD], n_jobs=njobs, threshold=thresh, stat_fun=group_comparison, connectivity=connectivity, tail=1, n_permutations=nperms, verbose=True)
     elif my_test=='anova':
         n = Y.shape[0]+Z.shape[0]+X.shape[0]
-        T_obs, clusters, p_values, H0 = \
-        mne.stats.spatio_temporal_cluster_test([X,Y,Z], n_jobs=2, threshold=thresh, stat_fun=group_comparison, connectivity=connectivity, tail=1, n_permutations=nperms, verbose=True)
+        stat_obs, clusters, p_values, H0 = \
+        mne.stats.spatio_temporal_cluster_test([X,Y,Z], n_jobs=njobs, threshold=thresh, stat_fun=group_comparison, connectivity=connectivity, tail=1, n_permutations=nperms, verbose=True)
     elif my_test=='inattWithNVs':
         inatt = len(g1_subjs)*[0] + g2_inatt + g3_inatt
-        T_obs, clusters, p_values, H0 = \
-        mne.stats.spatio_temporal_cluster_test([X,Y,Z], n_jobs=2, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=inatt_linreg, n_permutations=nperms, verbose=True)
+        n = Y.shape[0]+Z.shape[0]+X.shape[0]
+        stat_obs, clusters, p_values, H0 = \
+        mne.stats.spatio_temporal_cluster_test([X,Y,Z], n_jobs=njobs, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=inatt_linreg, n_permutations=nperms, verbose=True)
     elif my_test=='hiWithNVs':
+        n = Y.shape[0]+Z.shape[0]+X.shape[0]
         hi = len(g1_subjs)*[0] + g2_hi + g3_hi
-        T_obs, clusters, p_values, H0 = \
-        mne.stats.spatio_temporal_cluster_test([X,Y,Z], n_jobs=2, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=hi_linreg, n_permutations=nperms, verbose=True)
+        stat_obs, clusters, p_values, H0 = \
+        mne.stats.spatio_temporal_cluster_test([X,Y,Z], n_jobs=njobs, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=hi_linreg, n_permutations=nperms, verbose=True)
+    elif my_test=='totalWithNVs':
+        n = Y.shape[0]+Z.shape[0]+X.shape[0]
+        total = len(g1_subjs)*[0] + total
+        stat_obs, clusters, p_values, H0 = \
+        mne.stats.spatio_temporal_cluster_test([X,Y,Z], n_jobs=njobs, threshold=thresh, connectivity=connectivity, tail=1, stat_fun=total_linreg, n_permutations=nperms, verbose=True)
 
-output_results(clusters,p_values,my_test)
+    output_results(clusters,p_values,my_test,thresh)
 
-# two-sided
-P_obs = stats.t.sf(np.abs(T_obs), n-1)*2
-idx = ~np.isnan(P_obs)
-for a in alphas:
-    reject_fdr, pval_fdr = mne.stats.fdr_correction(P_obs[idx], alpha=a, method='indep')
-    num_good = np.sum(pval_fdr<a)
-    if num_good > 0:
-        print 'Good voxels at %.2f: %d'%(a,num_good)
-        # if we have any good voxels left, put them in their original positions
-        pvals = P_obs.copy()
-        pvals[idx] = 1-pval_fdr
-        pvals[~idx] = 0
-        # make .nii with p-values
-        fname = data_dir+my_test+'_a%.2ft%.2fd%dFDR'%(a,thresh,dist)
-        write2afni(pvals,fname,resample=True)
+# # two-sided
+# P_obs = stats.t.sf(np.abs(stat_obs), n-1)*2
+# idx = ~np.isnan(P_obs)
+# for a in alphas:
+#     reject_fdr, pval_fdr = mne.stats.fdr_correction(P_obs[idx], alpha=a, method='indep')
+#     num_good = np.sum(pval_fdr<a)
+#     if num_good > 0:
+#         print 'Good voxels at %.2f: %d'%(a,num_good)
+#         # if we have any good voxels left, put them in their original positions
+#         pvals = P_obs.copy()
+#         pvals[idx] = 1-pval_fdr
+#         pvals[~idx] = 0
+#         # make .nii with p-values
+#         fname = data_dir+my_test+'_a%.2ft%.2fd%dFDR'%(a,thresh,dist)
+#         write2afni(pvals,fname,resample=True)

@@ -23,9 +23,9 @@ csvOutput = '/Users/sudregp/tmp/scans.csv'
 # where to find .tar.gz with downloaded MR data
 tmpFolder = '/Users/sudregp/Downloads/'
 # target folder to upack the data
-mrFolder = '/Volumes/neuro/MR_data/'
+mrFolder = '/mnt/Labs/Shaw/MR_data/'
 # where to place symbolic links
-symlinkFolder = '/Volumes/neuro/data_by_maskID/'
+symlinkFolder = '/mnt/Labs/Shaw/data_by_maskID/'
 
 # type of modalities we scan
 # note that these names need to be found in the README file!
@@ -50,7 +50,7 @@ def check_for_data(dtype, folder):
 
 
 # find out what's the next mask id to use
-maskid_dirs = glob.glob(symlinkFolder + '*')
+maskid_dirs = glob.glob(symlinkFolder + '????')
 curMaskId = [int(m.split('/')[-1]) for m in maskid_dirs]
 curMaskId = max(curMaskId) + 1
 
@@ -131,14 +131,14 @@ for fidx, file in enumerate(dicoms):
     shutil.move(folder2move[0], targetFolder)
     os.rmdir(targetFolder + '/' + subjectName + '-' + mrn + '/')
 
-    # create symlink in data_by_maskid folder
-    print 'Creating symlinks...'
-    linkName = symlinkFolder + ('%04.0d' % curMaskId)
-    source = '../MR_data/' + folder2move[0].split('/')[-2] + '/' + str(curMaskId)
-    if not os.path.exists(linkName):
-        os.symlink(source, linkName)
-    else:
-        print 'WARNING: Link already exists!'    
+    # # create symlink in data_by_maskid folder
+    # print 'Creating symlinks...'
+    # linkName = symlinkFolder + ('%04.0d' % curMaskId)
+    # source = '../MR_data/' + folder2move[0].split('/')[-2] + '/' + str(curMaskId)
+    # if not os.path.exists(linkName):
+    #     os.symlink(source, linkName)
+    # else:
+    #     print 'WARNING: Link already exists!'    
 
     # get the information we'll need for the CSV file
     for midx, mod in enumerate(modInReadme):

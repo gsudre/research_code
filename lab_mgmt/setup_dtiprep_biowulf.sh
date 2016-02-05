@@ -14,9 +14,9 @@ while read m; do
 
     # piping inside the loop was breaking it. Will need to do it later. -n flag didn't work because I actually need the stdin pipe.
     echo "echo \"Copying over eDTI files for ${m}\"" >> $tmp_script
-    echo "ssh -q biowulf.nih.gov \"mkdir ~/data/tortoise/${m}\"" >> $tmp_script
-    echo "cd /mnt/neuro/data_by_maskID/${m}" >> $tmp_script 
-    echo "tar czf - edti edti_proc | ssh -q biowulf.nih.gov \"cd ~/data/tortoise/${m}; tar xzf -\"" >> $tmp_script
+    echo "ssh -q biowulf2.nih.gov \"mkdir ~/data/tortoise/${m}\"" >> $tmp_script
+    echo "cd /mnt/shaw/data_by_maskID/${m}" >> $tmp_script 
+    echo "tar czf - edti edti_proc | ssh -q biowulf2.nih.gov \"cd ~/data/tortoise/${m}; tar xzf -\"" >> $tmp_script
 
     # setting up XML file
     cp ~/tortoise_in_biowulf/0000_template.xml ~/tortoise_in_biowulf/${m}.xml
