@@ -1,4 +1,5 @@
 library(nlme)
+library(MASS)
 
 fname = '~/data/solar_paper_v2/dti_mean_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5.csv'
 out_fname = '~/data/solar_paper_v2/tmp.csv'
@@ -23,19 +24,25 @@ for (s in sxs) {
     bs = vector()
     for (v in phen_vars) {
         y = data[,v]
-        y = qnorm(rank(y)/(length(y) + 1))  # inorm formula from http://www.imaginggenetics.uci.edu/presentations/2012/ImageingGeneticsWorkshop%201-17-12/Workshop-%20Almasy.pdf
         eval(parse(text=sprintf('sx=data$%s', s)))
-        cmd_line = sprintf('python ~/research_code/get_significant_covariates.py %s', colnames(data)[v])
-        fm = system(cmd_line, intern=T)
-        if (fm == "") {
-            fm = as.formula(sprintf("y ~ sx"))
-        } else {
-            fm = as.formula(sprintf("y ~ sx + %s", fm))
+        # fm = as.formula("y ~ sx + sex*mvmt*age + sex*age*I(mvmt^2) + sex*mvmt*I(age^2) + sex*I(mvmt^2)*I(age^2)")
+        fm = as.formula("y ~ sx + sex + mvmt + I(mvmt^2) + age + I(age^2)")
+        fit = lme(fm, random=~1|famid, data=data, na.action=na.omit, method="ML")
+        # selecting which covariates to use
+        fm = "y ~ sx"
+        for (r in 3:dim(summary(fit)$tTable)[1]) {
+            if (summary(fit)$tTable[r, 5] < .1) {
+                if (r == 3) {
+                    fm = sprintf('%s + %s', fm, 'sex')
+                } else {
+                    fm = sprintf('%s + %s', fm, rownames(summary(fit)$tTable)[r])
+                }
+            }
         }
-        fit = lme(fm, random=~1|famid, data=data, na.action=na.omit)
-        ps = c(ps, summary(fit)$tTable[2,5])
-        ts = c(ts, summary(fit)$tTable[2,4])
-        bs = c(bs, summary(fit)$tTable[2,1])
+        opt_fit = lme(as.formula(fm), random=~1|famid, data=data, na.action=na.omit, method="ML")
+        ps = c(ps, summary(opt_fit)$tTable[2,5])
+        ts = c(ts, summary(opt_fit)$tTable[2,4])
+        bs = c(bs, summary(opt_fit)$tTable[2,1])
     }
     print(sprintf('==== Results for %s ====', s))
     good_ps = which(ps <= p_thresh)

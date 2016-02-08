@@ -1,7 +1,7 @@
 library(nlme)
 
 fname = '~/data/solar_paper_v2/fmri_3min_melodicMasked_5comps_nuclear.csv'
-out_fname = '~/data/solar_paper_v2/linear_fmri_3min_melodicMasked_5comps_enorm12_nuclear.csv'
+out_fname = '~/data/solar_paper_v2/linear_fmri_3min_melodicMasked_5comps_fixed_nuclear.csv'
 p_thresh = .05
 
 data = read.csv(fname)
@@ -24,7 +24,7 @@ for (s in sxs) {
         y=data[,v]
         eval(parse(text=sprintf('sx=data$%s', s)))
         # fit = lme(scale(y) ~ scale(sx) + sex + scale(age), random=~1|famid, data=data, na.action=na.omit)
-        fit = lme(y ~ sx + sex + age + mean_enorm + I(age^2) + I(mean_enorm^2), random=~1|famid, data=data, na.action=na.omit)
+        fit = lme(y ~ sx + sex + age + mean_enorm + I(mean_enorm^2), random=~1|famid, data=data, na.action=na.omit)
         ps = c(ps, summary(fit)$tTable[2,5])
         ts = c(ts, summary(fit)$tTable[2,4])
         bs = c(bs, summary(fit)$tTable[2,1])
