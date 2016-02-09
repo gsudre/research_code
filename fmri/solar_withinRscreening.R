@@ -1,18 +1,17 @@
 library(nlme)
 library(MASS)
 
-fname = '~/data/solar_paper_v2/dti_mean_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5_extended.csv'
-out_fname = '~/data/solar_paper_v2/linear_dti_mean_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5_additive_extended.csv'
+fname = '~/data/solar_paper_v2/fmri_3min_melodicMasked_5comps_nuclear.csv'
+out_fname = '~/data/solar_paper_v2/linear_fmri_3min_melodicMasked_5comps_additive_nuclear.csv'
 p_thresh = .05
 
 data = read.csv(fname)
 # all variables to use as phenotype
-phen_vars = c(which(grepl("left", names(data))), which(grepl("right", names(data))), which(grepl("cc", names(data))))
-# phen_vars = c('rd_left_ifo')
+phen_vars = which(grepl("net", names(data)))
 
 # which subjects to use
 idx = 1:dim(data)[1]
-sxs = c('inatt', 'hi', 'total', 'DX', 'DX_inatt', 'DX_hi', 'DX_comb')
+sxs = c('inatt', 'HI', 'total', 'DX', 'DX_inatt', 'DX_hi', 'DX_comb')
 
 # setting up output dataframe   
 df = data.frame(tracts=colnames(data[,phen_vars]))
@@ -25,8 +24,8 @@ for (s in sxs) {
     for (v in phen_vars) {
         y = data[,v]
         eval(parse(text=sprintf('sx=data$%s', s)))
-        # fm = as.formula("y ~ sx + sex*mvmt*age + sex*age*I(mvmt^2) + sex*mvmt*I(age^2) + sex*I(mvmt^2)*I(age^2)")
-        fm = as.formula("y ~ sx + sex + mvmt + I(mvmt^2) + age + I(age^2)")
+        # fm = as.formula("y ~ sx + sex*mean_enorm*age + sex*age*I(mean_enorm^2) + sex*mean_enorm*I(age^2) + sex*I(mean_enorm^2)*I(age^2)")
+        fm = as.formula("y ~ sx + sex + mean_enorm + I(mean_enorm^2) + age + I(age^2)")
         fit = lme(fm, random=~1|famid, data=data, na.action=na.omit, method="ML")
         # selecting which covariates to use
         fm = "y ~ sx"
