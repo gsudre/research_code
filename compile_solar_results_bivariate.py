@@ -1,13 +1,14 @@
-# Grabs the results from SOLAR univariate and bivariate analysis and formats it into a nice table.
+# Grabs the results from SOLAR univariate and bivariate analysis and formats it
+# into a nice table.
 import os
-home = os.path.expanduser('~')
 from math import *
 import csv
 import glob
+home = os.path.expanduser('~')
 
 
 dir_name = home + '/data/solar_paper_v2/'
-analysis = 'fmri_3min_melodicMasked_5comps_enorm12_bivar_nuclear'
+analysis = 'dti_mean_3sd_extendedAndNuclear_combMvmtClean_full_bivar_extended'
 out_fname = dir_name + 'polygen_bivar_results_%s.csv' % analysis
 
 folders = glob.glob(dir_name + analysis + '/*')
@@ -29,8 +30,9 @@ results = [header]
 traits = []
 for folder in folders:
     res_dir = folder.split('/')[-1]
-    # the trait name is represented by all directories that do not start with one of the bivariate analysis names
-    # we also make sure the trait directory has a valid polygen.out file
+    # the trait name is represented by all directories that do not start with
+    # one of the bivariate analysis names we also make sure the trait directory
+    # has a valid polygen.out file
     if res_dir.split('_')[0] not in bivar_code:
         folder = dir_name + analysis + '/' + res_dir
         fname = folder + '/polygenic.out'
