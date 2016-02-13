@@ -1,11 +1,12 @@
 # Creates phenotype files for SOLAR, using the output voxel-wise data
-group = '3min'
-nets = 0:15
-fam_type = 'nuclear'
-for (net in nets) {
-    gf_fname = sprintf('~/data/solar_paper_v2/fmri_%s_melodicMasked_5comps.csv', group)
-    data_fname = sprintf('~/data/fmri_example11_all/%s_net%02d.txt', group, net)
-    subjs_fname = sprintf('~/data/fmri_example11_all/%s.txt', group)
+group = 'mean'
+mode = c('fa', 'ad', 'rd')
+mode = c('rd')
+fam_type = 'extended'
+for (m in mode) {
+    gf_fname = sprintf('~/data/solar_paper_v2/dti_%s_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5.csv', group)
+    data_fname = sprintf('~/data/dti_voxelwise/dti_%s.txt', m)
+    subjs_fname = '~/data/dti_voxelwise/subjs.txt'
 
     cat('Loading data\n')
     brain = read.table(data_fname)
@@ -17,7 +18,7 @@ for (net in nets) {
         header = c(header, sprintf('v%d', v))
     }
     colnames(brain) = c('maskid', header)
-    data = merge(gf, brain, by.x='maskid', by.y='maskid')
+    data = merge(gf, brain, by.x='mask.id', by.y='maskid')
 
     if (fam_type != '') {
         idx = data$famType == fam_type
@@ -26,6 +27,6 @@ for (net in nets) {
     } else {
         fam_str = ''
     }
-    out_fname = sprintf('~/data/solar_paper_v2/phen_%s_net%02d%s.csv', group, net, fam_str)
+    out_fname = sprintf('~/data/solar_paper_v2/phen_%s_dti_%s%s.csv', group, m, fam_str)
     write.csv(data, file=out_fname, row.names=F, quote=F)
 }
