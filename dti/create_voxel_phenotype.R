@@ -1,8 +1,7 @@
 # Creates phenotype files for SOLAR, using the output voxel-wise data
 group = 'mean'
 mode = c('fa', 'ad', 'rd')
-mode = c('rd')
-fam_type = 'extended'
+fam_type = 'nuclear'
 for (m in mode) {
     gf_fname = sprintf('~/data/solar_paper_v2/dti_%s_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5.csv', group)
     data_fname = sprintf('~/data/dti_voxelwise/dti_%s.txt', m)

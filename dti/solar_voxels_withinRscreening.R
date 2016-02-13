@@ -1,7 +1,7 @@
 library(nlme)
 
 group = 'mean'
-net = 'ad'
+net = 'fa'
 gf_fname = sprintf('~/data/solar_paper_v2/dti_%s_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5.csv', group)
 data_fname = sprintf('~/data/dti_voxelwise/dti_%s.txt', net)
 subjs = '~/data/dti_voxelwise/subjs.txt'
@@ -43,10 +43,16 @@ for (s in sxs) {
                     fm = sprintf('%s + %s', fm, cname)
                 }
             }
-            opt_fit = lme(as.formula(fm), random=~1|famid, data=data, na.action=na.omit, method="ML")
-            ps = c(ps, summary(opt_fit)$tTable[2,5])
-            ts = c(ts, summary(opt_fit)$tTable[2,4])
-            bs = c(bs, summary(opt_fit)$tTable[2,1])
+            opt_fit = try(lme(as.formula(fm), random=~1|famid, data=data, na.action=na.omit, method="ML"))
+            if (length(opt_fit) > 1) {
+                ps = c(ps, summary(opt_fit)$tTable[2,5])
+                ts = c(ts, summary(opt_fit)$tTable[2,4])
+                bs = c(bs, summary(opt_fit)$tTable[2,1])
+            } else {
+                ps = c(ps, 1)
+                ts = c(ts, 0)
+                bs = c(bs, 0) 
+            }
         } else {
             # model failed!
             ps = c(ps, 1)
