@@ -26,6 +26,8 @@ nvoxels = len(voxel_folders)
 res = np.empty([nvoxels, 6])
 res[:] = np.nan
 for v in range(nvoxels):
+    if (v % 100) == 0:
+        print v, '/', nvoxels
     fname = dir_name + analysis + '/v%05d_polygenic.out' % (v + 1)
     if not os.path.exists(fname):
         print 'ERROR: Could not find results for voxel %d' % (v + 1)
