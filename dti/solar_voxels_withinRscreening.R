@@ -1,7 +1,7 @@
 library(nlme)
 
 group = 'mean'
-net = 'fa'
+net = 'rd'
 gf_fname = sprintf('~/data/solar_paper_v2/dti_%s_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5.csv', group)
 data_fname = sprintf('~/data/dti_voxelwise/dti_%s.txt', net)
 subjs = '~/data/dti_voxelwise/subjs.txt'
@@ -19,7 +19,8 @@ phen_vars = (dim(gf)[2] + 1):dim(data)[2]
 
 # which subjects to use
 idx = 1:dim(data)[1]
-sxs = c('inatt', 'HI', 'total', 'DX', 'DX_inatt', 'DX_hi', 'DX_comb')
+sxs = c('inatt', 'hi', 'total', 'DX', 'DX_inatt', 'DX_hi', 'DX_comb')
+sxs = c('hi', 'total', 'DX', 'DX_inatt', 'DX_hi', 'DX_comb')
 
 for (s in sxs) {
     df = data.frame(voxel=colnames(data[,phen_vars]))
