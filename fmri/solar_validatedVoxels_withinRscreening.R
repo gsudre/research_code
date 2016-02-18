@@ -1,7 +1,7 @@
 library(nlme)
 
 group = '3min'
-net = 00
+net = 14
 gf_fname = sprintf('~/data/solar_paper_v2/fmri_%s_melodicMasked_5comps.csv', group)
 # data_fname = sprintf('~/data/fmri_example11_all/%s_net%02d.txt', group, net)
 data_fname = sprintf('~/data/solar_paper_v2/nifti/net%02d_validated.txt', net)
@@ -22,8 +22,8 @@ phen_vars = (dim(gf)[2] + 1):dim(data)[2]
 idx = 1:dim(data)[1]
 sxs = c('inatt', 'HI', 'total', 'DX', 'DX_inatt', 'DX_hi', 'DX_comb')
 
+df = data.frame(voxel=colnames(data[,phen_vars]))
 for (s in sxs) {
-    df = data.frame(voxel=colnames(data[,phen_vars]))
     ps = vector()
     ts = vector()
     bs = vector()
@@ -51,7 +51,7 @@ for (s in sxs) {
     eval(parse(text=sprintf('df$%s_ts=ts', s)))
     eval(parse(text=sprintf('df$%s_ps=ps', s)))
     eval(parse(text=sprintf('df$%s_bs=bs', s)))
-    # out_fname = sprintf('~/data/solar_paper_v2/linear_fmri_melodicMasked_%s_net%02d_%s_full.csv', group, net, s)
-    out_fname = sprintf('~/data/solar_paper_v2/linear_fmri_melodicMasked_validated_net%02d_%s_full.csv', net, s)
-    write.csv(df,file=out_fname,row.names=F)
 }
+out_fname = sprintf('~/data/solar_paper_v2/linear_fmri_melodicMasked_validated_net%02d_full.csv', net)
+write.csv(df,file=out_fname,row.names=F)
+
