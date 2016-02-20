@@ -1,16 +1,18 @@
 library(nlme)
 
+net = 11
 gf_fname = sprintf('~/data/solar_paper_v2/fmri_3min_melodicMasked_5comps.csv')
-data_fname = sprintf('~/data/solar_paper_v2/nifti/additive/ic11_validatedMean_NN3.1D')
+data_fname = sprintf('~/data/solar_paper_v2/nifti/additive/net%02d_validated_NN3.txt', net)
 subjs = sprintf('~/data/fmri_example11_all/3min.txt')
 p_thresh = .1
 
 cat('Loading data\n')
 brain = read.table(data_fname)
+pca = princomp(t(brain))
 gf = read.csv(gf_fname)
 subjs = read.table(subjs)
-brain = cbind(subjs, brain)
-colnames(brain) = c('maskid', 'voxelMean')
+brain = cbind(subjs, pca$scores[, 1])
+colnames(brain) = c('maskid', 'voxelPC')
 data = merge(gf, brain, by='maskid')
 
 # all variables to use as phenotype

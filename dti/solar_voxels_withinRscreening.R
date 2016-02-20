@@ -1,7 +1,7 @@
 library(nlme)
 
 group = 'mean'
-net = 'rd'
+net = 'fa'
 gf_fname = sprintf('~/data/solar_paper_v2/dti_%s_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5.csv', group)
 data_fname = sprintf('~/data/dti_voxelwise/dti_%s.txt', net)
 subjs = '~/data/dti_voxelwise/subjs.txt'
@@ -31,8 +31,8 @@ for (s in sxs) {
         cat(sprintf('%s: %s / %d\n', s, colnames(data)[v], length(phen_vars)))
         y = data[,v]
         eval(parse(text=sprintf('sx=data$%s', s)))
-        fm = as.formula("y ~ sx + sex*mvmt*age + sex*age*I(mvmt^2) + sex*mvmt*I(age^2) + sex*I(mvmt^2)*I(age^2)")
-        # fm = as.formula("y ~ sx + sex + mean_enorm + I(mean_enorm^2) + age + I(age^2)")
+        # fm = as.formula("y ~ sx + sex*mvmt*age + sex*age*I(mvmt^2) + sex*mvmt*I(age^2) + sex*I(mvmt^2)*I(age^2)")
+        fm = as.formula("y ~ sx + sex + mean_enorm + I(mean_enorm^2) + age + I(age^2)")
         fit = try(lme(fm, random=~1|famid, data=data, na.action=na.omit, method="ML"))
         if (length(fit) > 1) {
             # selecting which covariates to use
@@ -52,7 +52,7 @@ for (s in sxs) {
             } else {
                 ps = c(ps, 1)
                 ts = c(ts, 0)
-                bs = c(bs, 0) 
+                bs = c(bs, 0)
             }
         } else {
             # model failed!
@@ -64,6 +64,6 @@ for (s in sxs) {
     eval(parse(text=sprintf('df$%s_ts=ts', s)))
     eval(parse(text=sprintf('df$%s_ps=ps', s)))
     eval(parse(text=sprintf('df$%s_bs=bs', s)))
-    out_fname = sprintf('~/data/solar_paper_v2/linear_dti_%s_vox_%s_full.csv', group, net)
+    out_fname = sprintf('~/data/solar_paper_v2/linear_dti_%s_vox_%s_additive.csv', group, net)
     write.csv(df,file=out_fname,row.names=F)
 }

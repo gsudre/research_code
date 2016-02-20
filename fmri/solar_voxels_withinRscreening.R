@@ -1,7 +1,7 @@
 library(nlme)
 
 group = '3min'
-net = 13
+net = 15
 gf_fname = sprintf('~/data/solar_paper_v2/fmri_%s_melodicMasked_5comps.csv', group)
 data_fname = sprintf('~/data/fmri_example11_all/%s_net%02d.txt', group, net)
 # data_fname = sprintf('~/data/solar_paper_v2/nifti/net%02d_validated.txt', net)

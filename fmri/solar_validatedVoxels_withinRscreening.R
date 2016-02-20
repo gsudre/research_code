@@ -1,10 +1,9 @@
 library(nlme)
 
 group = '3min'
-net = 14
+net = 00
 gf_fname = sprintf('~/data/solar_paper_v2/fmri_%s_melodicMasked_5comps.csv', group)
-# data_fname = sprintf('~/data/fmri_example11_all/%s_net%02d.txt', group, net)
-data_fname = sprintf('~/data/solar_paper_v2/nifti/net%02d_validated.txt', net)
+data_fname = sprintf('~/data/solar_paper_v2/nifti/additive/net%02d_validated_NN3.txt', net)
 subjs = sprintf('~/data/fmri_example11_all/%s.txt', group)
 p_thresh = .1
 
@@ -31,8 +30,8 @@ for (s in sxs) {
         cat(sprintf('%s: %s / %d\n', s, colnames(data)[v], length(phen_vars)))
         y = data[,v]
         eval(parse(text=sprintf('sx=data$%s', s)))
-        fm = as.formula("y ~ sx + sex*mean_enorm*age + sex*age*I(mean_enorm^2) + sex*mean_enorm*I(age^2) + sex*I(mean_enorm^2)*I(age^2)")
-        # fm = as.formula("y ~ sx + sex + mean_enorm + I(mean_enorm^2) + age + I(age^2)")
+        # fm = as.formula("y ~ sx + sex*mean_enorm*age + sex*age*I(mean_enorm^2) + sex*mean_enorm*I(age^2) + sex*I(mean_enorm^2)*I(age^2)")
+        fm = as.formula("y ~ sx + sex + mean_enorm + I(mean_enorm^2) + age + I(age^2)")
         fit = lme(fm, random=~1|famid, data=data, na.action=na.omit, method="ML")
         # selecting which covariates to use
         fm = "y ~ sx"
@@ -52,6 +51,7 @@ for (s in sxs) {
     eval(parse(text=sprintf('df$%s_ps=ps', s)))
     eval(parse(text=sprintf('df$%s_bs=bs', s)))
 }
-out_fname = sprintf('~/data/solar_paper_v2/linear_fmri_melodicMasked_validated_net%02d_full.csv', net)
+# out_fname = sprintf('~/data/solar_paper_v2/linear_fmri_melodicMasked_validated_net%02d_full.csv', net)
+out_fname = sprintf('~/data/solar_paper_v2/linear_fmri_melodicMasked_validated_net%02d_NN3_additive.csv', net)
 write.csv(df,file=out_fname,row.names=F)
 
