@@ -1,10 +1,11 @@
 # Creates phenotype files for SOLAR, using the output voxel-wise data
 group = '3min'
-nets = 0:15
-fam_type = 'nuclear'
+nets = 0:19
+fam_type = 'extended'
 for (net in nets) {
     gf_fname = sprintf('~/data/solar_paper_v2/fmri_%s_melodicMasked_5comps.csv', group)
     data_fname = sprintf('~/data/fmri_example11_all/%s_net%02d.txt', group, net)
+    data_fname = sprintf('~/data/test_full_grid_fmri/%s_net%02d.txt', group, net)
     subjs_fname = sprintf('~/data/fmri_example11_all/%s.txt', group)
 
     cat('Loading data\n')
@@ -27,5 +28,6 @@ for (net in nets) {
         fam_str = ''
     }
     out_fname = sprintf('~/data/solar_paper_v2/phen_%s_net%02d%s.csv', group, net, fam_str)
+    out_fname = sprintf('~/data/solar_paper_v2/phen_%s_net%02d_full%s.csv', group, net, fam_str)
     write.csv(data, file=out_fname, row.names=F, quote=F)
 }
