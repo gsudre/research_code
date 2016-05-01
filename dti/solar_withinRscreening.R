@@ -1,9 +1,9 @@
 library(nlme)
 library(MASS)
 
-fname = '~/data/solar_paper_v2/dti_mean_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5.csv'
-out_fname = '~/data/solar_paper_v2/linear_dti_mean_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5_full.csv'
-out_fname = '~/data/solar_paper_v2/tmp.csv'
+fname = '~/data/solar_paper_v2/dti_mean_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5_children.csv'
+out_fname = '~/data/solar_paper_v2/linear_dti_mean_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5_additive_children.csv'
+# out_fname = '~/data/solar_paper_v2/tmp.csv'
 p_thresh = .05
 
 data = read.csv(fname)

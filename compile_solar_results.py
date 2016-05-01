@@ -8,7 +8,7 @@ home = os.path.expanduser('~')
 
 
 dir_name = home+'/data/solar_paper_v2/'
-analysis = 'fmri_3min_melodicMasked_5comps_full_extended'
+analysis = 'dti_mean_3sd_extendedAndNuclear_combMvmtClean_additive_children'
 out_fname = dir_name + 'polygen_results_%s.csv' % analysis
 
 folders = glob.glob(dir_name + analysis + '/*')

@@ -24,8 +24,10 @@ csvOutput = '/Users/sudregp/tmp/scans.csv'
 tmpFolder = '/Users/sudregp/Downloads/'
 # target folder to upack the data
 mrFolder = '/mnt/Labs/Shaw/MR_data/'
+mrFolder = '/Volumes/Shaw/MR_data/'
 # where to place symbolic links
 symlinkFolder = '/mnt/Labs/Shaw/data_by_maskID/'
+symlinkFolder = '/Volumes/Shaw/data_by_maskID/'
 
 # type of modalities we scan
 # note that these names need to be found in the README file!
