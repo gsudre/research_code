@@ -1,10 +1,11 @@
-''' Checks whether there is a difference in the seed connectivity using OLS with covariates '''
+''' Checks if the voxel ICA results are significant in different regression tests '''
 
 import numpy as np
 import os
 home = os.path.expanduser('~')
 import pandas as pd
 import statsmodels.formula.api as smf
+from statsmodels.stats.anova import anova_lm
 import nibabel as nb
 import sys
 
@@ -17,28 +18,33 @@ else:
     test = 'hi'
 
 alpha = .05
-gf_fname = home + '/data/fmri_example11/gf.csv'
-subjs_fname = home+'/data/fmri_example11/all.txt'
-# data_dir = home + '/data/fmri/ica/dual_regression_alwaysPositive_AllSubjsZeroFilled_scaled/'
-data_dir = home + '/data/fmri_example11/ica/dual_regression/'
-# res_dir = home + '/data/fmri/ica/results_zscore/'
-res_dir = home + '/data/fmri_example11/ica/results_zscore/'
-# mask_fname = home + '/data/fmri/downsampled_444/gm_fast_444.nii'
-# mask_fname = home + '/data/fmri/downsampled_444/mask_GM_resam.nii'
-# mask_fname = home + '/data/fmri/downsampled_444/automask_444.nii'
-mask_fname = home + '/data/fmri_example11/brain_mask_444.nii'
-mask_fname = home + '/data/fmri_example11/ica/results_zscore/IC%02d_binNetMask_p01BF.nii' % comp
+gf_fname = home + '/data/fmri/gf.csv'
+subjs_fname = home+'/data/fmri/joel_all.txt'
+data_dir = home + '/data/fmri_full_grid/melodic/dual/'
+res_dir = home + '/data/fmri_full_grid/results/'
+mask_fname = home + '/data/fmri_full_grid/brain_mask_full.nii'
 
 fid = open(subjs_fname, 'r')
 subjs = [line.rstrip() for line in fid]
 fid.close()
 gf = pd.read_csv(gf_fname)
 
-if test.find('WithNVs') >= 0:
+# parsing the test
+if len(sys.argv) > 3:  # ttest: comp, g1, g2
+    test = sys.argv[2] + 'VS' + sys.argv[3]
+    ind_vars = 'group + age + sex + age2 + mvmt + mvmt2'
+    target_groups = [sys.argv[2], sys.argv[3]]
+elif test.find('WithNVs') >= 0:
     sx = test.replace('WithNVs', '')
+    ind_vars = sx + ' + age + sex + age2 + mvmt + mvmt2'
+    target_groups = ['NV', 'persistent', 'remission']
+elif test.find('anova') >= 0:
+    sx = test
+    ind_vars = 'group + age + sex + age2 + mvmt + mvmt2'
     target_groups = ['NV', 'persistent', 'remission']
 else:
     sx = test
+    ind_vars = sx + ' + age + sex + age2 + mvmt + mvmt2'
     target_groups = ['persistent', 'remission']
 
 # the order of subjects in data is the same as in subjs
@@ -65,6 +71,7 @@ col_names = ['v%d' % i for i in range(nvoxels)]
 # uses the same index so we don't have issues concatenating later
 data_df = pd.DataFrame(data, columns=col_names, index=gf.index, dtype=float)
 df = pd.concat([gf, data_df], axis=1)
+df.rename(columns={'age^2': 'age2', 'mvmt^2': 'mvmt2'}, inplace=True)
 
 # selecting just specific groups
 groups = gf.group.tolist()
@@ -78,16 +85,34 @@ for v in range(nvoxels):
     print '%d / %d' % (v + 1, nvoxels)
     good_subjs = np.nonzero(~np.isnan(df['v%d' % v]))[0]
     keep = np.intersect1d(good_subjs, idx)
-    est = smf.ols(formula='v%d ~ %s + age + gender' % (v, sx), data=df.iloc[keep]).fit()
-    # convert from coefficient to beta
-    beta = est.params[sx]
-    cc = beta * np.std(df.iloc[keep][sx]) / np.std(df.iloc[keep]['v%d' % v])
-    res[gv_idx[v], 0] = est.tvalues[sx]
-    res[gv_idx[v], 1] = 1 - est.pvalues[sx]
-    res[gv_idx[v], 2] = beta
-    res[gv_idx[v], 3] = cc
-    pvals.append(est.pvalues[sx])
-fname = '%s/%sAgeGender_inNet_IC%02d_drStage2Z.nii' % (res_dir, test, comp)
+    est = smf.ols(formula='v%d ~ %s' % (v, ind_vars), data=df.iloc[keep]).fit()
+    if test == 'anova':
+        an = anova_lm(est)
+        res[gv_idx[v], 0] = an['F']['group']
+        res[gv_idx[v], 1] = 1 - an['PR(>F)']['group']
+    elif test.find('VS') > 0:
+        # find the coefficient with group term
+        sx = [x for x, i in enumerate(est.tvalues.keys()) if i.find('group') == 0]
+        if len(sx) > 0:
+            sx = sx[0]
+            # convert from coefficient to beta
+            beta = est.tvalues[sx]
+            res[gv_idx[v], 0] = beta
+            res[gv_idx[v], 1] = 1 - est.pvalues[sx]
+        else:
+            res[gv_idx[v], 0] = 0
+            res[gv_idx[v], 1] = 0
+    else:
+        # convert from coefficient to beta
+        beta = est.params[sx]
+        cc = beta * np.std(df.iloc[keep][sx]) / np.std(df.iloc[keep]['v%d' % v])
+        res[gv_idx[v], 0] = est.tvalues[sx]
+        res[gv_idx[v], 1] = 1 - est.pvalues[sx]
+        res[gv_idx[v], 2] = beta
+        res[gv_idx[v], 3] = cc
+    pvals.append(1 - res[gv_idx[v], 1])  # saving for FDR later
+
+fname = '%s/%s_additive_IC%02d_Z.nii' % (res_dir, test, comp)
 print 'Saving results to %s' % fname
 res = res.reshape(mask.get_data().shape[:3] + tuple([-1]))
 nb.save(nb.Nifti1Image(res, img.get_affine()), fname)
