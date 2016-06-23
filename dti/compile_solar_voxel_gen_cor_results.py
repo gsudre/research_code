@@ -1,4 +1,4 @@
-# Grabs the results from SOLAR univariate analysis and formats it into .nii
+# Grabs the results from SOLAR bivariate analysis and formats it into .nii
 # files.
 import os
 import numpy as np
@@ -9,26 +9,25 @@ home = os.path.expanduser('~')
 if len(sys.argv) > 1:
     analysis = sys.argv[1]
 else:
-    analysis = 'phen_3min_net06'
+    analysis = '00_fa_right_cst'
 
 dir_name = home + '/data/tmp/'
 out_fname = dir_name + 'polygen_results_%s.nii' % analysis
 mask_root = home + '/data/fmri_example11_all/555/brain_mask_555'
-# mask_root = home + '/data/full_grid_fmri/brain_mask_full'
 
 # keep track of what voxels crapped out
 run_again = []
 
 folder = dir_name + analysis
 voxel_folders = glob.glob(folder + '/v*_polygenic.out')
-nvoxels = 14574 # 116483  # len(voxel_folders)
+nvoxels = len(voxel_folders)
 
-# the results are: h2r, h_pval, h2r_se, c2, c2_pval, high_kurtosis
-res = np.empty([nvoxels, 6])
+# the results are: rhog, rhog_pval, rhoe, rhoe_pval, rhop
+res = np.empty([nvoxels, 5])
 res[:] = np.nan
 for v in range(nvoxels):
     if (v % 100) == 0:
-        print v, '/', nvoxels
+        print analysis, v, '/', nvoxels
     fname = dir_name + analysis + '/v%05d_polygenic.out' % (v + 1)
     if not os.path.exists(fname):
         print 'ERROR: Could not find results for voxel %d' % (v + 1)
@@ -36,32 +35,15 @@ for v in range(nvoxels):
     else:
         fid = open(fname, 'r')
         for line in fid:
-            if line.find('H2r is') >= 0:
-                h2r = float(line.split('is ')[-1].split(' ')[0])
-                p = float(line.split('= ')[-1].split(' ')[0])
-                res[v, 0] = h2r
-                res[v, 1] = 1 - p
-                # there's no SE when h2r is 0
-                if h2r < 0.000000001:
-                    res[v, 2] = 0
-            if line.find('C2 is') >= 0:
-                c2 = float(line.split('is ')[-1].split(' ')[0])
-                # there's no p-value when c2 = 0
-                if c2 < 0.000000001:
-                    p = .5
-                else:
-                    p = float(line.split('= ')[-1].split(' ')[0])
-                res[v, 3] = c2
-                res[v, 4] = 1 - p
-            if line.find('Residual Kurtosis') >= 0:
-                if line.find('too high') > 0:
-                    print 'Residual kurtosis too high for voxel %d' % v
-                    res[v, 5] = 1
-                else:
-                    res[v, 5] = 0
-            if line.find('H2r Std. Error:') >= 0:
-                se = float(line.split(':')[-1])
-                res[v, 2] = se
+            if line.find('RhoG is') >= 0:
+                res[v, 0] = float(line.split('is ')[-1].split(' ')[0])
+            if line.find('RhoG different from zero') >= 0:
+                res[v, 1] = line.split('= ')[-1].split(' ')[0]
+            if line.find('RhoE is') >= 0:
+                res[v, 2] = float(line.split('is ')[-1].split(' ')[0])
+                res[v, 3] = float(line.split('= ')[-1])
+            if line.find('Derived Estimate of RhoP') >= 0:
+                res[v, 4] = float(line.split('is ')[-1].split(' ')[0])
         fid.close()
 
 print '\n\n %d/%d voxels crapped out\n\n' % (len(run_again), nvoxels)
@@ -91,6 +73,7 @@ else:
     print 'Creating re-run file %s' % fout_name
     fid = open(fout_name, 'w')
     for v in run_again:
-        fid.write('bash ~/research_code/run_solar_voxel.sh %s %d' % (analysis,
-                  v) + '\n')
+        ic = analysis.split('_')[0]
+        prop = analysis.split('_')[1]
+        fid.write('bash ~/research_code/run_solar_voxel_gen_corr.sh %s %s %d' % (ic, prop, v) + '\n')
     fid.close()

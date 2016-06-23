@@ -2,7 +2,7 @@
 phen_file=$1
 v=$2
 tmp_dir=~/data/tmp/
-solar_dir=~/data/solar_paper_v2/
+solar_dir=~/data/solar_paper_noMeds/
 vox=`printf "%05d" $v`
 mkdir ${tmp_dir}/${phen_file}
 mkdir /lscratch/${SLURM_JOBID}/${phen_file}
