@@ -23,9 +23,9 @@ csvOutput = '/Users/sudregp/tmp/scans.csv'
 # where to find .tar.gz with downloaded MR data
 tmpFolder = '/Users/sudregp/Downloads/'
 # target folder to upack the data
-mrFolder = '/mnt/Labs/Shaw/MR_data/'
+mrFolder = '/mnt/shaw/MR_data/'
 # where to place symbolic links
-symlinkFolder = '/mnt/Labs/Shaw/data_by_maskID/'
+symlinkFolder = '/mnt/shaw/data_by_maskID/'
 
 # type of modalities we scan
 # note that these names need to be found in the README file!

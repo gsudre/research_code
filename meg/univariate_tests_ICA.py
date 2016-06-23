@@ -79,12 +79,13 @@ for bidx, band in enumerate(bands):
             res[int(vox_pos[v, 0]), int(vox_pos[v, 1]), int(vox_pos[v, 2]), 2] = beta
             res[int(vox_pos[v, 0]), int(vox_pos[v, 1]), int(vox_pos[v, 2]), 3] = cc
 
-        net_mask = data_dir + '/results/binNetMask_%d-%d_IC%02d_p01BF.nii' % (band[0], band[1], c)
+        # net_mask = data_dir + '/results/binNetMask_%d-%d_IC%02d_p01BF.nii' % (band[0], band[1], c)
+        net_mask = home + '/data/meg/sam_narrow_8mm/brain_mask_888.nii'
         img = nb.load(net_mask)
         net_res = res
         net_res[:, :, :, 1] = np.multiply(res[:, :, :, 1], img.get_data() > 0)
         nsig = np.nansum(res[:, :, :, 1] > .95)
         print 'Significant voxels: %d (%.2f)' % (nsig, float(nsig) / nvoxels)
-        fname = '%s/results/%sAgeGender_inNet_%d-%d_IC%02d_rtoz.nii' % (data_dir, test, band[0], band[1], c)
+        fname = '%s/results/%sAgeGender_%d-%d_IC%02d_rtoz.nii' % (data_dir, test, band[0], band[1], c)
         print 'Saving results to %s' % fname
         nb.save(nb.Nifti1Image(net_res, img.get_affine()), fname)

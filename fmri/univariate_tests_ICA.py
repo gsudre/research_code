@@ -24,28 +24,30 @@ data_dir = home + '/data/fmri_full_grid/melodic/dual/'
 res_dir = home + '/data/fmri_full_grid/results/'
 mask_fname = home + '/data/fmri_full_grid/brain_mask_full.nii'
 
+# parsing the test
+if len(sys.argv) > 3:  # ttest: comp, g1, g2
+    test = sys.argv[2] + 'VS' + sys.argv[3]
+    ind_vars = 'group + age + sex + mvmt + mvmt2'
+    target_groups = [sys.argv[2], sys.argv[3]]
+elif test.find('WithNVs') >= 0:
+    sx = test.replace('WithNVs', '')
+    ind_vars = sx + ' + age + sex + mvmt + mvmt2'
+    target_groups = ['NV', 'persistent', 'remission']
+elif test.find('anova') >= 0:
+    sx = test
+    ind_vars = 'group + age + sex + mvmt + mvmt2'
+    target_groups = ['NV', 'persistent', 'remission']
+else:
+    sx = test
+    ind_vars = sx + ' + age + sex + mvmt + mvmt2'
+    target_groups = ['persistent', 'remission']
+
+fname = '%s/%s_ageSexMvmtMvmt2_IC%02d_Z.nii' % (res_dir, test, comp)
+
 fid = open(subjs_fname, 'r')
 subjs = [line.rstrip() for line in fid]
 fid.close()
 gf = pd.read_csv(gf_fname)
-
-# parsing the test
-if len(sys.argv) > 3:  # ttest: comp, g1, g2
-    test = sys.argv[2] + 'VS' + sys.argv[3]
-    ind_vars = 'group + age + sex + age2 + mvmt + mvmt2'
-    target_groups = [sys.argv[2], sys.argv[3]]
-elif test.find('WithNVs') >= 0:
-    sx = test.replace('WithNVs', '')
-    ind_vars = sx + ' + age + sex + age2 + mvmt + mvmt2'
-    target_groups = ['NV', 'persistent', 'remission']
-elif test.find('anova') >= 0:
-    sx = test
-    ind_vars = 'group + age + sex + age2 + mvmt + mvmt2'
-    target_groups = ['NV', 'persistent', 'remission']
-else:
-    sx = test
-    ind_vars = sx + ' + age + sex + age2 + mvmt + mvmt2'
-    target_groups = ['persistent', 'remission']
 
 # the order of subjects in data is the same as in subjs
 # let's find that order in the gf and resort it
@@ -112,7 +114,6 @@ for v in range(nvoxels):
         res[gv_idx[v], 3] = cc
     pvals.append(1 - res[gv_idx[v], 1])  # saving for FDR later
 
-fname = '%s/%s_additive_IC%02d_Z.nii' % (res_dir, test, comp)
 print 'Saving results to %s' % fname
 res = res.reshape(mask.get_data().shape[:3] + tuple([-1]))
 nb.save(nb.Nifti1Image(res, img.get_affine()), fname)
