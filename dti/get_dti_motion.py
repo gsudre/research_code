@@ -23,7 +23,7 @@ for line in fid:
         data = np.genfromtxt(trans_file[-1])
         nvolumes = data.shape[0]
         # look for the path to all slices
-        path_file = glob.glob(path % maskid + '/*_R1.path')
+        path_file = glob.glob(path % maskid + '/*DMC*_R1.path')
         slices = np.recfromtxt(path_file[-1])
         # we only need to look at the first directory to figure out what slices are missing. It's repeated across directories
         good = [int(sl.split('.')[-1]) for sl in slices if sl.find('SL0001') > 0]
