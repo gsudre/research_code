@@ -1,4 +1,4 @@
-''' Removes the appropriate volumes from TORTOISe files so that it can easily be processed by DIFFCALC or DIFFPREP later '''
+''' Removes the appropriate volumes from TORTOISE files so that it can easily be processed by DIFFCALC or DIFFPREP later '''
 
 import numpy as np
 import re
@@ -13,7 +13,7 @@ rm_me = [int(i) for i in sys.argv[2:]]
 
 root_fname = 'edti_DMC'
 
-path = '/mnt/shaw/data_by_maskID/%04d/edti_proc/' % maskid
+path = '/scratch/ncr/%04d/edti_proc/' % maskid
 
 # update data .path file. Only include entries for volumes we
 # are not removing
@@ -25,22 +25,31 @@ for l in lines:
         fid.write(l + '\n')
 fid.close()
 
-# the noise.path file apparently gets indexed with new indexes
-volumes = [int(sl.split('.')[-1]) for sl in lines if sl.find('SL0001') > 0]
-ngood = len(volumes) - len(rm_me)
-slices = np.unique([s.split('/')[-2] for s in lines])
+# do the exact same thing as above, but now for the _noise file
 fid = open(path + '%s_DR_noise.path' % root_fname, 'w')
-for s in slices:
-    for i in range(1, ngood + 1):
-        fid.write('edti_DMC_noise_info/%s/I.%04d\n' % (s, i))
+lines = np.recfromtxt(path + '%s_noise.path' % root_fname)
+for l in lines:
+    nvol = int(l.split('.')[-1])
+    if nvol not in rm_me:
+        fid.write(l + '\n')
 fid.close()
 
-# removing the rows from the Bmatrix. Not identical to TORTOISE's, but might do the trick
-bm = np.recfromtxt(path + '%s.bmtxt' % root_fname)
-bm2 = np.delete(bm, np.array(rm_me) - 1, axis=0)
-np.savetxt(path + '%s_DR.BMTXT' % root_fname, bm2, fmt='%6f')
+
+# removing the rows from the Bmatrix. If we read it in we'll lose
+# the formatting. So let's go line by line
+fin = open(path + '%s.bmtxt' % root_fname, 'r')
+fout = open(path + '%s_DR.BMTXT' % root_fname, 'w')
+cnt = 1
+for l in fin:
+    if cnt not in rm_me:
+        fout.write(l)
+    cnt += 1
+fin.close()
+fout.close()
 
 # correct the entries in the .list file
+volumes = [int(sl.split('.')[-1]) for sl in lines if sl.find('SL0001') > 0]
+ngood = len(volumes) - len(rm_me)
 fin = open(path + '%s.list' % root_fname, 'r')
 fout = open(path + '%s_DR.list' % root_fname, 'w')
 for line in fin:
