@@ -81,8 +81,8 @@ for band in bands:
     con_idx = np.tril_indices_from(con.squeeze(), k=-1)
     for v1, voxel1 in enumerate(good_vox):
         for v2, voxel2 in enumerate(good_vox):
-          b[voxel1, voxel2] = con[idx2[0][v1], idx2[1][v2], 0]
-          b[voxel2, voxel1] = b[voxel1, voxel2]
+            b[voxel1, voxel2] = con[con_idx[0][v1], con_idx[1][v2], 0]
+            b[voxel2, voxel1] = b[voxel1, voxel2]
     all_data[bname] = b
 
 print 'Saving results'
