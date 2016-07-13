@@ -44,6 +44,7 @@ def dist(x1,y1, x2,y2, x3,y3): # x3,y3 is the point
 
 
 def print_elbow(ratio):
+    import numpy as np
     comps = np.arange(len(ratio)) + 1
     dists = [dist(comps[0], ratio[0], comps[-1], ratio[-1], comps[i], ratio[i])
              for i in range(len(ratio))]
