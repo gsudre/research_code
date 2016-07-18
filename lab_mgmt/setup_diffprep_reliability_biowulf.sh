@@ -1,7 +1,6 @@
 #!/bin/sh
 
 maskids=$1
-batchFile=~/tortoise_in_biowulf/tortoise.bat
 start_dir=`pwd`
 tmp_script=ssh_pipes.sh
 
@@ -9,8 +8,8 @@ tmp_script=ssh_pipes.sh
 while read m; do 
     echo "Working on ${m}"    
 
-    cp ~/tortoise_in_biowulf/tortoise_template.bat ${batchFile}
-    suffix=''
+    cp ~/tortoise_in_biowulf/tortoise_template.bat ${m}_1.bat
+    cp ~/tortoise_in_biowulf/tortoise_template.bat ${m}_2.bat
 
     # piping inside the loop was breaking it. Will need to do it later. -n flag didn't work because I actually need the stdin pipe.
     echo "echo \"Copying over eDTI files for ${m}\"" >> $tmp_script
@@ -28,15 +27,15 @@ while read m; do
     rm ~/tortoise_in_biowulf/${m}*.xml
 
     # adding mask id to the current batch file
-    echo "./diffprep.sh \"'/home/sudregp/tortoiseXMLfiles/${m}.xml'\" &" >> ${batchFile}
-    echo "./diffprep.sh \"'/home/sudregp/tortoiseXMLfiles/${m}_2.xml'\" &" >> ${batchFile}
+    echo "./diffprep.sh \"'/home/sudregp/tortoiseXMLfiles/${m}.xml'\" &" >> ${m}_1.bat
+    echo "./diffprep.sh \"'/home/sudregp/tortoiseXMLfiles/${m}_2.xml'\" &" >> ${m}_2.bat
 
-    # setup batch file suffix
-    suffix=${suffix}'_'${m}
+    echo "wait" >> ${m}_1.bat
+    echo "wait" >> ${m}_2.bat
 
-    echo "wait" >> ${batchFile}
-    mv ${batchFile} ~/tortoise_in_biowulf/tortoise${suffix}.bat
-    scp -q ~/tortoise_in_biowulf/tortoise${suffix}.bat bw:~/scripts/
+    mv ${m}_1.bat ~/tortoise_in_biowulf/tortoise_${m}_1.bat
+    mv ${m}_2.bat ~/tortoise_in_biowulf/tortoise_${m}_2.bat
+    scp -q ~/tortoise_in_biowulf/tortoise_${m}_* bw:~/scripts/
 done < ${maskids}
 
 echo "cd ${start_dir}" >> $tmp_script
