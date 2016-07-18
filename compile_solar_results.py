@@ -7,10 +7,8 @@ import glob
 home = os.path.expanduser('~')
 
 
-dir_name = home+'/data/solar_paper_v2/'
-dir_name = home+'/philip/'
-analysis = 'dti_mean_3sd_extendedAndNuclear_combMvmtClean_additive_children'
-analysis = 'no_covars'
+dir_name = home + '/data/solar_paper_review/'
+analysis = 'dti_mean_3sd_extendedAndNuclear_combMvmtClean_additive_LE22NoTwins'
 out_fname = dir_name + 'polygen_results_%s.csv' % analysis
 
 folders = glob.glob(dir_name + analysis + '/*')
