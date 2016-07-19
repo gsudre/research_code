@@ -2,10 +2,11 @@
 group = '3min'
 nets = c(2, 5, 11, 4, 12, 6, 0) #0:15
 fam_type = 'LE22'
+header=vector()
 for (net in nets) {
     gf_fname = sprintf('~/data/solar_paper_review/fmri_%s_melodicMasked_5comps_%s_noSingletons.csv', group, fam_type)
-    data_fname = sprintf('~/data/solar_paper_review/%s_net%02d_%s_noSingletons.txt', group, net, fam_type)
-    subjs_fname = sprintf('~/data/solar_paper_review/%s_noSingletons.txt', group, fam_type)
+    data_fname = sprintf('~/data/solar_paper_review/%s_net%02d_%s.txt', group, net, fam_type)
+    subjs_fname = sprintf('~/data/solar_paper_review/%s_%s_noSingletons.txt', group, fam_type)
 
     cat(sprintf('Loading data net %d\n', net))
     brain = read.table(data_fname)
