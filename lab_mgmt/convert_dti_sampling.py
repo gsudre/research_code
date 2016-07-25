@@ -5,10 +5,10 @@ from rpy2.robjects import r
 from rpy2.robjects.numpy2ri import numpy2ri
 
 
-dir_name = '/mnt/shaw/dti_robust_tsa/analysis_june_2016/'
+dir_name = '/mnt/shaw/dti_robust_tsa/analysis_99redo/'
 # dir_name = '/Users/sudregp/tmp/dti/'
 subj_file = 'subjs_diffeo.txt'
-r_output_file = 'max_sampling'
+r_output_file = 'mean_sampling'
 tract_names = ['left_cst', 'left_ifo', 'left_ilf', 'left_slf', 'left_unc', 'right_cst', 'right_ifo', 'right_ilf', 'right_slf', 'right_unc', 'cc']
 var_names = ['FA', 'ADC', 'PD', 'AD', 'RD']#, 'eig1', 'eig2', 'eig3']
 
