@@ -26,7 +26,7 @@ tract_var_names = []
 for tract in tract_names:
     print 'opening', tract
     # .mean. or .maxFA.
-    fid = open(dir_name + 'ixi_template_' + tract + '_def3.med.maxFA.vtk', 'r')
+    fid = open(dir_name + 'ixi_template_' + tract + '_def3.med.mean.vtk', 'r')
     data = fid.read()
     # get rid of new lines
     data = data.replace('\n', '')
