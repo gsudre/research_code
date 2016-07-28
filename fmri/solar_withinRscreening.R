@@ -1,8 +1,8 @@
 library(nlme)
 library(MASS)
 
-fname = '~/data/solar_paper_v2/fmri_3min_melodicMasked_5comps_nuclear.csv'
-out_fname = '~/data/solar_paper_v2/linear_fmri_3min_melodicMasked_5comps_additive_nuclear.csv'
+fname = '~/data/solar_paper_review/fmri_nets_mean_heritable.csv'
+out_fname = '~/data/solar_paper_review/linear_fmri_nets_mean_heritable.csv'
 p_thresh = .05
 
 data = read.csv(fname)

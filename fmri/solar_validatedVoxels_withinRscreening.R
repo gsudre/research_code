@@ -1,17 +1,11 @@
 library(nlme)
 
-group = '3min'
-<<<<<<< HEAD
-net = 6
-gf_fname = sprintf('~/data/solar_paper_v2/fmri_%s_melodicMasked_5comps_whites.csv', group)
-=======
+group = 'GE22'
 net = 0
-gf_fname = sprintf('~/data/solar_paper_v2/fmri_%s_melodicMasked_5comps.csv', group)
->>>>>>> 4141146cbe480879d2da52c21d4e1abfd712bac5
-data_fname = sprintf('~/data/solar_paper_v2/nifti/additive/net%02d_validated_NN1.txt', net)
-# data_fname = sprintf('~/data/solar_paper_v2/nifti/additive/net%02d_validated.txt', net)
-subjs = sprintf('~/data/fmri_example11_all/%s.txt', group)
-out_fname = sprintf('~/data/solar_paper_v2/linear_fmri_melodicMasked_validated_net%02d_additive_whites.csv', net)
+gf_fname = '~/data/solar_paper_review/fmri_3min_melodicMasked_5comps.csv'
+data_fname = sprintf('~/data/solar_paper_review/net%02d_%s_validated.txt', net, group)
+subjs = sprintf('~/data/solar_paper_review/3min_%s_noSingletons.txt', group)
+out_fname = sprintf('~/data/solar_paper_review/linear_fmri_net%02d_%s_validated.csv', net, group)
 p_thresh = .1
 
 cat('Loading data\n')
