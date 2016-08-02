@@ -25,7 +25,7 @@ tmpFolder = '/Users/sudregp/Downloads/'
 # target folder to upack the data
 mrFolder = '/Volumes/Shaw/MR_data/'
 # where to place symbolic links
-symlinkFolder = '/Volumes/Shaw/data_by_maskID/'
+symlinkFolder = '/mnt/shaw/data_by_maskID/'
 
 # type of modalities we scan
 # note that these names need to be found in the README file!
