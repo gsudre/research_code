@@ -24,6 +24,7 @@ for line in fid:
     original_cdi = glob.glob(path % maskid + '/E*/cdiflist0*')
     if len(original_cdi) == 0:
         notes = notes + 'ERROR: no gradient file!'
+        num_original_volumes = '0'
     else:
         with open(original_cdi[0], 'r') as f:
             num_original_volumes = f.readline().rstrip()
