@@ -162,11 +162,16 @@ for line in fid:
         else:
             has_files.append('N')
 
+    if wrong_imported == 'Y' or replayed_removed == 'N' or export_current not 'Y':
+        problems = 'Y'
+    else:
+        problems = 'N'
+
     row = ['%04d' % maskid]
     row = row + [num_original_volumes, num_volumes99, rv_str, vol_imported, wrong_imported,
                  d_str, vol_final, replayed_removed, rm_str, dtitk_exported, export_current]
     row = row + has_files
-    row = row + [notes]
+    row = row + [problems, notes]
     data.append(row)
 
 
@@ -174,7 +179,7 @@ table = [['mask id', 'original', 'replayed', 'volumes replayed (minus B0)',
           'imported', 'wrong imported', 'volumes removed', 'remaining',
           '99 removed', 'remove_list', 'exported', 'current']]
 table[0] = table[0] + ['has %s?' % f for f in files]
-table[0] = table[0] + ['notes']
+table[0] = table[0] + ['problems', 'notes']
 table = table + data
 fout = open(home + '/tmp/dti_info.csv', 'w')
 wr = csv.writer(fout)
