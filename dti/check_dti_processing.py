@@ -23,7 +23,7 @@ for line in fid:
     notes = ''
     original_cdi = glob.glob(path % maskid + '/E*/cdiflist0*')
     if len(original_cdi) == 0:
-        notes = notes + 'ERROR: no gradient file!'
+        notes = notes + 'ERROR: no gradient file! '
         num_original_volumes = '0'
     else:
         with open(original_cdi[0], 'r') as f:
@@ -39,7 +39,7 @@ for line in fid:
         fid = open(readme, 'r')
         found99 = False
         for line in fid:
-            if re.search('cdiflist99', line):
+            if line.find('cdiflist99') > 0:
                 found99 = True
         fid.close()
         if found99:
