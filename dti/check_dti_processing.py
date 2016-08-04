@@ -34,7 +34,7 @@ for line in fid:
         num_volumes99 = 0
         # did not find a gradient file. Did we have 99?
         readme = glob.glob(path % maskid + '/20*/*README*')[0]
-        fid = open(replayed_info, 'r')
+        fid = open(readme, 'r')
         found99 = False
         for line in fid:
             if re.search('cdiflist99', line):
