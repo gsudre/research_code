@@ -43,9 +43,9 @@ for line in fid:
                 found99 = True
         fid.close()
         if found99:
-            notes = notes + 'No 99 used. '
-        else:
             notes = notes + 'No resampled gradient file found for 99. '
+        else:
+            notes = notes + 'No 99 used. '
     else:
         with open(cdi99[0], 'r') as f:
             # store the total number of replayed volumes
@@ -68,6 +68,7 @@ for line in fid:
         tortoise_final = None
         vol_final = 0
         vol_imported = 0
+        dtitk_exported = 'N'
     else:
         fid = open(tortoise_original, 'r')
         for line in fid:
@@ -83,15 +84,17 @@ for line in fid:
             replayed_removed = 'N'
             remove_me = replayed_vols
             tortoise_final = path % maskid + '/edti_proc/edti_DMC_R1.list'
+            dtitk_target = path % maskid + '/edti_proc/edti_DMC_R1_SAVE_DTITK/' + \
+                                            'edti_DMC_R1_tensor.nii'
             if not os.path.exists(tortoise_final):
-                # this is a problem, becaus they all should have robust processing!
+                # this is a problem, because they all should have robust processing!
                 tortoise_final = path % maskid + '/edti_proc/edti_DMC.list'
                 notes = notes + 'No robust processing. '
                 if not os.path.exists(tortoise_final):
                     # haven't done much with this character
                     tortoise_final = None
                     num_removed = 'NA'
-                    notes = notes + 'No DIFFCALC processing. '
+                    notes = notes + 'No DIFFPREP processing. '
         else:
             fid = open(tortoise_final, 'r')
             for line in fid:
@@ -99,6 +102,12 @@ for line in fid:
                     match = re.search(r'(\d+)', line)
                     vol_final = int(match.group(0))
             fid.close()
+            dtitk_target = path % maskid + '/edti_proc/edti_DMC_DR_R1_SAVE_DTITK/' + \
+                                           'edti_DMC_R1_tensor.nii'
+        if not os.path.exists(dtitk_target):
+            dtitk_exported = 'Y'
+        else:
+            dtitk_exported = 'N'
 
     if vol_final != int(num_original_volumes) + int(num_volumes99) and vol_final != 0:
         path_file = glob.glob(path % maskid + 'edti_proc/*DMC_DR_R1.path')
@@ -135,15 +144,26 @@ for line in fid:
     else:
         wrong_imported = 'N'
 
+    # check if export date is valid
+    if dtitk_exported == 'Y':
+        export_time = os.path.getmtime(dtitk_target)
+        analysis_time = os.path.getmtime(tortoise_final)
+        if export_time > analysis_time:
+            export_current = 'Y'
+        else:
+            export_current = 'N'
+    else:
+        export_current = 'NA'
+
     data.append(['%04d' % maskid] + [num_original_volumes, num_volumes99,
                                      rv_str, vol_imported, wrong_imported,
                                      d_str, vol_final, replayed_removed,
-                                     rm_str, notes])
+                                     rm_str, dtitk_exported, export_current, notes])
 
 
 table = [['mask id', 'original', 'replayed', 'volumes replayed (minus B0)',
           'imported', 'wrong imported', 'volumes removed', 'remaining',
-          '99 removed', 'remove_list', 'notes']]
+          '99 removed', 'remove_list', 'exported', 'current', 'notes']]
 table = table + data
 fout = open(home + '/tmp/dti_info.csv', 'w')
 wr = csv.writer(fout)
