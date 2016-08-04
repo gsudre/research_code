@@ -162,7 +162,7 @@ for line in fid:
         else:
             has_files.append('N')
 
-    if wrong_imported == 'Y' or replayed_removed == 'N' or export_current not 'Y':
+    if wrong_imported == 'Y' or replayed_removed == 'N' or export_current is not 'Y':
         problems = 'Y'
     else:
         problems = 'N'
