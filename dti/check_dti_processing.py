@@ -173,7 +173,7 @@ for line in fid:
 table = [['mask id', 'original', 'replayed', 'volumes replayed (minus B0)',
           'imported', 'wrong imported', 'volumes removed', 'remaining',
           '99 removed', 'remove_list', 'exported', 'current']]
-table[0] = table[0] + ','.join(['has_%s' % f for f in files])
+table[0] = table[0] + ['has_%s' % f for f in files]
 table[0] = table[0] + ['notes']
 table = table + data
 fout = open(home + '/tmp/dti_info.csv', 'w')
