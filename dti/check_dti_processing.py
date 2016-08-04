@@ -49,6 +49,7 @@ for line in fid:
         else:
             notes = notes + 'No 99 used. '
     else:
+        notes = notes + 'Scanned with 99. '
         with open(cdi99[0], 'r') as f:
             # store the total number of replayed volumes
             num_volumes99 = f.readline().rstrip()
