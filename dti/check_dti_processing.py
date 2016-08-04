@@ -27,7 +27,8 @@ for line in fid:
         num_original_volumes = '0'
     else:
         with open(original_cdi[0], 'r') as f:
-            num_original_volumes = f.readline().rstrip()
+            # it's either 60 or 80, so we just need the first 2 chars
+            num_original_volumes = f.readline()[:2]
     # store the indexes of replayed volumes
     replayed_vols = []
     cdi99 = glob.glob(path % maskid + '/E*/cdiflist99*')
@@ -144,7 +145,7 @@ table = [['mask id', 'original', 'replayed', 'volumes replayed (minus B0)',
           'imported', 'wrong imported', 'volumes removed', 'remaining',
           '99 removed', 'remove_list', 'notes']]
 table = table + data
-fout = open(home + '/tmp/99_info.csv', 'w')
+fout = open(home + '/tmp/dti_info.csv', 'w')
 wr = csv.writer(fout)
 wr.writerows(table)
 fout.close()
