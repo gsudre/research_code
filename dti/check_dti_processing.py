@@ -103,7 +103,7 @@ for line in fid:
                     vol_final = int(match.group(0))
             fid.close()
             dtitk_target = path % maskid + '/edti_proc/edti_DMC_DR_R1_SAVE_DTITK/' + \
-                                           'edti_DMC_R1_tensor.nii'
+                                           'edti_DMC_DR_R1_tensor.nii'
         if not os.path.exists(dtitk_target):
             dtitk_exported = 'Y'
         else:
