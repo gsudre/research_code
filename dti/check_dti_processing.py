@@ -21,6 +21,8 @@ for line in fid:
     maskid = int(line)
     print '%04d' % maskid
     notes = ''
+    dtitk_exported = 'N'
+    export_current = 'NA'
     original_cdi = glob.glob(path % maskid + '/E*/cdiflist0*')
     if len(original_cdi) == 0:
         notes = notes + 'ERROR: no gradient file! '
@@ -68,7 +70,6 @@ for line in fid:
         tortoise_final = None
         vol_final = 0
         vol_imported = 0
-        dtitk_exported = 'N'
     else:
         fid = open(tortoise_original, 'r')
         for line in fid:
@@ -104,10 +105,8 @@ for line in fid:
             fid.close()
             dtitk_target = path % maskid + '/edti_proc/edti_DMC_DR_R1_SAVE_DTITK/' + \
                                            'edti_DMC_DR_R1_tensor.nii'
-        if not os.path.exists(dtitk_target):
+        if os.path.exists(dtitk_target):
             dtitk_exported = 'Y'
-        else:
-            dtitk_exported = 'N'
 
     if vol_final != int(num_original_volumes) + int(num_volumes99) and vol_final != 0:
         path_file = glob.glob(path % maskid + 'edti_proc/*DMC_DR_R1.path')
@@ -152,8 +151,6 @@ for line in fid:
             export_current = 'Y'
         else:
             export_current = 'N'
-    else:
-        export_current = 'NA'
 
     data.append(['%04d' % maskid] + [num_original_volumes, num_volumes99,
                                      rv_str, vol_imported, wrong_imported,
