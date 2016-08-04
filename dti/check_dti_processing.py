@@ -153,15 +153,28 @@ for line in fid:
         else:
             export_current = 'N'
 
-    data.append(['%04d' % maskid] + [num_original_volumes, num_volumes99,
-                                     rv_str, vol_imported, wrong_imported,
-                                     d_str, vol_final, replayed_removed,
-                                     rm_str, dtitk_exported, export_current, notes])
+    # a few final but useful columns, based on file existence
+    files = ['edti.list', 'edti_DMC.list', 'edti_DMC_DR.list', 'edti_DMC_DR_R1.list']
+    has_files = []
+    for f in files:
+        if os.path.exists(path % maskid + '/edti_proc/' + f):
+            has_files.append('Y')
+        else:
+            has_files.append('N')
+
+    row = ['%04d' % maskid]
+    row = row + [num_original_volumes, num_volumes99, rv_str, vol_imported, wrong_imported,
+                 d_str, vol_final, replayed_removed, rm_str, dtitk_exported, export_current]
+    row = row + has_files
+    row = row + [notes]
+    data.append(row)
 
 
 table = [['mask id', 'original', 'replayed', 'volumes replayed (minus B0)',
           'imported', 'wrong imported', 'volumes removed', 'remaining',
-          '99 removed', 'remove_list', 'exported', 'current', 'notes']]
+          '99 removed', 'remove_list', 'exported', 'current']]
+table[0] = table[0] + ','.join(['has_%s' % f for f in files])
+table[0] = table[0] + ['notes']
 table = table + data
 fout = open(home + '/tmp/dti_info.csv', 'w')
 wr = csv.writer(fout)
