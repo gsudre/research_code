@@ -21,9 +21,12 @@ for line in fid:
     maskid = int(line)
     print '%04d' % maskid
     notes = ''
-    original_cdi = glob.glob(path % maskid + '/E*/cdiflist0*')[0]
-    with open(original_cdi, 'r') as f:
-        num_original_volumes = f.readline().rstrip()
+    original_cdi = glob.glob(path % maskid + '/E*/cdiflist0*')
+    if len(original_cdi) == 0:
+        notes = notes + 'ERROR: no gradient file!'
+    else:
+        with open(original_cdi[0], 'r') as f:
+            num_original_volumes = f.readline().rstrip()
     # store the indexes of replayed volumes
     replayed_vols = []
     cdi99 = glob.glob(path % maskid + '/E*/cdiflist99*')
