@@ -25,4 +25,5 @@ while read m; do
 			# fi;
 			let cnt=$cnt+1;
 		done < /tmp/date_dirs;
+	fi;
 done < $maskids
