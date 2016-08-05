@@ -21,13 +21,10 @@ while read m; do
 			grep rest /mnt/shaw/data_by_maskID/${m}/${d}/*README* > /tmp/rest;
 			# for each rest line
 			while read line; do
-				stringarray=$(echo $line | tr "," "\n");
-				mr=$(echo ${stringarray[2]} | tr ":" "\n");
-				echo ${mr[1]};
-			# if [ ! -e /mnt/shaw/data_by_maskID/${m}/${d}/cdiflist0${cdi} ]; then
-			# 	echo "Copying cdiflist for ${m}";
-			# 	cp /mnt/shaw/tmp/cdiflist0${cdi} /mnt/shaw/data_by_maskID/${m}/${d}/cdiflist0${cdi}_surrogate;
-			# fi;
+				stringarray=($(echo $line | tr "," "\n"));
+				mr=($(echo ${stringarray[2]} | tr ":" "\n"));
+				mr_dir=${mr[1]};
+				Dimon -infile_prefix '../${d}/${mr_dir}/*.dcm' -gert_to3d_prefix rest${cnt} -gert_create_dataset
 				let cnt=$cnt+1;
 			done < /tmp/rest;
 		done < /tmp/date_dirs;
