@@ -21,14 +21,15 @@ while read m; do
 			grep rest /mnt/shaw/data_by_maskID/${m}/${d}/*README* > /tmp/rest;
 			# for each rest line
 			while read line; do
-				stringarray=($line)
-				mr=$(echo ${stringarray[2]} | tr ":" "\n")
-				echo $mr
+				stringarray=($line);
+				mr=$(echo ${stringarray[2]} | tr ":" "\n");
+				echo $mr;
 			# if [ ! -e /mnt/shaw/data_by_maskID/${m}/${d}/cdiflist0${cdi} ]; then
 			# 	echo "Copying cdiflist for ${m}";
 			# 	cp /mnt/shaw/tmp/cdiflist0${cdi} /mnt/shaw/data_by_maskID/${m}/${d}/cdiflist0${cdi}_surrogate;
 			# fi;
-			let cnt=$cnt+1;
+				let cnt=$cnt+1;
+			done < /tmp/rest;
 		done < /tmp/date_dirs;
 	# fi;
 done < $maskids
