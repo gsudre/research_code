@@ -24,9 +24,13 @@ while read m; do
 				stringarray=($(echo $line | tr "," "\n"));
 				mr=($(echo ${stringarray[2]} | tr ":" "\n"));
 				mr_dir=${mr[1]};
-				Dimon -infile_prefix '../${d}/${mr_dir}/*.dcm' -gert_to3d_prefix rest${cnt} -gert_create_dataset
+				Dimon -infile_prefix "../${d}/${mr_dir}/*.dcm" -gert_to3d_prefix rest${cnt} -gert_create_dataset
 				let cnt=$cnt+1;
 			done < /tmp/rest;
 		done < /tmp/date_dirs;
+
+		# spit out how many files we converted
+		let cnt=$cnt-1;
+		echo "${m},${cnt}" >> $out_file
 	# fi;
 done < $maskids
