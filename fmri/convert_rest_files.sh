@@ -19,6 +19,11 @@ while read m; do
 		cnt=1
 		while read d; do
 			grep rest /mnt/shaw/data_by_maskID/${m}/${d}/*README* > /tmp/rest;
+			# for each rest line
+			while read line; do
+				stringarray=($line)
+				mr=$(echo ${stringarray[2]} | tr ":" "\n")
+				echo $mr
 			# if [ ! -e /mnt/shaw/data_by_maskID/${m}/${d}/cdiflist0${cdi} ]; then
 			# 	echo "Copying cdiflist for ${m}";
 			# 	cp /mnt/shaw/tmp/cdiflist0${cdi} /mnt/shaw/data_by_maskID/${m}/${d}/cdiflist0${cdi}_surrogate;
