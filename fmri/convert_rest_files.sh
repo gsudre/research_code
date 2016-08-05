@@ -5,15 +5,15 @@ while read m; do
 	echo $m
 	# only continue if we don't have an afni folder already, or if there is a good mprage selected
 	# for the maskid
-	# if [ -d /mnt/shaw/data_by_maskID/${m}/afni ] || [ ! -d /mnt/shaw/best_mprages/${m}/ ]; then
-	# 	echo "Skipping...";
-	# else
+	if [ -d /mnt/shaw/data_by_maskID/${m}/afni ] || [ ! -d /mnt/shaw/best_mprages/${m}/ ]; then
+		echo "Skipping...";
+	else
 		mkdir /mnt/shaw/data_by_maskID/${m}/afni
 		# find name of date folders
 		ls -1 /mnt/shaw/data_by_maskID/${m}/ | grep -e ^20 > /tmp/date_dirs
 		cd /mnt/shaw/data_by_maskID/${m}/afni
 		# converting structural
-		# Dimon -infile_prefix "/mnt/shaw/best_mprages/${m}/*.dcm" -gert_to3d_prefix mprage -gert_create_dataset
+		Dimon -infile_prefix "/mnt/shaw/best_mprages/${m}/*.dcm" -gert_to3d_prefix mprage -gert_create_dataset
 
 		# for each date folder, check for resting scans
 		cnt=1
@@ -32,5 +32,5 @@ while read m; do
 		# spit out how many files we converted
 		let cnt=$cnt-1;
 		echo "${m},${cnt}" >> $out_file
-	# fi;
+	fi;
 done < $maskids
