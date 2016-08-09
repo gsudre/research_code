@@ -70,21 +70,21 @@ if len(run_again) == 0:
     # write each column to its individual text file, and create the final nifti
     # file by concatenating each individual one
     for c in range(res.shape[1]):
-        np.savetxt(dir_name + '/res%d.1D' % c, res[:, c])
-        cmd_line = '1dcat -ok_1D_text %s_ijk.txt %s/res%d.1D' % (
-            mask_root, dir_name, c) + ' > %s/tmp%d.1D' % (dir_name, c)
+        np.savetxt(dir_name + '/%s_res%d.1D' % (analysis, c), res[:, c])
+        cmd_line = '1dcat -ok_1D_text %s_ijk.txt %s/%s_res%d.1D' % (
+            mask_root, dir_name, analysis, c) + ' > %s/%s_tmp%d.1D' % (dir_name, analysis, c)
         os.system(cmd_line)
-        cmd_line = 'cat %s/tmp%d.1D ' % (dir_name, c) + \
+        cmd_line = 'cat %s/%s_tmp%d.1D ' % (dir_name, analysis, c) + \
                    '| 3dUndump -master %s.nii -mask %s.nii' % (mask_root,
                                                                mask_root) + \
-                   ' -datum float -prefix %s/res%d.nii.gz' % (dir_name, c) + \
+                   ' -datum float -prefix %s/%s_res%d.nii.gz' % (dir_name, analysis, c) + \
                    ' -overwrite -'
         os.system(cmd_line)
     res_str = ' '.join(
-        ['%s/res%d.nii.gz' % (dir_name, c) for c in range(res.shape[1])])
+        ['%s/%s_res%d.nii.gz' % (dir_name, analysis, c) for c in range(res.shape[1])])
     cmd_line = '3dbucket -prefix %s %s' % (out_fname, res_str)
     os.system(cmd_line)
-    cmd_line = 'rm %s %s/res*1D %s/tmp*' % (res_str, dir_name, dir_name)
+    cmd_line = 'rm %s %s/%s_res*1D %s/%s_tmp*' % (res_str, dir_name, analysis, dir_name, analysis)
     os.system(cmd_line)
 else:
     fout_name = home + '/solar_logs/rerun_%s.swarm' % analysis
