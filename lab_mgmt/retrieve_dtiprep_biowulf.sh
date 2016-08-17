@@ -16,7 +16,7 @@ while read m; do
         # copying over the generated files
         echo "echo \"Copying results for ${m}\"" >> $tmp_script
         echo "cd ~/data/tortoise/${m}" >> $tmp_script
-        echo "tar czf - edti_proc* | ssh -q sbrbmeg.nhgri.nih.gov \"cd /mnt/shaw/data_by_maskID/${m}; tar xzf -\"" >> $tmp_script
+        echo "tar czf - edti*_proc | ssh -q sbrbmeg.nhgri.nih.gov \"cd /mnt/shaw/data_by_maskID/${m}; tar xzf -\"" >> $tmp_script
     else
         echo "ERROR: ${m} did not run properly. No edti_DMC.list"
     fi
