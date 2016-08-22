@@ -7,7 +7,7 @@ import statsmodels.formula.api as smf
 
 band = sys.argv[1]
 method = sys.argv[2]
-fname = '/data/NCR_SBRB/ica_results_%s_%s_enriched_50perms_15ics.mat' % (band, method)
+fname = '/data/NCR_SBRB/ica_results_%s_%s_enriched_1000perms_15ics.mat' % (band, method)
 file = tables.openFile(fname)
 S = file.root.S[:]
 fname = '/data/NCR_SBRB/ica_results_%s_%s_enrichedYddOnly.mat' % (band, method)
@@ -19,5 +19,5 @@ for s in range(res_mats.shape[0]):
     est = smf.OLS(res_mats[s, :], S).fit()
     scores.append(est.bse)
 exp_scores = np.array(scores)
-fname = '/data/NCR_SBRB/exp_scores_SE_%s_%s_enriched_50perms_15ics.npy' % (band, method)
+fname = '/data/NCR_SBRB/exp_scores_SE_%s_%s_enriched_1000perms_15ics.npy' % (band, method)
 np.save(fname, exp_scores)
