@@ -114,7 +114,7 @@ for line in fid:
         slices = np.recfromtxt(path_file[-1])
         # we only need to look at the first directory to figure out what slices are missing. It's repeated across directories
         good = [int(sl.split('.')[-1]) for sl in slices if sl.find('SL0001') > 0]
-        details = list(np.setdiff1d(np.arange(1, vol_imported), good))
+        details = list(np.setdiff1d(np.arange(1, vol_imported + 1), good))
         replayed_removed = True
         for v in replayed_vols:
             if v not in details:
