@@ -1,4 +1,4 @@
-families = read.table('~/philip/fam_pedigrees/fams.txt')
+families = read.table('~/philip/fam_pedigrees/all_fams_332.txt')
 families = unique(families)
 library(kinship2)
 library(RColorBrewer)
@@ -54,7 +54,7 @@ for (f in 1:dim(families)[1]) {
                vals = append(vals, NA)
           } else {
                affected = append(affected, 1)
-               vals = append(vals, zvar[as.character(phe$id) == id])
+               vals = append(vals, zvals[as.character(phe$id) == id])
           }
           if (sum(as.character(dx$ID) == id) == 0) {
                sx = append(sx, 'Unknown')
@@ -83,7 +83,7 @@ for (f in 1:dim(families)[1]) {
                colors = append(colors, mycol)
           }
      }
-     pdf(sprintf('~/philip/fam_pedigrees/zscore/all/rd_right_slf/%d.pdf', myfam))
+     pdf(sprintf('~/philip/fam_pedigrees/all_fams_in_332/rd_right_slf/%d.pdf', myfam))
      plot(ped2, col=colors, affected=affected, id=sx, cex=.7)
      title(sprintf('Family %d, phenotype z(RD_rSLF)', myfam))
      dev.off()

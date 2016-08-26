@@ -2,13 +2,14 @@
 library(nlme)
 library(MASS)
 
-fname = '~/data/solar_paper_review/dti_mean_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5.csv'
-out_fname = '~/data/solar_paper_review/BIC_dti.csv'
+fname = '~/data/solar_paper_review/fmri_netMask_mean_GE22.csv'
+out_fname = '~/data/solar_paper_review/BIC_fmri_GE22.csv'
 p_thresh = .05
 
 data = read.csv(fname)
 # all variables to use as phenotype
-phen_vars = c(which(grepl("left", names(data))), which(grepl("right", names(data))), which(grepl("cc", names(data))))
+# phen_vars = c(which(grepl("left", names(data))), which(grepl("right", names(data))), which(grepl("cc", names(data))))
+phen_vars = which(grepl("net0", names(data)))
 
 # which subjects to use
 idx = 1:dim(data)[1]

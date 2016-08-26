@@ -2,8 +2,8 @@
 library(nlme)
 library(MASS)
 
-fname = '~/data/solar_paper_review/fmri_nets_mean_heritable.csv'
-out_fname = '~/data/solar_paper_review/all_covariates_fmri_linear_interaction_interactionSquared.csv'
+fname = '~/data/solar_paper_review/fmri_netMask_mean.csv'
+out_fname = '~/data/solar_paper_review/all_covariates_fmri_maskMean_linear_interaction_squared.csv'
 p_thresh = .05
 
 data = read.csv(fname)
@@ -17,7 +17,7 @@ sxs = c('inatt', 'HI', 'total')#, 'DX', 'DX_inatt', 'DX_hi', 'DX_comb')
 # setting up output dataframe
 df = data.frame(tracts=colnames(data[,phen_vars]))
 
-terms = c('sx', 'sex', 'mean_enorm', 'I(mean_enorm^2)', 'age', 'sx:age', 'I(age^2)', 'sx:I(age^2)')
+terms = c('sx', 'sex', 'mean_enorm', 'I(mean_enorm^2)', 'age', 'sx:age', 'I(age^2)')
 res = matrix(nrow=length(phen_vars), ncol=3*length(sxs)*length(terms))
 cnames = vector()
 for (s in sxs) {
