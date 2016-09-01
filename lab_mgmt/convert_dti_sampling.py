@@ -5,7 +5,7 @@ from rpy2.robjects import r
 from rpy2.robjects.numpy2ri import numpy2ri
 
 
-dir_name = '/mnt/shaw/dti_robust_tsa/analysis_99redo/'
+dir_name = '/mnt/shaw/dti_robust_tsa/analysis_kiddie/'
 # dir_name = '/Users/sudregp/tmp/dti/'
 subj_file = 'subjs_diffeo.txt'
 r_output_file = 'mean_sampling'
