@@ -2,10 +2,10 @@
 tract_names = c('left_cst', 'left_ifo', 'left_ilf', 'left_slf', 'left_unc', 'right_cst', 'right_ifo', 'right_ilf', 'right_slf', 'right_unc', 'cc')
 var_names = c('FA', 'AD', 'RD')#, 'MO')
 
-subj_file = '/mnt/shaw/dti_robust_tsa/analysis_99redo/subjs_diffeo.txt'
-data_dir = '/mnt/shaw/dti_robust_tsa/analysis_99redo/'
+subj_file = '/Volumes/Labs/Shaw/dti_robust_tsa/analysis_kiddie/subjs_diffeo.txt'
+data_dir = '/Volumes/Labs/Shaw/dti_robust_tsa/analysis_kiddie/'
 in_fname = 'mean_sampling.gzip'
-out_fname = 'dti_max_phenotype_cleanedWithinTract3sd.csv'
+# out_fname = 'dti_max_phenotype_cleanedWithinTract3sd.csv'
 out_fname = 'dti_mean_phenotype.csv'
 
 load(sprintf('%s/%s',data_dir,in_fname))
