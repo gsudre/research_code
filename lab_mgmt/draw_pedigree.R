@@ -3,13 +3,13 @@ families = read.table('~/tmp/fams.txt')
 families = unique(families)
 library(kinship2)
 library(RColorBrewer)
-mycol = 2
+mycol = 33
 pal = brewer.pal(9, "Reds")
 # remove the whitest and reddest colors
 pal = pal[2:8]
 # expand the palette so that we have enough colors
 ped = read.csv('~/tmp/pedigree.csv')
-phe = read.csv('~/tmp/pedigree.csv')
+phe = read.csv('~/tmp/phen.csv')
 for (f in 1:dim(families)[1]) {
      myfam = families[f, 1]
      cat(sprintf('Plotting family %d\n', myfam))
@@ -20,12 +20,20 @@ for (f in 1:dim(families)[1]) {
      sx = vector()
      for (id in ped2$id) {
           if (sum(as.character(phe$id)==id)==0) {
-               affected = append(affected, 0)
-               vals = append(vals, NA)
+               # affected = append(affected, 0)
+               # vals = append(vals, NA)
+               affected = append(affected, 1)
+               vals = append(vals, 'grey')
                sx = append(sx, '')
           } else {
                affected = append(affected, 1)
-               vals = append(vals, phe[as.character(phe$id)==id,mycol])
+               # vals = append(vals, phe[as.character(phe$id)==id,mycol])
+               if (phe[as.character(phe$id)==id, mycol] == 'ADHD') {
+                    vals = append(vals, pal[length(pal)])
+               } 
+               else {
+                    vals = append(vals, pal[1])
+               }
                sx_str = sprintf('%d', phe[as.character(phe$id)==id,]$id)
                sx = append(sx, sx_str)
           }
@@ -41,8 +49,9 @@ for (f in 1:dim(families)[1]) {
                colors = append(colors, cols[svals$ix[svals$x==v]])
           }
      } 
-     pdf(sprintf('~/Documents/colorful_pedigrees_mrn/%d_selectedOnly.pdf', myfam))
-     plot(ped2, col=colors, affected=affected, cex=.7)
+     pdf(sprintf('~/tmp/pedigrees/%d.pdf', myfam))
+     # plot(ped2, col=colors, affected=affected, cex=.7)
+     plot(ped2, col=vals, affected=affected, cex=.7)
      title(sprintf('Family %d, phenotype %s', myfam, colnames(phe)[mycol]))
      dev.off()
 }
