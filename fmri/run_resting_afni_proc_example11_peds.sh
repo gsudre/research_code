@@ -3,7 +3,7 @@ subj=$1
 
 # subj_dir=/mnt/shaw/data_by_maskID/$subj/afni
 # freesurfer_dir=/mnt/shaw/freesurfer5.3_subjects/$subj
-subj_dir=~/data/fmri/$subj
+subj_dir=/scratch/sudregp/$subj
 freesurfer_dir=~/data/MEG_structural/freesurfer/$subj
 SUMA_dir=~/data/MEG_structural/freesurfer/$subj/SUMA
 
@@ -12,8 +12,10 @@ SUMA_dir=~/data/MEG_structural/freesurfer/$subj/SUMA
 # first, prepare the files we'll need from Freesurfer
 cd $subj_dir
 @SUMA_Make_Spec_FS -sid $subj -NIFTI -fspath $freesurfer_dir
-3dcalc -a ${SUMA_dir}/aparc+aseg.nii -datum byte -prefix FT_vent.nii -expr 'amongst(a,4,43)'
-3dcalc -a ${SUMA_dir}/aparc+aseg.nii -datum byte -prefix FT_WM.nii -expr 'amongst(a,2,7,16,41,46,251,252,253,254,255)'
+3dcalc -a ${SUMA_dir}/aparc+aseg.nii -datum byte -prefix FT_vent.nii \
+    -expr 'amongst(a,4,43)'
+3dcalc -a ${SUMA_dir}/aparc+aseg.nii -datum byte -prefix FT_WM.nii \
+    -expr 'amongst(a,2,7,16,41,46,251,252,253,254,255)'
 
 afni_proc.py -subj_id $subj                             \
       -blocks despike tshift align tlrc volreg blur mask regress \
@@ -42,10 +44,13 @@ afni_proc.py -subj_id $subj                             \
       -regress_est_blur_epits                                    \
       -regress_est_blur_errts                                    \
       -regress_run_clustsim no
-      
-tcsh -xef $subj_dir/rest.proc.example11_HaskinsPeds.$subj 2>&1 | tee $subj_dir/output.rest.example11_HaskinsPeds.proc.$subj
 
-# Example 11. Resting state analysis (now even more modern :).         
+#       -align_opts_aea -big_move \
+
+tcsh -xef $subj_dir/rest.proc.example11_HaskinsPeds.$subj 2>&1 | tee \
+    $subj_dir/output.rest.example11_HaskinsPeds.proc.$subj
+
+# Example 11. Resting state analysis (now even more modern :).
 #          o Yes, censor (outliers and motion) and despike.
 #          o Register EPI volumes to the one which has the minimum outlier
 #               fraction (so hopefully the least motion).
