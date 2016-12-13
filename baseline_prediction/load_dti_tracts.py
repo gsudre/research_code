@@ -76,7 +76,7 @@ y = np.array(dti_with_labels[group_cols])
 
 def classify(X, y, verbose=False, nfolds=2, dim_red=None,
              n_components=[5, 10, 20], scale=True, fs=None,
-             fs_C=[.1, 1], njobs=1,
+             njobs=1,
              LR_C=[.01, .1, 1, 10, 100], LR_class_weight=[None, 'balanced'],
              SVC_C=[.01, .1, 1, 10, 100], SVC_class_weight=[None, 'balanced'],
              SVC_kernels=['rbf', 'linear', 'poly'],
@@ -93,7 +93,6 @@ def classify(X, y, verbose=False, nfolds=2, dim_red=None,
             print "    %s = %s" % (i, values[i])
 
     # prepare configuration for cross validation test harness
-    # num_folds = 2  # note that this parameter is used for splits and folds, so choose it accordingly!
     num_instances = len(X)
     seed = 8
 
@@ -114,7 +113,8 @@ def classify(X, y, verbose=False, nfolds=2, dim_red=None,
                    {"C": SVC_C,
                     "class_weight": SVC_class_weight,
                     'kernel': SVC_kernels}))
-    models.append(('Most frequent', DummyClassifier(strategy='most_frequent'), {}))
+    models.append(('Most frequent', DummyClassifier(strategy='most_frequent'),
+                   {}))
     models.append(('Stratified', DummyClassifier(strategy='stratified'), {}))
 
     # spit out to the screen the parameters to be tried in each classifier
@@ -128,10 +128,12 @@ def classify(X, y, verbose=False, nfolds=2, dim_red=None,
     names = []
     scoring = 'accuracy'
     for name, model, params in models:
-        # need to create the CV objects inside the loop because they get used and
-        # not get reset!
-        inner_cv = StratifiedShuffleSplit(n_splits=nfolds, test_size=.1, random_state=seed)
-        outer_cv = StratifiedShuffleSplit(n_splits=nfolds, test_size=.1, random_state=seed)
+        # need to create the CV objects inside the loop because they get used
+        # and not get reset!
+        inner_cv = StratifiedShuffleSplit(n_splits=nfolds, test_size=.1,
+                                          random_state=seed)
+        outer_cv = StratifiedShuffleSplit(n_splits=nfolds, test_size=.1,
+                                          random_state=seed)
     #     # do this if no shuffling is wanted
     #     inner_cv = StratifiedKFold(n_splits=num_folds, random_state=seed)
     #     outer_cv = StratifiedKFold(n_splits=num_folds, random_state=seed)
@@ -143,7 +145,6 @@ def classify(X, y, verbose=False, nfolds=2, dim_red=None,
         if fs == 'l1':
             lsvc = LinearSVC(C=0.1, penalty="l1", dual=False)
             fs = feature_selection.SelectFromModel(lsvc)
-            pipe_params['feat_sel__C'] = fs_C
         elif fs == 'rfe':
             fs = feature_selection.RFE(estimator=model)
             pipe_params['feat_sel__n_features_to_select'] = n_components
@@ -171,7 +172,8 @@ def classify(X, y, verbose=False, nfolds=2, dim_red=None,
             opt_model.fit(X_train, y_train)
             if verbose:
                 if len(params.keys()) > 0:
-                    print 'Best paramaters for', name, ' (%d/%d):' % (cnt + 1, outer_cv.n_splits)
+                    print 'Best paramaters for', name, +\
+                          ' (%d/%d):' % (cnt + 1, outer_cv.n_splits)
                     print opt_model.best_params_
             predictions = opt_model.predict(X_test)
             cv_results.append(metrics.accuracy_score(y_test, predictions))
