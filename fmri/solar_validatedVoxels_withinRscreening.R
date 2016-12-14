@@ -1,11 +1,10 @@
 library(nlme)
 
-group = 'GE22'
-net = 0
-gf_fname = '~/data/solar_paper_review/fmri_3min_melodicMasked_5comps.csv'
-data_fname = sprintf('~/data/solar_paper_review/net%02d_%s_validated.txt', net, group)
-subjs = sprintf('~/data/solar_paper_review/3min_%s_noSingletons.txt', group)
-out_fname = sprintf('~/data/solar_paper_review/linear_fmri_net%02d_%s_validated.csv', net, group)
+net = 6
+gf_fname = '~/data/solar_paper_review/fmri_nets_mean_heritable.csv'
+data_fname = sprintf('~/data/solar_paper_review/net%02d_validated_NN1.txt', net)
+subjs = '~/data/solar_paper_review/3min.txt'
+out_fname = sprintf('~/data/solar_paper_review/linear_fmri_net%02d_validated.csv', net)
 p_thresh = .1
 
 cat('Loading data\n')
@@ -20,7 +19,8 @@ phen_vars = (dim(gf)[2] + 1):dim(data)[2]
 
 # which subjects to use
 idx = 1:dim(data)[1]
-sxs = c('inatt', 'HI', 'total')#, 'DX', 'DX_inatt', 'DX_hi', 'DX_comb')
+sxs = c('inatt', 'HI', 'total', 'DX', 'DX_inatt', 'DX_hi', 'DX_comb',
+        'DX_inatt_noComb', 'DX_hi_noComb')
 
 df = data.frame(voxel=colnames(data[,phen_vars]))
 for (s in sxs) {
@@ -52,6 +52,5 @@ for (s in sxs) {
     eval(parse(text=sprintf('df$%s_ps=ps', s)))
     eval(parse(text=sprintf('df$%s_bs=bs', s)))
 }
-# out_fname = sprintf('~/data/solar_paper_v2/linear_fmri_melodicMasked_validated_net%02d_full.csv', net)
 write.csv(df,file=out_fname,row.names=F)
 

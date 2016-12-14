@@ -1,8 +1,8 @@
 library(nlme)
 library(MASS)
 
-fname = '~/data/solar_paper_review/dti_mean_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5_GE22.csv'
-out_fname = '~/data/solar_paper_review/linear_dti_mean_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5_additive_GE22.csv'
+fname = '~/data/solar_paper_review/dti_mean_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5.csv'
+out_fname = '~/data/solar_paper_review/linear_dti_mean_phenotype_cleanedWithinTract3sd_adhd_nodups_extendedAndNuclear_mvmt_pctMissingSE10_FAbt2.5_additive.csv'
 p_thresh = .05
 
 data = read.csv(fname)
@@ -12,7 +12,8 @@ phen_vars = c(which(grepl("left", names(data))), which(grepl("right", names(data
 
 # which subjects to use
 idx = 1:dim(data)[1]
-sxs = c('inatt', 'hi', 'total')#, 'DX', 'DX_inatt', 'DX_hi', 'DX_comb')
+sxs = c('inatt', 'hi', 'total', 'DX', 'DX_inatt', 'DX_hi', 'DX_comb',
+        'DX_inatt_noComb', 'DX_hi_noComb')
 
 # setting up output dataframe
 df = data.frame(tracts=colnames(data[,phen_vars]))

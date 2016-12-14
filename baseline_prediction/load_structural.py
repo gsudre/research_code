@@ -1,19 +1,14 @@
 import pandas as pd
 import numpy as np
-import pylab as pl
 import os
 from sklearn import decomposition, preprocessing
 from sklearn import feature_selection, metrics
 from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC, LinearSVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
-from sklearn.model_selection import StratifiedKFold
-from sklearn.ensemble import VotingClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.dummy import DummyClassifier
 
@@ -56,19 +51,18 @@ group_cols = ['group3_HI_quad', 'group3_HI_linear',
               'group3_inatt_linear', 'group3_inatt_quad',
               'group_HI_quad_4gp', 'group_HI_linear_4gp']
 
-dti_data = pd.read_csv(csv_dir + 'dti_tortoiseExported_meanTSA_12092016.csv')
-dti_columns = ['%s_%s_%s' % (i, j, k) for i in ['FA', 'AD', 'RD']
-               for j in ['left', 'right']
-               for k in ['cst', 'ifo', 'ilf', 'slf', 'unc']] + \
-               ['%s_cc' % i for i in ['FA', 'AD', 'RD']]
+# open dataset and see which subjects have that type of data
+st_data = pd.read_csv(csv_dir + 'structural_long_12082016.csv')
 
-dti_base_data = get_baseline_scans(dti_data)
+st_columns = st_data.columns[11:]
+
+st_base_data = get_baseline_scans(st_data)
 subj_groups = get_unique_gf(gf)
-dti_with_labels = pd.merge(dti_base_data, subj_groups, left_on='MRN',
-                           right_on='ID')
+st_with_labels = pd.merge(st_base_data, subj_groups, left_on='MRN',
+                          right_on='ID')
 
-X = np.array(dti_with_labels[dti_columns])
-y = np.array(dti_with_labels[group_cols])
+X = np.array(st_with_labels[st_columns])
+y = np.array(st_with_labels[group_cols])
 
 
 def classify(X, y, verbose=False, nfolds=2, dim_red=None,
@@ -90,7 +84,6 @@ def classify(X, y, verbose=False, nfolds=2, dim_red=None,
             print "    %s = %s" % (i, values[i])
 
     # prepare configuration for cross validation test harness
-    num_instances = len(X)
     seed = 8
 
     # prepare models
@@ -123,7 +116,6 @@ def classify(X, y, verbose=False, nfolds=2, dim_red=None,
     # evaluate each model in turn
     results = []
     names = []
-    scoring = 'accuracy'
     for name, model, params in models:
         # need to create the CV objects inside the loop because they get used
         # and not get reset!

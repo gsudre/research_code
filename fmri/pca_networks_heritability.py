@@ -8,14 +8,14 @@ from sklearn.decomposition import PCA
 import glob
 
 
-ncomps = 5
+ncomps = 3
 # subjs_fname = home + '/data/fmri_example11_all/elbow.txt'
 # data_dir = home + '/data/fmri_example11_all/dual_elbow/'
-mygroup = '2min'
+mygroup = '3min'
 subjs_fname = home + '/data/fmri_example11_all/%s.txt' % mygroup
 data_dir = home + '/data/fmri_example11_all/melodic/%s/dual/' % mygroup
 net_mask_dir = data_dir
-out_fname = home + '/data/fmri_example11_all/fmri_melodicMaskedNoZ_%s_%dcomps.csv' % (mygroup, ncomps)
+out_fname = home + '/data/fmri_example11_all/fmri_melodicNoMaskZ_%s_%dcomps.csv' % (mygroup, ncomps)
 save_comps = False
 # subjs_fname = home + '/data/fmri_example11_all/famAndSibs.txt'
 # data_dir = home + '/data/fmri_example11_all/dual/'
@@ -30,8 +30,8 @@ fid.close()
 data = []
 for s, subj in enumerate(subjs):
     print 'Loading subject %d / %d' % (s + 1, len(subjs))
-    # img = nb.load(data_dir + 'dr_stage2_%s_Z.nii.gz' % subj)
-    img = nb.load(data_dir + 'dr_stage2_%s.nii.gz' % subj)
+    img = nb.load(data_dir + 'dr_stage2_%s_Z.nii.gz' % subj)
+    # img = nb.load(data_dir + 'dr_stage2_%s.nii.gz' % subj)
     x, y, z, nics = img.get_data().shape
     nvoxels = x * y * z
     data.append(np.reshape(img.get_data(), [nvoxels, nics]))
@@ -46,8 +46,8 @@ cnt = 0
 for n in range(nics):
     print 'Working on net %d / %d' % (n + 1, nics)
     # mask = nb.load(net_mask_dir + '/IC%d_binNetMask_p01a01.nii' % n)
-    # mask = nb.load(home + '/data/fmri_example11_all/brain_mask_555.nii')
-    mask = nb.load(net_mask_dir + '/IC%d_binNetMask_p01.nii' % (n + 1))
+    mask = nb.load(home + '/data/fmri_example11_all/brain_mask_555.nii')
+    # mask = nb.load(net_mask_dir + '/IC%d_binNetMask_p01.nii' % (n + 1))
     # good voxels
     gv = mask.get_data().astype(bool).flatten()
     nvoxels = np.sum(gv)

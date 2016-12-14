@@ -11,20 +11,20 @@ phen_vars = which(grepl("net", names(data)))
 
 # which subjects to use
 idx = 1:dim(data)[1]
-sxs = c('inatt', 'HI', 'total', 'DX', 'DX_inatt', 'DX_hi', 'DX_comb')
+sxs = c('inatt', 'HI', 'total', 'DX', 'DX_inatt', 'DX_hi', 'DX_comb',
+        'DX_inatt_noComb', 'DX_hi_noComb')
 
-# setting up output dataframe   
+# setting up output dataframe
 df = data.frame(tracts=colnames(data[,phen_vars]))
 
 print(fname)
-for (s in sxs) { 
+for (s in sxs) {
     ps = vector()
     ts = vector()
     bs = vector()
     for (v in phen_vars) {
         y = data[,v]
         eval(parse(text=sprintf('sx=data$%s', s)))
-        # fm = as.formula("y ~ sx + sex*mean_enorm*age + sex*age*I(mean_enorm^2) + sex*mean_enorm*I(age^2) + sex*I(mean_enorm^2)*I(age^2)")
         fm = as.formula("y ~ sx + sex + mean_enorm + I(mean_enorm^2) + age + I(age^2)")
         fit = lme(fm, random=~1|famid, data=data, na.action=na.omit, method="ML")
         # selecting which covariates to use

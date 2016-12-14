@@ -11,13 +11,14 @@ phen_vars = c(which(grepl("left", names(data))), which(grepl("right", names(data
 
 # which subjects to use
 idx = 1:dim(data)[1]
-sxs = c('inatt', 'hi', 'total', 'DX', 'DX_inatt', 'DX_hi', 'DX_comb')
+sxs = c('inatt', 'hi', 'total', 'DX', 'DX_inatt', 'DX_hi', 'DX_comb',
+        'DX_inatt_noComb', 'DX_hi_noComb')
 
 # setting up output dataframe
 df = data.frame(tracts=colnames(data[,phen_vars]))
 
 print(fname)
-for (s in sxs) { 
+for (s in sxs) {
     ps = vector()
     ts = vector()
     bs = vector()
