@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import pylab as pl
+import nibabel as nb
 import os
 from sklearn import decomposition, preprocessing
 from sklearn import feature_selection, metrics
