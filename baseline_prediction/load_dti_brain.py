@@ -57,27 +57,30 @@ group_cols = ['group3_HI_quad', 'group3_HI_linear',
               'group_HI_quad_4gp', 'group_HI_linear_4gp']
 
 dti_data = pd.read_csv(csv_dir + 'dti_tortoiseExported_meanTSA_12092016.csv')
-dti_columns = ['%s_%s_%s' % (i, j, k) for i in ['FA', 'AD', 'RD']
-               for j in ['left', 'right']
-               for k in ['cst', 'ifo', 'ilf', 'slf', 'unc']] + \
-               ['%s_cc' % i for i in ['FA', 'AD', 'RD']]
-
 dti_base_data = get_baseline_scans(dti_data)
 subj_groups = get_unique_gf(gf)
 dti_with_labels = pd.merge(dti_base_data, subj_groups, left_on='MRN',
                            right_on='ID')
 
-X = np.array(dti_with_labels[dti_columns])
+# load data for all NIFTI data for all DTI subjects
+mask = nb.load(csv_dir + '/dti/mean_fa_skeleton_mask.nii.gz')
+idx = mask.get_data() == 1
+X = []
+for maskid in dti_with_labels['Mask.ID...Scan']:
+    img = nb.load(csv_dir + '/dti/%04d_tensor_diffeo_fa.nii.gz' % maskid)
+    X.append(img.get_data()[idx])
+X = np.array(X)
 y = np.array(dti_with_labels[group_cols])
 
 
-def classify(X, y, verbose=False, nfolds=2, dim_red=None,
+def classify(X, y, verbose=False, nfolds=5, dim_red=None,
              n_components=[5, 10, 20], scale=True, fs=None,
              njobs=1,
              LR_C=[.01, .1, 1, 10, 100], LR_class_weight=[None, 'balanced'],
              SVC_C=[.01, .1, 1, 10, 100], SVC_class_weight=[None, 'balanced'],
              SVC_kernels=['rbf', 'linear', 'poly'],
              n_estimators=[10, 20, 30], max_features=['auto', 'log2', None],
+             shuffle=False,
              **kwargs):
 
     # spit out to the screen the function parameters, for logging
@@ -127,13 +130,15 @@ def classify(X, y, verbose=False, nfolds=2, dim_red=None,
     for name, model, params in models:
         # need to create the CV objects inside the loop because they get used
         # and not get reset!
-        inner_cv = StratifiedShuffleSplit(n_splits=nfolds, test_size=.1,
-                                          random_state=seed)
-        outer_cv = StratifiedShuffleSplit(n_splits=nfolds, test_size=.1,
-                                          random_state=seed)
-    #     # do this if no shuffling is wanted
-    #     inner_cv = StratifiedKFold(n_splits=num_folds, random_state=seed)
-    #     outer_cv = StratifiedKFold(n_splits=num_folds, random_state=seed)
+        if shuffle:
+            inner_cv = StratifiedShuffleSplit(n_splits=nfolds, test_size=.1,
+                                              random_state=seed)
+            outer_cv = StratifiedShuffleSplit(n_splits=nfolds, test_size=.1,
+                                              random_state=seed)
+        else:
+            # do this if no shuffling is wanted
+            inner_cv = StratifiedKFold(n_splits=nfolds, random_state=seed)
+            outer_cv = StratifiedKFold(n_splits=nfolds, random_state=seed)
         steps = [('clf', model)]
         pipe_params = {}
         for key, val in params.iteritems():
