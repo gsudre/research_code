@@ -1,8 +1,11 @@
 '''
 
-Given a temporary folder and a destination folder, organizes the files downloaded from the DICOM server using the mask IDS queried from LabMatrix.
+Given a temporary folder and a destination folder, organizes the files
+downloaded from the DICOM server using the mask IDS queried from LabMatrix.
 
-Note that this script assumes the data has been collected properly. In the cases when the study is incomplete, and there are more than one scan session per maskID, upload the incomplete files manually to the directory structure!
+Note that this script assumes the data has been collected properly. In the
+cases when the study is incomplete, and there are more than one scan session
+per maskID, upload the incomplete files manually to the directory structure!
 
 It also creates a CSV file to be uploaded to Labmatrix to populate Scan fields.
 
@@ -25,16 +28,17 @@ tmpFolder = '/Users/sudregp/Downloads/'
 # target folder to upack the data
 mrFolder = '/Volumes/Shaw/MR_data/'
 # where to place symbolic links
-symlinkFolder = '/mnt/shaw/data_by_maskID/'
+symlinkFolder = '/Volumes/Shaw/data_by_maskID/'
 
 # type of modalities we scan
 # note that these names need to be found in the README file!
-modInReadme = ['rage_', 'fmri', 'rest', 'edti', 'clinical', 'fat_sat']  
+modInReadme = ['rage_', 'fmri', 'rest', 'edti', 'clinical', 'fat_sat']
 # how they should be called in the Scan record (same order!)
 modInCSV = ['MPRAGE', 'stop task', 'rest', 'eDTI', 'clinical', 'T2']
 
 
-# Function that checks whether we scanned a certain type of data (dtype) in a given data folder
+# Function that checks whether we scanned a certain type of data (dtype) in a
+# given data folder
 def check_for_data(dtype, folder):
     dataFolder = glob.glob(folder + '/20*')
     # get the name of the text file
@@ -45,7 +49,8 @@ def check_for_data(dtype, folder):
     if pos > 0:
         return True
 
-    # if we get to here, we didn't find the type fo data in any of the matching folders
+    # if we get to here, we didn't find the type fo data in any of the matching
+    # folders
     return False
 
 
@@ -123,35 +128,28 @@ for fidx, file in enumerate(dicoms):
         elif len(ecgData) == 1:
             print '\tOnly found one set of physiological data!'
         # adults should have 4 + 1 physiological files
-        elif len(ecgData) != 5:  
-            print '\tFound unexpected number of physiological files (%d)!' % len(ecgData)
+        elif len(ecgData) != 5:
+            print '\tFound unexpected number of physiological files ' +\
+                  '(%d)!' % len(ecgData)
 
     # moving extracted files inside maskId folder
     folder2move = glob.glob(targetFolder + '/*' + mrn + '/*')
     shutil.move(folder2move[0], targetFolder)
     os.rmdir(targetFolder + '/' + subjectName + '-' + mrn + '/')
 
-    # # create symlink in data_by_maskid folder
-    # print 'Creating symlinks...'
-    # linkName = symlinkFolder + ('%04.0d' % curMaskId)
-    # source = '../MR_data/' + folder2move[0].split('/')[-2] + '/' + str(curMaskId)
-    # if not os.path.exists(linkName):
-    #     os.symlink(source, linkName)
-    # else:
-    #     print 'WARNING: Link already exists!'    
-
     # get the information we'll need for the CSV file
     for midx, mod in enumerate(modInReadme):
         if check_for_data(mod, targetFolder):
             subjectNames.append(subjectName)
-            subjectMRNs.append(mrn) 
+            subjectMRNs.append(mrn)
             maskIDs.append(curMaskId)
             myDate = file.split('-')[2]
-            myDate = datetime.datetime.strptime(myDate,'%Y%m%d')
-            datesCollected.append(datetime.datetime.strftime(myDate,'%m/%d/%Y'))
+            myDate = datetime.datetime.strptime(myDate, '%Y%m%d')
+            datesCollected.append(datetime.datetime.strftime(myDate,
+                                                             '%m/%d/%Y'))
             scanTypes.append(modInCSV[midx])
             scanners.append('3TA')
-            if mod=='edti':
+            if mod == 'edti':
                 # checking the duration of cdi99 if any
                 edti99_file = targetFolder + '/E' + scanId + '/cdiflist99'
                 if os.path.exists(edti99_file):
@@ -165,13 +163,15 @@ for fidx, file in enumerate(dicoms):
                 notes.append('')
 
 
-headers = 'Name,MRN,Date,Type,Scanner,Mask ID,Task / MEG ID,Notes,MPRAGE quality\n'
+headers = 'Name,MRN,Date,Type,Scanner,Mask ID,Task / MEG ID,Notes,' +\
+          'MPRAGE quality\n'
 fid = open(csvOutput, 'w')
 fid.write(headers)
 for i in range(len(subjectMRNs)):
-    fid.write(subjectNames[i] + ',' + subjectMRNs[i] + ',' + 
-              datesCollected[i] + ',' + scanTypes[i] + ',' + scanners[i] + 
-              ',' + str(maskIDs[i]) + ',' + '' + ',' + notes[i] + ',' + ''+ '\n')
+    fid.write(subjectNames[i] + ',' + subjectMRNs[i] + ',' +
+              datesCollected[i] + ',' + scanTypes[i] + ',' + scanners[i] +
+              ',' + str(maskIDs[i]) + ',' + '' + ',' + notes[i] + ',' + '' +
+              '\n')
 fid.close()
 
 print 'Done storing files in server and outputting CSV.'
