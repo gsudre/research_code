@@ -55,17 +55,17 @@ group_cols = ['HI_linear_4groups_recoded', 'HI_quad_3groups_recoded',
 fmri_scans = pd.read_csv(csv_dir + 'fmri/good_scans_filtered.csv')
 fmri_base_scans = get_baseline_scans(fmri_scans, min_time_diff=.75)
 
-mats = []
-for m, s in zip(fmri_base_scans.MRN, fmri_base_scans.mask_id):
-    print s
-    fname = data_dir + '%04d_maskAve.1D' % s
-    roi_data = np.genfromtxt(fname)
-    subj_data = np.arctanh(np.corrcoef(roi_data.T))
-    idx = np.triu_indices_from(subj_data, k=1)
-    mats.append([m] + list(subj_data[idx]))
-corr_mats = np.array(mats, dtype='float32')
+# mats = []
+# for m, s in zip(fmri_base_scans.MRN, fmri_base_scans.mask_id):
+#     print s
+#     fname = data_dir + '%04d_maskAve.1D' % s
+#     roi_data = np.genfromtxt(fname)
+#     subj_data = np.arctanh(np.corrcoef(roi_data.T))
+#     idx = np.triu_indices_from(subj_data, k=1)
+#     mats.append([m] + list(subj_data[idx]))
+# corr_mats = np.array(mats, dtype='float32')
 
-# corr_mats = np.load(data_dir + '/sphere_corr.npz')[()]
+corr_mats = np.load(data_dir + '/sphere_corr.npz')[()]
 
 data = pd.DataFrame(corr_mats,
                     columns=['MRN'] +
