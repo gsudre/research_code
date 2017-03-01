@@ -65,7 +65,7 @@ fmri_base_scans = get_baseline_scans(fmri_scans, min_time_diff=.75)
 #     mats.append([m] + list(subj_data[idx]))
 # corr_mats = np.array(mats, dtype='float32')
 
-corr_mats = np.load(data_dir + '/sphere_corr.npz')[()]
+corr_mats = np.load(data_dir + '/spheres_corr.npz')[()]
 
 data = pd.DataFrame(corr_mats,
                     columns=['MRN'] +

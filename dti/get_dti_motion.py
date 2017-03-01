@@ -8,14 +8,13 @@ import os
 import sys
 
 
-path = '/mnt/shaw/data_by_maskID/%04d/edti_proc/'
+path = '/Volumes/Shaw/data_by_maskID/%04d/edti_proc/'
 home = os.path.expanduser('~')
 
 fname = sys.argv[1]
 fid = open(fname, 'r')
 
 subj_movement = []
-
 for line in fid:
     maskid = int(line)
     # find what's the name of the transformations folder
@@ -39,9 +38,10 @@ for line in fid:
         mean_mvmt = np.mean(np.abs(data[good_idx, :6]), axis=0)
         translation = np.sqrt(np.sum(mean_mvmt[:3]**2))
         rotation = np.sqrt(np.sum(mean_mvmt[3:]**2))
+        removed_str = ';'.join(['%d' % d for d in list(removed)])
         subj_movement.append([maskid] + list(mean_mvmt) +
                              [translation, rotation, nvolumes,
-                              len(good), len(removed)])
+                              len(good), len(removed), removed_str])
     else:
         print '\nWARNING: Did not find transformation file for', maskid, '\n'
     if len(trans_file) > 1:
@@ -49,7 +49,7 @@ for line in fid:
 
 table = [['mask id', 'meanX trans', 'meanY trans', 'meanZ trans',
           'meanX rot', 'meanY rot', 'meanZ rot', 'norm trans', 'norm rot',
-          'numVolumes', 'goodSlices', 'missingSlices']]
+          'numVolumes', 'goodSlices', 'missingSlices', 'removedSlices']]
 table = table + subj_movement
 fout = open(home + '/tmp/mean_dti_movement.csv', 'w')
 wr = csv.writer(fout)

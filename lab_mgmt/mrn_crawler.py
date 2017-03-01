@@ -3,11 +3,11 @@
 from openpyxl import load_workbook
 from xlrd import open_workbook
 
-mrnListFile = '/Users/sudregp/tmp/missing_sx.txt'
-dataDir = '/Volumes/Labs/Shaw/'
+mrnListFile = '/Users/sudregp/tmp/weirdo.txt'
+dataDir = '/Volumes/Shaw/Biosamples/'
 
 # get the list of MRNs
-mrns = [] 
+mrns = []
 fid = open(mrnListFile, 'r')
 for line in fid:
     mrns.append(int(line.rstrip()))
@@ -54,7 +54,7 @@ for dirName, subdirList, fileList in os.walk(dataDir):
             except:
                 print 'ERROR: Could not open', fullName, '(password protected?)'
         elif fname.lower().find('.xls') > 0:
-            try: 
+            try:
                 book = open_workbook(fullName)
                 print 'Crawling', fullName
                 foundMRNs = []

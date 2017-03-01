@@ -1,0 +1,28 @@
+cond=STI-correct
+nv=~/eszter/task_review/MEG_task_NVs
+rem=~/eszter/task_review/MEG_task_remitted
+per=~/eszter/task_review/MEG_task_persistent
+mask=/Volumes/Shaw/MEG_data/analysis/stop/source_volume_at_red/nii_tlrc/mask.nii
+mydir=/Volumes/Shaw/MEG_data/analysis/stop/source_volume_at_red/nii_tlrc/
+bands=( 1to4 4to8 )
+
+for band in "${bands[@]}"; do
+     for t in {0..28}; do
+          N=''; while read p; do N=${N}' -dset 1 '${mydir}/${p}_${cond}_DICSevoked_${band}_clean.nii'['${t}']'; done < $nv
+          P=''; while read p; do P=${P}' -dset 2 '${mydir}/${p}_${cond}_DICSevoked_${band}_clean.nii'['${t}']'; done < $per
+          R=''; while read p; do R=${R}' -dset 3 '${mydir}/${p}_${cond}_DICSevoked_${band}_clean.nii'['${t}']'; done < $rem
+          3dANOVA -levels 3 $N $P $R \
+                   -ftr group                 \
+                   -mean 1 nv                 \
+                   -mean 2 persistent                \
+                   -mean 3 remission                \
+                   -diff 1 2 NvsP                \
+                   -diff 2 3 PvsR                \
+                   -diff 1 3 NvsR                \
+                   -contr  1  1 -1 NPvsR         \
+                   -contr -1  1  1 NvsPR         \
+                   -contr  1 -1  1 NRvsP         \
+                   -mask $mask    \
+                   -bucket ANOVA_${cond}_DICSevoked_${band}_${t}
+     done;
+done

@@ -52,9 +52,9 @@ csv_dir = home + '/data/baseline_prediction/'
 
 # open main file to get list of subjects and their classes
 gf = pd.read_csv(csv_dir + 'gf_final_long_aug11.csv')
-group_cols = ['group3_HI_quad', 'group3_HI_linear',
-              'group3_inatt_linear', 'group3_inatt_quad',
-              'group_HI_quad_4gp', 'group_HI_linear_4gp']
+group_cols = ['HI_linear_4groups_recoded', 'HI_quad_3groups_recoded',
+              'inatt_quad_3groups_recoded', 'inatt_linear_3groups_recoded',
+              'HI_linear_3groups_recoded']
 
 dti_data = pd.read_csv(csv_dir + 'dti_tortoiseExported_meanTSA_12092016.csv')
 dti_columns = ['%s_%s_%s' % (i, j, k) for i in ['FA', 'AD', 'RD']

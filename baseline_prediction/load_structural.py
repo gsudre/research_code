@@ -19,8 +19,8 @@ def get_baseline_scans(df, min_time_diff=0):
     for mrn in np.unique(df.MRN):
         mrn_ages = df[df.MRN == mrn].age_at_scan
         if len(mrn_ages) > 1 and np.diff(mrn_ages)[0] < min_time_diff:
-            print 'ERROR: Scans for %d are not more ' + \
-                  'than %.2f apart!' % (mrn, min_time_diff)
+            print 'ERROR: Scans for %d are not more ' % mrn + \
+                  'than %.2f apart!' % min_time_diff
             print mrn_ages
         keep.append(np.argmin(mrn_ages))
     df = df.iloc[keep, :].reset_index(drop=True)
@@ -47,9 +47,9 @@ csv_dir = home + '/data/baseline_prediction/'
 
 # open main file to get list of subjects and their classes
 gf = pd.read_csv(csv_dir + 'gf_final_long_aug11.csv')
-group_cols = ['group3_HI_quad', 'group3_HI_linear',
-              'group3_inatt_linear', 'group3_inatt_quad',
-              'group_HI_quad_4gp', 'group_HI_linear_4gp']
+group_cols = ['HI_linear_4groups_recoded', 'HI_quad_3groups_recoded',
+              'inatt_quad_3groups_recoded', 'inatt_linear_3groups_recoded',
+              'HI_linear_3groups_recoded']
 
 # open dataset and see which subjects have that type of data
 st_data = pd.read_csv(csv_dir + 'structural_long_12082016.csv')

@@ -6,6 +6,7 @@ import glob
 import re
 import shutil
 import sys
+import os
 
 
 maskid_file = sys.argv[1]
@@ -16,11 +17,13 @@ copied_cnt = 0
 cnt = 0
 for maskid in fid:
     cnt += 1
-    maskid_dir = '/Volumes//Shaw/data_by_maskID/%04d/' % int(maskid)
+    maskid_dir = '/Volumes/Shaw/data_by_maskID/%04d/' % int(maskid)
     # we could have more than one date directory inside the same mask ID when
     # there were two scan sessions (e.g. the first one was interrupted). Still
     # they'll share the same date!
-    date_dirs = glob.glob(maskid_dir + '/20*')
+    date_dirs = glob.glob(maskid_dir)  # bypass data_by_maskID OSX bug
+    date_dirs = glob.glob(maskid_dir + '20*')
+    date_dirs.sort()  # making it easier to figure out scan order
 
     mprage_dirs = []
     for date_dir in date_dirs:
@@ -48,6 +51,8 @@ for maskid in fid:
             scan_num = 0
         else:
             print 'Found %d scans for %s.' % (num_mprages, maskid.rstrip())
+            if len(date_dirs) > 1:
+                print '\n\nWARNING!!! More than one date directory!\n\n'
             print mprage_dirs
             scan_num = 0
             while scan_num < 1:
