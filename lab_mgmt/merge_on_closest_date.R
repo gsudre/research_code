@@ -14,7 +14,7 @@ merge_func = function(id, df1, df2, my_ids, x.id, x.date, y.id, y.date) {
     x.date = sprintf('%s.x', x.date)
     y.date = sprintf('%s.y', y.date)
   }
-  d3$dateX.minus.dateY.months = (d3[, eval(x.date)] - d3[, eval(y.date)]) / 30
+  d3$dateX.minus.dateY.months = as.numeric(d3[, eval(x.date)] - d3[, eval(y.date)]) / 30
   return(d3)
 }
 

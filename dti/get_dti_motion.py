@@ -17,6 +17,7 @@ fid = open(fname, 'r')
 subj_movement = []
 for line in fid:
     maskid = int(line)
+    print maskid
     # find what's the name of the transformations folder
     trans_file = glob.glob(path % maskid + '/*DMC*.transformations')
     if len(trans_file) > 0:
