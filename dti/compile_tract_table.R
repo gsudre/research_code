@@ -3,7 +3,7 @@ tract_names = c('left_cst', 'left_ifo', 'left_ilf', 'left_slf', 'left_unc', 'rig
 var_names = c('FA', 'AD', 'RD', 'MO')
 
 subj_file = '~/tmp/subjs_diffeo.txt'
-data_dir = '~/data/baseline_prediction/dti/'
+data_dir = '~/tmp/'
 in_fname = 'mean_sampling.gzip'
 # out_fname = 'dti_max_phenotype_cleanedWithinTract3sd.csv'
 out_fname = 'dti_mean_phenotype.csv'
