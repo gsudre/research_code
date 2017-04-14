@@ -1,11 +1,12 @@
-#! /bin/bash
+#!/bin/bash
+# Script to run BET2 and the afni program 3D edge to detect the edges in an
+# image
+# data_dir='/Users/sudregp/tmp/tonya/'
 
-# Script to run BET2 and the afni program 3D edge to detect the edges in an image
+bet2 ${data_dir}/t1.nii.gz ${data_dir}/t1_brain_mask.nii.gz
 
-bet2 /Volumes/rbraid/mr_data/tonya/structural_at_9_scratch_file/t1.nii.gz /Volumes/rbraid/mr_data/tonya/structural_at_9_scratch_file/t1_brain_mask.nii.gz
+3dedge3 -input ${data_dir}/t1.nii.gz -prefix ${data_dir}/t1_edge.nii.gz
 
-3dedge3 -input /Volumes/rbraid/mr_data/tonya/structural_at_9_scratch_file/t1.nii.gz -prefix /Volumes/rbraid/mr_data/tonya/structural_at_9_scratch_file/t1edge.nii.gz
-
-gunzip /Volumes/rbraid/mr_data/tonya/structural_at_9_scratch_file/t1.nii.gz
-gunzip /Volumes/rbraid/mr_data/tonya/structural_at_9_scratch_file/t1_brain_mask.nii.gz
-gunzip /Volumes/rbraid/mr_data/tonya/structural_at_9_scratch_file/t1edge.nii.gz
+gunzip ${data_dir}/t1.nii.gz
+gunzip ${data_dir}/t1_brain_mask.nii.gz
+gunzip ${data_dir}/t1_edge.nii.gz
