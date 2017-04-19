@@ -17,7 +17,7 @@ copied_cnt = 0
 cnt = 0
 for maskid in fid:
     cnt += 1
-    maskid_dir = '/Volumes/Shaw/data_by_maskID/%04d/' % int(maskid)
+    maskid_dir = '/Volumes/Labs/Shaw/data_by_maskID/%04d/' % int(maskid)
     # we could have more than one date directory inside the same mask ID when
     # there were two scan sessions (e.g. the first one was interrupted). Still
     # they'll share the same date!

@@ -45,7 +45,7 @@ setenv('FSLDIR','/usr/local/fsl');  % this to tell where FSL folder is
 setenv('FSLOUTPUTTYPE', 'NIFTI_GZ'); % this to tell what the output type would be
 
 % Build a path for the sMRI imaging .nii files
-path_sMRI = importdata('/Users/sudregp/tmp/tonia_images/image_paths.txt') ;
+path_sMRI = importdata('/Users/sudregp/tmp/tonya_images/image_paths.txt') ;
 
 % These are the paths to the nii files in the xnat server. The goal will be
 % to read the structural MRI images one by one, based on the script that lists the
@@ -62,10 +62,8 @@ outpath_vals = [scratch_dir '/NHGRI_Automated_ratings.csv'];
 
 
 % Set the threshold for the edge of the brain
-% thresh = 1000 ;
-% edgethresh = 500 ;
-thresh = 50;
-edgethresh = 70;
+thresh = 1000 ;
+edgethresh = 500 ;
 
 % Set the number of axial slices that will be used to calculate the noise
 slabs = 5 ;
@@ -159,7 +157,7 @@ for i = 1 : n
     % Check to make sure that the dimensions of the images are correct, and
     % if not then use a flirt script to resample the image and force it
     % into the correct space ;
-    if sz2(1,1) ~= dimx
+    if sz2(1,1) ~= dimx || sz2(2) ~= dimy || sz2(3) ~= dimz
         setenv('template_1mm', template_1mm)
         !./Script_sMRI_resample_to_1mm.sh
         imgstruct = load_nifti([scratch_dir '/' img_tmp_name '_iso.nii']) ;
