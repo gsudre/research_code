@@ -5,31 +5,65 @@
 # GS, April 2017
 
 fname=$1;
+tmp_dir=~/tmp/ayaka;
+
+rm ${tmp_dir}/*;
+
+# Ayaka usually sends files with DOS carriage returns
+tr -d '\15\32' < $fname > unix.txt
 
 header='';
-eigval1='';
-eigval2='';
-eigval3='';
-fa='';
-trace='';
+eigval1='eigval1';
+eigval2='eigval2';
+eigval3='eigval3';
+fa='FA';
+trace='TR';
 
-split -p "^[0-9]+" sub2Run2FA.txt
-
-while read line; do
-    # if it's a blank line, close the ROI data only if we haven't already
-    # closed it
-    if [ ${#line} == 1 ]; then
-        last=$((${#header}));
-        if [ ! ${header:$last:1} == ',' ]; then
-            echo 'hello'
-            header=$header',';
-            eigval1='';
-            eigval2='';
-            eigval3='';
-            fa='';
-            trace='';
-        fi;
+# make one file per ROI
+cd $tmp_dir;
+split -p "^[0-9]+" unix.txt;
+ls -1 x* > rois.txt;
+while read roi_file; do
+    roi_name=`head -1 $roi_file`;
+    grep Mean $roi_file > means.txt;
+    nmeans=`cat means.txt | wc -l`;
+    if [ $nmeans == '0' ]; then
+        e1='';
+        e2='';
+        e3='';
+        f='';
+        t='';
+    else
+        cnt=0;
+        while read line; do
+            split_line=($line);
+            val=${split_line[3]};
+            if [ $cnt == 0 ]; then
+                e1=$val;
+            elif [ $cnt == 1 ]; then
+                e2=$val;
+            elif [ $cnt == 2 ]; then
+                e3=$val;
+            elif [ $cnt == 3 ]; then
+                f=$val;
+            else
+                t=$val;
+            fi;
+            let cnt=$cnt+1;
+        done < means.txt;
     fi;
-done < $fname
+    header="${header},$roi_name";
+    eigval1="${eigval1},${e1}";
+    eigval2="${eigval2},${e2}";
+    eigval3="${eigval3},${e3}";
+    fa="${fa},${f}";
+    trace="${trace},${t}";
+done < rois.txt
 
-echo $header
+out_fname=results.csv
+echo $header > $out_fname;
+echo $eigval1 >> $out_fname;
+echo $eigval2 >> $out_fname;
+echo $eigval3 >> $out_fname;
+echo $fa >> $out_fname;
+echo $trace >> $out_fname;
