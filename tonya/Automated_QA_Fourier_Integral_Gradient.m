@@ -81,12 +81,12 @@ fftleng = 60 ;
 % dimx = 220 ;
 % dimy = 220 ;
 % dimz = 226 ;
-dimx = 256 ;
-dimy = 256 ;
-dimz = 256 ;
-slcx = 110 ;
-slcy = 110 ;
-slcz = 113 ;
+dimx = 182 ;
+dimy = 218 ;
+dimz = 182 ;
+% slcx = 110 ;
+% slcy = 110 ;
+% slcz = 113 ;
 
 
 % ________________________________________________________________________
@@ -192,15 +192,14 @@ for i = 1 : n
     % Now check to see if there are enough slices above to calculate the
     % noise from five different coronal slabs. Choose five coronal slices
     % that are at least five slices above the top of the brain
-
-    if topbrain < 211
+    if topbrain < (dimy-slabs-5)
         pnt1 = topbrain + 5 ;
-        pnt2 = topbrain + slabs + 4 ;
+        pnt2 = pnt1 + slabs ;
         slb = squeeze(smri(:,pnt1:pnt2,:)) ;
         noisemean = mean(slb(:)) ;
         noisestd = std(slb(:)) ;
-    elseif topbrain < 219
-        slba = squeeze(smri(:,219:220,:)) ;
+    elseif topbrain < (dimy-slabs)
+        slba = squeeze(smri(:,topbrain:(topbrain+slabs),:)) ;
         noisemean = mean(slba(:)) ;
         noisestd = std(slba(:)) ;
     else
@@ -451,7 +450,7 @@ for i = 1 : n
     values(i,:) = [i topbrain anterior posterior noisemean noisestd rarea larea r2area l2area reyearea leyearea fftmaxovermean rightymax righty5 rightygrad leftymax lefty5 leftygrad] ;
     system(['rm ' scratch_dir '/*']) ;
 
-    Prcnt_done = i / n
+    Prcnt_done = i / n * 100
 
 
 
