@@ -3,8 +3,8 @@
 from openpyxl import load_workbook
 from xlrd import open_workbook
 
-mrnListFile = '/Users/sudregp/tmp/weirdo.txt'
-dataDir = '/Volumes/Labs/Shaw/Biosamples/'
+mrnListFile = '/Users/sudregp/tmp/weirdos.txt'
+dataDir = '/Volumes/Shaw/Clinical_Interviews/'
 
 # get the list of MRNs
 mrns = []
