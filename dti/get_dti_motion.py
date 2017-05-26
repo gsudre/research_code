@@ -8,7 +8,7 @@ import os
 import sys
 
 
-path = '/Volumes/Labs/Shaw/data_by_maskID/%04d/edti_proc/'
+path = '/Volumes/Shaw/data_by_maskID/%04d/edti_proc/'
 home = os.path.expanduser('~')
 
 fname = sys.argv[1]

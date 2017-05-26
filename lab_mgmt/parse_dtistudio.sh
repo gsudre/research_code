@@ -52,7 +52,7 @@ while read roi_file; do
             let cnt=$cnt+1;
         done < means.txt;
     fi;
-    header="${header},$roi_name";
+    header="${header},r${roi_name}";
     eigval1="${eigval1},${e1}";
     eigval2="${eigval2},${e2}";
     eigval3="${eigval3},${e3}";
@@ -60,10 +60,13 @@ while read roi_file; do
     trace="${trace},${t}";
 done < rois.txt
 
-out_fname=results.csv
+out_fname=`echo $fname | sed -e 's/\.txt/_parsed\.csv/g'`
 echo $header > $out_fname;
 echo $eigval1 >> $out_fname;
 echo $eigval2 >> $out_fname;
 echo $eigval3 >> $out_fname;
 echo $fa >> $out_fname;
 echo $trace >> $out_fname;
+
+# remove N/As
+sed -i -e 's/N\/A//g' $out_fname
