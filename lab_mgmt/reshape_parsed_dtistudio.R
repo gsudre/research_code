@@ -1,8 +1,10 @@
-res_dir = '~/tmp/ayaka/'
-files = dir(path = res_dir, pattern = 'parsed.txt$')
+res_dir = '~/ayaka/'
+files = dir(path = res_dir, pattern = 'parsed.csv$')
 res = c()
 for (f in files) {
+  print(f)
   a = read.csv(sprintf('%s/%s', res_dir, f), row.names=1)
+  print(dim(a))
   vals = a['FA', ]
   vals = cbind(vals, 3 * a['TR', ])  # MD
   vals = cbind(vals, a['eigval1', ]) # AD

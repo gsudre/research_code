@@ -4,13 +4,15 @@
 #
 # GS, April 2017
 
+old_dir=`pwd`
+
 fname=$1;
 tmp_dir=~/tmp/ayaka;
 
 rm ${tmp_dir}/*;
 
 # Ayaka usually sends files with DOS carriage returns
-tr -d '\15\32' < $fname > unix.txt
+tr -d '\15\32' < $fname > ${tmp_dir}/unix.txt
 
 header='';
 eigval1='eigval1';
@@ -70,3 +72,5 @@ echo $trace >> $out_fname;
 
 # remove N/As
 sed -i -e 's/N\/A//g' $out_fname
+
+cd $old_dir
