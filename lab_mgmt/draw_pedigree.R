@@ -22,23 +22,24 @@ for (f in 1:dim(families)[1]) {
           if (sum(as.character(phe$id)==id)==0) {
                # affected = append(affected, 0)
                # vals = append(vals, NA)
-               affected = append(affected, 1)
-               vals = append(vals, 'grey')
+               affected = append(affected, 0)
+               vals = append(vals, 'black')
                sx = append(sx, '')
           } else {
                affected = append(affected, 1)
                # vals = append(vals, phe[as.character(phe$id)==id,mycol])
-               if (phe[as.character(phe$id)==id, mycol] == 'ADHD') {
-                    vals = append(vals, pal[length(pal)])
-               } 
-               else {
-                    vals = append(vals, pal[1])
-               }
+            #    if (phe[as.character(phe$id)==id, mycol] == 'ADHD') {
+            #         vals = append(vals, pal[length(pal)])
+            #    }
+            #    else {
+            #         vals = append(vals, pal[1])
+            #    }
+               vals = append(vals, 'darkred')
                sx_str = sprintf('%d', phe[as.character(phe$id)==id,]$id)
-               sx = append(sx, sx_str)
+               sx = append(sx, '')
           }
-     } 
-     svals = sort(vals, index.return=T)      
+     }
+     svals = sort(vals, index.return=T)
      nscale = sum(!is.na(vals))
      cols <- colorRampPalette(pal)(nscale)
      colors = vector()
@@ -48,10 +49,10 @@ for (f in 1:dim(families)[1]) {
           } else {
                colors = append(colors, cols[svals$ix[svals$x==v]])
           }
-     } 
+     }
      pdf(sprintf('~/tmp/pedigrees/%d.pdf', myfam))
      # plot(ped2, col=colors, affected=affected, cex=.7)
-     plot(ped2, col=vals, affected=affected, cex=.7)
+     plot(ped2, col=vals, affected=affected, cex=1.2, id=sx)
      title(sprintf('Family %d, phenotype %s', myfam, colnames(phe)[mycol]))
      dev.off()
 }

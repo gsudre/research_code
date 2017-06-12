@@ -5,16 +5,16 @@ library(kinship2)
 # column with binary indicator (black is 1, white is zero)
 mycol = 7
 # remove the whitest and reddest colors
-ped = read.csv('~/tmp/new_pedigree.csv')
+ped = read.csv('~/tmp/pedigree.csv')
 for (f in 1:dim(families)[1]) {
     myfam = families[f, 1]
     cat(sprintf('Plotting family %d\n', myfam))
-    idx = ped$famid==myfam
-    ped2 = pedigree(ped[idx,]$id, ped[idx,]$fa, ped[idx,]$mo, ped[idx,]$sex, missid=0)
+    idx = ped$Famid==myfam
+    ped2 = pedigree(ped[idx,]$ID, ped[idx,]$FA, ped[idx,]$MO, ped[idx,]$sex, missid=0)
     vals = vector()
     # for each ID in the pedigree
     for (id in ped2$id) {
-        vals = append(vals, ped[as.character(ped$id)==id, mycol])
+        vals = append(vals, ped[as.character(ped$ID)==id, mycol])
      }
      pdf(sprintf('~/tmp/%d.pdf', myfam))
      # sx = rep('', length(vals))
