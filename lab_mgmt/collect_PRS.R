@@ -1,6 +1,6 @@
 # Collects the polygenic risk scores from PROFILE files, created by PRSice
-suffix = '2017eur_original_clump_default'
-res_dir = sprintf('~/data/baseline_prediction/prs/results%s/', suffix)
+suffix = 'PRJansen'
+res_dir = sprintf('~/data/baseline_prediction/prs/%s/', suffix)
 
 # read in result files
 files = dir(path = res_dir, pattern = 'profile$')

@@ -3,8 +3,8 @@
 from openpyxl import load_workbook
 from xlrd import open_workbook
 
-mrnListFile = '/Users/sudregp/tmp/weirdos.txt'
-dataDir = '/Volumes/Shaw/Clinical_Interviews/'
+mrnListFile = '/Users/sudregp/tmp/weirdo.txt'
+dataDir = '/Volumes/Shaw/DNA_Manifests'
 
 # get the list of MRNs
 mrns = []
@@ -35,7 +35,7 @@ for dirName, subdirList, fileList in os.walk(dataDir):
         # The idea for XLS and XLSX is the same, but we need to use different libraries. We just iterate over all sheets, and all cells in the sheet. If we can convert it to an integer, then we check if it's one of our MRNs
         elif fname.lower().find('.xlsx') > 0:
             try:
-                wb = load_workbook(filename = fullName, use_iterators = True)
+                wb = load_workbook(filename = fullName)#, use_iterators = True)
                 print 'Crawling', fullName
                 foundMRNs = []
                 sheets = wb.get_sheet_names()
