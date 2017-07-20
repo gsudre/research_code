@@ -19,16 +19,17 @@ import tarfile
 import shutil
 import numpy as np
 import datetime
-import pdb
+import sys
+
 
 # Where to output the scan records
 csvOutput = '/Users/sudregp/tmp/scans.csv'
 # where to find .tar.gz with downloaded MR data
 tmpFolder = '/Users/sudregp/Downloads/'
 # target folder to upack the data
-mrFolder = '/Volumes/Shaw/MR_data/'
+mrFolder = '%s/MR_data/' % sys.argv[0]
 # where to place symbolic links
-symlinkFolder = '/Volumes/Shaw/data_by_maskID/'
+symlinkFolder = '%s/data_by_maskID/' % sys.argv[0]
 
 # type of modalities we scan
 # note that these names need to be found in the README file!
