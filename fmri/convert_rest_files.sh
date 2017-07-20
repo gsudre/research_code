@@ -13,6 +13,7 @@ while read m; do
 		# find name of date folders
 		ls -1 $net_dir/data_by_maskID/${m}/ | grep -e ^20 > /tmp/date_dirs;
 		cd $net_dir/data_by_maskID/${m}/afni
+		rm mprage*
 		# converting structural
 		Dimon -infile_prefix "$net_dir/best_mprages/${m}/*.dcm" \
 			-gert_to3d_prefix mprage -gert_create_dataset
