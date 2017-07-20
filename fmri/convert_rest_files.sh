@@ -1,7 +1,7 @@
 # Convert raw DICOMs to HEAD and BRIK, structural and functional
 maskids=$1
 out_file=$2
-net_dir=/Volumes/Shaw
+net_dir=/mnt/shaw/
 while read m; do
 	echo $m
 	# only continue if we don't have an afni folder already, or if there is a
@@ -18,7 +18,6 @@ while read m; do
 			-gert_to3d_prefix mprage -gert_create_dataset
 
 		# for each date folder, check for resting scans
-
 		rm rest*BRIK rest*HEAD
 		cnt=1
 		while read d; do
