@@ -30,10 +30,10 @@ for key, val in haskins.iteritems():
 
 data_dir = '/Users/sudregp/data/fmri_prs/'
 fid = open('/Users/sudregp/data/prs/fmri_kids_all.txt', 'r')
-kids = [line.rstrip() for line in fid][:10]
+kids = [line.rstrip() for line in fid]
 fid.close()
 fid = open('/Users/sudregp/data/prs/fmri_adults_all.txt', 'r')
-adults = [line.rstrip() for line in fid][:10]
+adults = [line.rstrip() for line in fid]
 fid.close()
 
 rois = atlas_map.keys()
@@ -54,19 +54,3 @@ corr_mats = np.array(mats)
 cnames = ['%s_TO_%s' % (rois[i], rois[j]) for i, j in zip(idx[0], idx[1])]
 data = pd.DataFrame(corr_mats, columns=['maskid'] + cnames)
 data.to_csv('test.csv')
-
-#%%
-
-
-# df.rename(columns={'age^2': 'age2', 'mvmt^2': 'mvmt2'}, inplace=True)
-
-# ntests = corr_mats.shape[1]
-# res_mats = np.zeros_like(corr_mats)
-# res_mats[:] = np.nan
-# for v in range(1, ntests):
-#     good_subjs = np.nonzero(~np.isnan(df['conn%d' % v]))[0]
-#     est = smf.ols(formula='conn%d ~ age + sex + mvmt + mvmt2' % v, data=df.iloc[good_subjs]).fit()
-#     res_mats[good_subjs, v - 1] = est.resid
-
-# out = {'corr_mats': corr_mats, 'res_mats': res_mats}
-# io.savemat(data_dir + 'corrs.mat', out)
