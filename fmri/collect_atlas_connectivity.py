@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 
+trimmed = True
 fid = open('/Users/sudregp/data/prs/Haskins_atlas_code_trimmed.txt')
 haskins = {}
 for line in fid:
@@ -45,7 +46,11 @@ for s in kids + adults:
     for r in rois:
         fname = data_dir + '/%s/%d.1D' % (s, atlas_map[r][atlas_id])
         roi_data = np.genfromtxt(fname)
-        subj_data.append(roi_data)
+        if trimmed:
+            max_trs = min(123, len(roi_data))
+        else:
+            max_trs = len(roi_data)
+        subj_data.append(roi_data[:max_trs])
     subj_data = np.arctanh(np.corrcoef(np.array(subj_data)))
     idx = np.triu_indices_from(subj_data, k=1)
     mats.append([int(s)] + list(subj_data[idx]))
