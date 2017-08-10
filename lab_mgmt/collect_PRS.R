@@ -1,5 +1,5 @@
 # Collects the polygenic risk scores from PROFILE files, created by PRSice
-suffix = 'PRJansen'
+suffix = 'noInversion_all'
 res_dir = sprintf('~/data/baseline_prediction/prs/%s/', suffix)
 
 # read in result files
