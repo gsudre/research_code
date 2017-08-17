@@ -45,8 +45,8 @@ afni_proc.py -subj_id $subj                             \
 
 #       -align_opts_aea -big_move \
 
-tcsh -xef $subj_dir/rest.proc.example11.$subj 2>&1 | tee \
-    $subj_dir/output.rest.example11.proc.$subj
+tcsh -xef $subj_dir/rest.proc.subjectSpace.$subj 2>&1 | tee \
+    $subj_dir/output.rest.subjectSpace.proc.$subj
 
 # Example 11. Resting state analysis (now even more modern :).
 #          o Yes, censor (outliers and motion) and despike.
