@@ -1,26 +1,35 @@
 # families to plot
-families = read.table('~/tmp/fams.txt')
+families = read.table('~/tmp/fams.csv')
 families = unique(families)
 library(kinship2)
 # column with binary indicator (black is 1, white is zero)
-mycol = 7
+mycol = 10
 # remove the whitest and reddest colors
-ped = read.csv('~/tmp/pedigree.csv')
+ped = read.csv('/Volumes/Shaw/busby_training/pedigree_extended_only.csv')
 for (f in 1:dim(families)[1]) {
     myfam = families[f, 1]
     cat(sprintf('Plotting family %d\n', myfam))
-    idx = ped$Famid==myfam
+    idx = ped$FAMID==myfam
     ped2 = pedigree(ped[idx,]$ID, ped[idx,]$FA, ped[idx,]$MO, ped[idx,]$sex, missid=0)
     vals = vector()
+    ids = vector()
     # for each ID in the pedigree
     for (id in ped2$id) {
-        vals = append(vals, ped[as.character(ped$ID)==id, mycol])
+        idx = as.character(ped$ID)==id
+        vals = append(vals, 0)#ped[idx, mycol])
+        if (as.character(ped[idx,]$first_name) != '') {
+            my_str = sprintf('%s\n%s (%d)', ped[idx,]$first_name,
+                             ped[idx,]$last_name, ped[idx,]$age)
+        } else {
+            my_str = ''
+        }
+        ids = append(ids, my_str)
      }
-     pdf(sprintf('~/tmp/%d.pdf', myfam))
+     pdf(sprintf('/Volumes/Shaw/busby_training/named_trees/%d.pdf', myfam))
      # sx = rep('', length(vals))
      # plot(ped2, col=colors, affected=affected)
-     plot(ped2, affected=vals, cex=.7)
+     plot(ped2, affected=vals, cex=.4, id=ids)
      # title(sprintf('Family %d, phenotype %s', myfam, colnames(phe)[mycol]))
-     title(sprintf('Family %d, phenotyped', myfam))
+     title(sprintf('Family %d, ADHD DX', myfam))
      dev.off()
 }
