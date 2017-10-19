@@ -16,16 +16,16 @@ for (f in 1:dim(families)[1]) {
     # for each ID in the pedigree
     for (id in ped2$id) {
         idx = as.character(ped$ID)==id
-        vals = append(vals, 0)#ped[idx, mycol])
-        if (as.character(ped[idx,]$first_name) != '') {
-            my_str = sprintf('%s\n%s (%d)', ped[idx,]$first_name,
-                             ped[idx,]$last_name, ped[idx,]$age)
+        vals = append(vals, ped[idx, mycol])
+        if (as.character(ped[idx,]$code) != '') {
+            my_str = sprintf('%s\n(%s)', ped[idx,]$code,
+                             ped[idx,]$DX_saadia)
         } else {
             my_str = ''
         }
         ids = append(ids, my_str)
      }
-     pdf(sprintf('/Volumes/Shaw/busby_training/named_trees/%d.pdf', myfam))
+     pdf(sprintf('/Volumes/Shaw/busby_training/trees/%d.pdf', myfam))
      # sx = rep('', length(vals))
      # plot(ped2, col=colors, affected=affected)
      plot(ped2, affected=vals, cex=.4, id=ids)

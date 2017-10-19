@@ -1,6 +1,6 @@
 # Collects the polygenic risk scores from PROFILE files, created by PRSice
-suffix = 'noInversion_eur_all'
-res_dir = sprintf('~/data/baseline_prediction/prs/%s/', suffix)
+suffix = 'noFlip_MAFbtp01_rsbtp5'
+res_dir = sprintf('~/data/prs/geno2/imputation/%s/', suffix)
 
 # read in result files
 files = dir(path = res_dir, pattern = 'profile$')
@@ -35,5 +35,5 @@ mrns = read.csv('~/data/baseline_prediction/prs/nsb_and_mrn.csv')
 
 m = merge(mrns, prs_df, by.x='NSB', by.y='NSB_GENOTYPE_INDEX')
 
-fname = sprintf('~/data/baseline_prediction/stripped/PRS%s.csv', suffix)
+fname = sprintf('~/data/prs/PRS%s.csv', suffix)
 write.csv(m, file=fname, row.names=F)
