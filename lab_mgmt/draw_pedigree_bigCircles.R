@@ -19,11 +19,11 @@ for (f in 1:dim(families)[1]) {
      vals = vector()
      sx = vector()
      for (id in ped2$id) {
-          if (ped[as.character(ped$ID)==id,]$sequenced==0) {
+          if (ped[as.character(ped$ID)==id,]$DX==0) {
                # affected = append(affected, 0)
                # vals = append(vals, NA)
-               affected = append(affected, 1)
-               vals = append(vals, 'grey')
+               affected = append(affected, 0)
+               vals = append(vals, 'black')
                sx = append(sx, '')
           } else {
                affected = append(affected, 1)
@@ -34,7 +34,7 @@ for (f in 1:dim(families)[1]) {
             #    else {
             #         vals = append(vals, pal[1])
             #    }
-               vals = append(vals, 'grey')
+               vals = append(vals, 'darkred')
                sx_str = '' #sprintf('%d', phe[as.character(phe$id)==id,]$id)
                sx = append(sx, '')
           }
@@ -52,7 +52,7 @@ for (f in 1:dim(families)[1]) {
      }
      pdf(sprintf('~/tmp/%d.pdf', myfam))
     #  plot(ped2, col=colors, affected=affected, symbolsize=.7)
-     plot(ped2, col=vals, affected=affected, symbolsize=1, id=sx)
+     plot(ped2, col=vals, affected=affected, symbolsize=1.5, id=sx)
     #  title(sprintf('Family %d, phenotype %s', myfam, colnames(phe)[mycol]))
      dev.off()
 }

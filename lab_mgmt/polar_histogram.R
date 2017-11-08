@@ -77,7 +77,7 @@ ph = function (df, family = NULL, columnNames = NULL, binSize = 1,
     hjust <- readableJustification(xmin + binSize/2)
   })
   p <- p + geom_text(aes(x = x, label = custom_label, angle = angle,
-                         hjust = hjust), y = 1.02, size = 4.5, vjust = 0.5, data = dfItemLabels)
+                         hjust = hjust), y = 1.02, size = 4.7, vjust = 0.5, data = dfItemLabels)
   p <- p + geom_segment(aes(x = xmin, xend = xend, y = y, yend = y),
                         colour = "white", data = guidesDF)
   if (normalised)
@@ -117,7 +117,7 @@ ph = function (df, family = NULL, columnNames = NULL, binSize = 1,
 }
 require(ggplot2)
 require(plyr)
-a = read.csv('~/philip/daisy_wheel_v3_hi_sevVSrap.csv')
+a = read.csv('~/philip/daisy_wheel_v5_hi_sevVSrap.csv')
 myguides = c(100, 85, 35)
 ph(a, normalised = T, direction='outwards', binSize=1, familyLabels = F,
    guides = myguides, gLabels=round(a$ymax[1]*myguides/100, digit=1), outerRadius = 1,
