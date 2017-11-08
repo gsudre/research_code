@@ -12,7 +12,7 @@ import os
 
 maskid = int(sys.argv[1])
 path = '/scratch/ncr/%04d/edti_proc/' % maskid
-path = '/Users/sudregp/data/tmp/1438/edti_proc/'
+path = '/data/sudregp/tmp/1438/edti_proc/'
 
 if len(sys.argv) > 2:
     rm_me = [int(i) for i in sys.argv[2:]]
