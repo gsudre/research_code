@@ -1,6 +1,6 @@
 ''' Goes through all the MR data in a list of mask ids, and copy the last
     MPRAGE data to a specific folder.
-    Usage: copy_mprages.py list.txt out_dir/ '''
+    Usage: copy_mprages.py list.txt share_dir/ out_dir/ '''
 
 import glob
 import re
@@ -10,14 +10,14 @@ import os
 
 
 maskid_file = sys.argv[1]
-copy_to = sys.argv[2] + '/%04d/'
+copy_to = sys.argv[3] + '/%04d/'
 
 fid = open(maskid_file, 'r')
 copied_cnt = 0
 cnt = 0
 for maskid in fid:
     cnt += 1
-    maskid_dir = '/Volumes/Labs/Shaw/data_by_maskID/%04d/' % int(maskid)
+    maskid_dir = sys.argv[2] + '/data_by_maskID/%04d/' % int(maskid)
     # we could have more than one date directory inside the same mask ID when
     # there were two scan sessions (e.g. the first one was interrupted). Still
     # they'll share the same date!
