@@ -4,6 +4,7 @@ maskids=$1
 batchFile=~/tortoise_in_biowulf/tortoise.bat
 start_dir=`pwd`
 bw_dir=/scratch/sudregp/tortoise/
+data_dir=/Volumes/Shaw/data_by_maskID/
 tmp_script=ssh_pipes.sh
 
 # for each mask id in the file
@@ -16,8 +17,13 @@ while read m; do
     # piping inside the loop was breaking it. Will need to do it later. -n flag didn't work because I actually need the stdin pipe.
     echo "echo \"Copying over eDTI files for ${m}\"" >> $tmp_script
     echo "ssh -q biowulf.nih.gov \"mkdir ${bw_dir}/${m}\"" >> $tmp_script
-    echo "cd /mnt/shaw/data_by_maskID/${m}" >> $tmp_script 
-    echo "gtar czf - edti edti_proc | ssh -q biowulf.nih.gov \"cd ${bw_dir}/${m}; tar xzf -\"" >> $tmp_script
+    echo "cd ${data_dir}/${m}" >> $tmp_script
+    if [ -d ${data_dir}/${m}/edti_proc ]; then
+        echo "gtar czf - edti edti_proc | ssh -q biowulf.nih.gov \"cd ${bw_dir}/${m}; tar xzf -\"" >> $tmp_script
+    else
+        echo "Could not find edti_proc";
+        echo "gtar czf - edti | ssh -q biowulf.nih.gov \"cd ${bw_dir}/${m}; tar xzf -\"" >> $tmp_script
+    fi
 
     # setting up XML file
     cp ~/tortoise_in_biowulf/0000_template.xml ~/tortoise_in_biowulf/${m}.xml

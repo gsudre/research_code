@@ -1,8 +1,8 @@
 ''' Assigns a Freesurfer label to every vertex in the CIVET cortical output '''
 
-civet_fname = '/Users/sudregp/Documents/surfaces/IMAGING_TOOLS/cortex.mat'
-labels_dir = '/Users/sudregp/data/fsaverage_labels/destrieux/'
-output_dir = '/Users/sudregp/tmp/c/'
+civet_fname = '/Users/sudregp/data/cortex.mat'
+labels_dir = '/Volumes/Shaw/longitudinal_anatomy/fsaverage_aparc_labels/'
+output_dir = '/Users/sudregp/tmp/'
 
 import scipy.io
 mat = scipy.io.loadmat(civet_fname)

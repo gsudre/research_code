@@ -6,6 +6,8 @@ function [tri,coord,nbr,normal]=mni_getmesh(inputmesh)
 % nbr    : 1st neihbor nodes list 
 % normal : normal vector list
 %
+% From: http://www.stat.wisc.edu/%7Emchung/softwares/hk/mni_getmesh.m
+%
 % EXAMPLE: [tri,coord,nbr,normal]=mni_getmesh(inputmesh)
 %
 %(C) Moo K. Chung
