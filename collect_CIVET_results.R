@@ -25,9 +25,8 @@ for (measure in c('area', 'thickness', 'volume')) {
       civet_hemi = 'right'
     }
     rois = read.table(sprintf(map_file, hemi))
-    vmap = read.table(sprintf(vertex_file, hemi))
     # remove the headers
-    vmap = as.numeric(vmap[4:nrow(vmap), 1])
+    vmap = read.table(sprintf(vertex_file, hemi), skip=3)
     
     hemi_data = matrix(nrow=length(maskids), ncol=nrow(rois))
     for (m in 1:length(maskids)) {
