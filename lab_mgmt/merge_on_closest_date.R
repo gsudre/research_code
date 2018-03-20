@@ -30,6 +30,10 @@ mergeOnClosestDate = function(df1, df2, my_ids, x.id='MRN', x.date='DOA', y.id='
   merged_ids <- lapply(my_ids, merge_func, df1, df2, my_ids, x.id, x.date, y.id, y.date)
   # bind by rows the ID-specific merged dataframes
   res_df = do.call(rbind, merged_ids)
+
+  # reformat dates to be in the usual format, instead of separated by hyphens
+  res_df[, eval(x.date)] = format(res_df[, eval(x.date)], format='%m/%d/%Y')
+  res_df[, eval(y.date)] = format(res_df[, eval(y.date)], format='%m/%d/%Y')
   return(res_df)
 }
 

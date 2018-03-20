@@ -7,7 +7,7 @@
 map_file = '/Volumes/Shaw/longitudinal_anatomy/%s_map_ds.txt'
 # map of vertex to freesurfer integers
 vertex_file = '/Volumes/Shaw/longitudinal_anatomy/%s_freesurfer2civet_labels_ds.txt'
-data_dir = '/Volumes/Shaw/longitudinal_anatomy/CIVET_2.1.0_longitudinal/'
+data_dir = '/Volumes/Shaw/longitudinal_anatomy/CIVET_2.1.0_cross/'
 
 # maskids = c('0119', '0123')
 maskids = unlist(lapply(strsplit(list.files(path=data_dir, pattern="*-Mam*", include.dirs=T),
