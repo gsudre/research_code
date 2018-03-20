@@ -37,15 +37,15 @@ mergeOnClosestDate = function(df1, df2, my_ids, x.id='MRN', x.date='DOA', y.id='
   return(res_df)
 }
 
-# So, an example on how to run it would be:
+# # So, an example on how to run it would be:
 
-# read in both files
-df1 = read.csv('~/data/baseline_prediction/stripped/gf_clinical.csv')
-df2 = read.table('~/Downloads/Results 1.txt', sep='\t', header=1)
-# Select the set of unique IDs you want to merge
-my_ids = unique(df1$MRN)  # or use the intersect of IDs of both dfs
-# run the command, specifying the column names if different than MRN and DOA
-df3 = mergeOnClosestDate(df1, df2, my_ids, y.id='Medical.Record...MRN', y.date='record.date.collected...GAS')
-# write out the results
-write.csv(df3, row.names=F, file='~/tmp/merged.csv')
+# # read in both files
+# df1 = read.csv('~/data/baseline_prediction/stripped/gf_clinical.csv')
+# df2 = read.table('~/Downloads/Results 1.txt', sep='\t', header=1)
+# # Select the set of unique IDs you want to merge
+# my_ids = unique(df1$MRN)  # or use the intersect of IDs of both dfs
+# # run the command, specifying the column names if different than MRN and DOA
+# df3 = mergeOnClosestDate(df1, df2, my_ids, y.id='Medical.Record...MRN', y.date='record.date.collected...GAS')
+# # write out the results
+# write.csv(df3, row.names=F, file='~/tmp/merged.csv')
 
