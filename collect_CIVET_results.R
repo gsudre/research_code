@@ -57,3 +57,35 @@ for (measure in c('area', 'thickness', 'volume')) {
     data = cbind(data, hemi_data)
   }
 }
+data = cbind(maskids, data)
+save(data, file='/Volumes/Shaw/longitudinal_anatomy/civet_in_freesurfer_labels_cross.RData')
+
+
+
+# a = read.csv('/Volumes/Shaw/longitudinal_anatomy/demo_long.csv')
+# b = read.csv('/Volumes/Shaw/longitudinal_anatomy/mriqc_longitudinal/T1w.csv')
+# colnames(b) = sapply(colnames(b), function(x) { sprintf('mriqc_%s', x) } )
+# m = merge(a, b, by.x='Mask.ID...Scan', by.y='mriqc_session_id', all.x=T)
+# b = read.table('/Volumes/Shaw/longitudinal_anatomy/freesurfer_output_longitudinal/cross_pipeline/merged_rois.txt', header=1)
+# colnames(b) = sapply(colnames(b), function(x) { sprintf('freesurfer_crossPipe_%s', x) } )
+# m = merge(m, b, by.x='Mask.ID...Scan', by.y='freesurfer_crossPipe_lh.aparc.area', all.x=T)
+# b = read.csv('/Volumes/Shaw/longitudinal_anatomy/freesurfer_qc.csv')
+# colnames(b) = sapply(colnames(b), function(x) { sprintf('freesurferQC_%s', x) } )
+# m = merge(m, b, by.x='Mask.ID...Scan', by.y='freesurferQC_Mask.ID...QualityControl', all.x=T)
+# b = read.table('/Volumes/Shaw/longitudinal_anatomy/freesurfer_output_longitudinal/longitudinal_pipeline/merged_rois.txt', header=1)
+# colnames(b) = sapply(colnames(b), function(x) { sprintf('freesurfer_longPipe_%s', x) } )
+# m = merge(m, b, by.x='Mask.ID...Scan', by.y='freesurfer_longPipe_lh.aparc.area', all.x=T)
+# b = read.csv('/Volumes/Shaw/longitudinal_anatomy/CIVET_2.1.0_longitudinal/Study-1521129234/QC/civet_ncr_.csv')
+# colnames(b) = sapply(colnames(b), function(x) { sprintf('CIVET_%s', x) } )
+# m = merge(m, b, by.x='Mask.ID...Scan', by.y='CIVET_ID', all.x=T)
+
+
+# source('~/research_code/lab_mgmt/merge_on_closest_date.R')
+# my_ids = unique(a$Medical.Record...MRN...Subjects)
+# df3 = mergeOnClosestDate(a, b, my_ids, x.id='Medical.Record...MRN...Subjects', y.id='Medical.Record...MRN...Subjects', y.date='Date.tested...WASI.I...WASI.II...WPPSI.III...WPPSI.IV...WTAR...Subjects', x.date='record.date.collected...Scan')
+# colnames(df3)[16] = 'dateScan.minus.dateIQ.months'
+# d = read.csv('/Volumes/Shaw/longitudinal_anatomy/clinical_03202018.csv')
+# m = mergeOnClosestDate(df3, d, my_ids, x.id='Medical.Record...MRN...Subjects', y.id='MRN', y.date='Date', x.date='record.date.collected...Scan')
+# colnames(m)[25] = 'dateScan.minus.dateClinical.months'
+# write.csv(m, row.names=F, file='/Volumes/Shaw/longitudinal_anatomy/gf_cross_03202018.csv')
+
