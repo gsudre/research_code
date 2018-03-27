@@ -14,12 +14,17 @@ rois = [range(5, 10+1) + range(13, 15+1) + [17, 20] + range(25, 33+1) + [36] +
         range(5, 10+1) + range(13, 15+1) + [17, 20] + range(25, 33+1) + [36] +
          range(49, 122+1) + range(124, 197)]
 
-fid = open('/Users/sudregp/data/prs/fmri_kids_all.txt', 'r')
+# fid = open('/Users/sudregp/data/prs/fmri_kids_all.txt', 'r')
+# subjs = [line.rstrip() for line in fid]
+# fid.close()
+# fid = open('/Users/sudregp/data/prs/fmri_adults_all.txt', 'r')
+# subjs += [line.rstrip() for line in fid]
+# fid.close()
+
+fid = open('/Users/sudregp/data/prs/maskids_503.txt', 'r')
 subjs = [line.rstrip() for line in fid]
 fid.close()
-fid = open('/Users/sudregp/data/prs/fmri_adults_all.txt', 'r')
-subjs += [line.rstrip() for line in fid]
-fid.close()
+
 
 for trim in trimmed:
     print trim
