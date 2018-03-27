@@ -1,4 +1,4 @@
-mydata<-read.csv('/scratch/sudregp/prs/wnh_aa_jhu_tract2_pca_03262018.csv')
+mydata<-read.csv('/scratch/sudregp/prs/dti_wnhaa_304_03272018.csv')
 
 load('/scratch/sudregp/prs/dti_fa_voxelwise_08162017.RData')
 
@@ -10,7 +10,7 @@ dim(mydata)
 args <- commandArgs(trailingOnly = TRUE)
 
 # choosing mediators
-Ms = c(which(colnames(mydata) == args[1]))
+Ms = which(grepl('^v', colnames(mydata)))
 Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 'PROFILES.0.2.profile',
        'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
 Ys = c('SX_HI', 'SX_inatt')
