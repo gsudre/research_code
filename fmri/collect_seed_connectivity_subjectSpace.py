@@ -37,7 +37,13 @@ for trim in trimmed:
         for r in seed:
             fname = data_dir + '/%s/%d.1D' % (s, r)
             roi_data = np.genfromtxt(fname)
-            num_trs = max(num_trs, len(roi_data)) 
+            num_trs = max(num_trs, len(roi_data))
+            if trim:
+                max_trs = min(123, num_trs)
+                out_fname = '/Users/sudregp/tmp/seed_trimmed.csv'
+            else:
+                max_trs = num_trs
+                out_fname = '/Users/sudregp/tmp/seed.csv' 
             seed_data.append(roi_data[:max_trs])
         seed_data = np.sum(seed_data, axis=0)
         subj_data = []
@@ -45,12 +51,6 @@ for trim in trimmed:
             fname = data_dir + '/%s/%d.1D' % (s, r)
             roi_data = np.genfromtxt(fname)
             num_trs = max(num_trs, len(roi_data))
-            if trim:
-                max_trs = min(123, num_trs)
-                out_fname = '/Users/sudregp/tmp/%s_trimmed.csv' % atlas
-            else:
-                max_trs = num_trs
-                out_fname = '/Users/sudregp/tmp/%s.csv' % atlas
             subj_data.append(np.arctanh(np.corrcoef(seed_data[:max_trs], roi_data[:max_trs])[0, 1]))
         mats.append([int(s)] + list(subj_data))
     corr_mats = np.array(mats)
