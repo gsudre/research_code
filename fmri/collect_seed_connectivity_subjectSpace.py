@@ -10,9 +10,9 @@ import pandas as pd
 
 trimmed = [False, True]
 seed = [48, 68, 71, 83, 103, 106]  # L and R rostralanteriorcingulate, posteriorcingulate and caudalanteriorcingulate
-rois = [range(5, 10+1) + range(13, 15+1) + [17, 20] + range(25, 33+1) + [36] +
+all_rois = [range(5, 10+1) + range(13, 15+1) + [17, 20] + range(25, 33+1) + [36] +
          range(47, 80+1) + range(82, 115+1)]
-rois = [r for r in rois if r not in seed]
+rois = [r for r in all_rois[0] if r not in seed]
 
 fid = open('/Users/sudregp/data/prs/maskids_503.txt', 'r')
 subjs = [line.rstrip() for line in fid]
@@ -55,8 +55,7 @@ for trim in trimmed:
         mats.append([int(s)] + list(subj_data))
     corr_mats = np.array(mats)
 
-    cnames = ['%s_TO_%s' % (roi_labels[rois[a][i]], roi_labels[rois[a][j]])
-                for i, j in zip(idx[0], idx[1])]
+    cnames = ['%s' % roi_labels[i] for i in rois]
     data = pd.DataFrame(corr_mats, columns=['maskid'] + cnames)
     
-    data.to_csv(out_fname)
+    data.to_csv(out_fname, index=False)
