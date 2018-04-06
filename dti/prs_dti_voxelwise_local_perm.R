@@ -84,17 +84,17 @@ perm_labels <- sample.int(dim(mydata)[1], replace = FALSE)
 mydata = mydata[perm_labels, ]
 print(perm_labels[1:10])
 
-# dir.create(dir_root, showWarnings = FALSE)
-# dir.create(file.path(dir_root, x_str), showWarnings = FALSE)
-# X = mydata[, x_str]
-# dir.create(file.path(sprintf('%s/%s', dir_root, x_str), y_str), showWarnings = FALSE)
-# Y = mydata[, y_str]
+dir.create(dir_root, showWarnings = FALSE)
+dir.create(file.path(dir_root, x_str), showWarnings = FALSE)
+X = mydata[, x_str]
+dir.create(file.path(sprintf('%s/%s', dir_root, x_str), y_str), showWarnings = FALSE)
+Y = mydata[, y_str]
 
-# dir.create(file.path(sprintf('%s/%s/%s', dir_root, x_str, y_str), myseed), showWarnings = FALSE)
+dir.create(file.path(sprintf('%s/%s/%s', dir_root, x_str, y_str), myseed), showWarnings = FALSE)
 
-# out_fname = sprintf('%s/%s/%s/%s/%s.csv', dir_root, x_str, y_str, myseed, m_str)
-# print(out_fname)
+out_fname = sprintf('%s/%s/%s/%s/%s.csv', dir_root, x_str, y_str, myseed, m_str)
+print(out_fname)
 
-# all_res = run_model4(X, mydata[, m_str], Y, nboot=nboot, data2=mydata)
+all_res = run_model4(X, mydata[, m_str], Y, nboot=nboot, data2=mydata)
 
-# write.csv(t(all_res), file=out_fname, row.names=F, quote=F)
+write.csv(t(all_res), file=out_fname, row.names=F, quote=F)
