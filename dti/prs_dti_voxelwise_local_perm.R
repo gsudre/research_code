@@ -90,9 +90,10 @@ X = mydata[, x_str]
 dir.create(file.path(sprintf('%s/%s', dir_root, x_str), y_str), showWarnings = FALSE)
 Y = mydata[, y_str]
 
-dir.create(file.path(sprintf('%s/%s/%s', dir_root, x_str, y_str), myseed), showWarnings = FALSE)
+dir.create(file.path(sprintf('%s/%s/%s', dir_root, x_str, y_str),
+                     sprintf('perm%s', myseed)), showWarnings = FALSE)
 
-out_fname = sprintf('%s/%s/%s/%s/%s.csv', dir_root, x_str, y_str, myseed, m_str)
+out_fname = sprintf('%s/%s/%s/perm%s/%s.csv', dir_root, x_str, y_str, myseed, m_str)
 print(out_fname)
 
 all_res = run_model4(X, mydata[, m_str], Y, nboot=nboot, data2=mydata)
