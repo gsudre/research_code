@@ -2,7 +2,7 @@
 
 mydata<-read.csv('/scratch/sudregp/prs/dti_wnhaa_304_03272018.csv')
 
-load('/scratch/sudregp/prs/dti_fa_voxelwise_08162017.RData')
+load('/scratch/sudregp/prs/dti_rd_voxelwise_08162017.RData')
 
 dim(mydata)
 dim(m)
@@ -18,9 +18,9 @@ y_str = args[2]
 m_str = args[3]
 myseed = args[4]
 
-nboot = 10
+nboot = 1000
 mixed = T
-dir_root = '/scratch/sudregp/prs/dti_voxels_fa_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex_10K'
+dir_root = '/scratch/sudregp/prs/dti_voxels_rd_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex'
 
 # no need to change anything below here. The functions remove NAs and zscore variables on their own
 run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
@@ -85,15 +85,15 @@ mydata = mydata[perm_labels, ]
 print(perm_labels[1:10])
 
 dir.create(dir_root, showWarnings = FALSE)
-dir.create(file.path(dir_root, x_str), showWarnings = FALSE)
+dir_name = sprintf('%s/%s', dir_root, x_str)
+dir.create(dir_name, showWarnings = FALSE)
 X = mydata[, x_str]
-dir.create(file.path(sprintf('%s/%s', dir_root, x_str), y_str), showWarnings = FALSE)
+dir_name = sprintf('%s/%s/%s', dir_root, x_str, y_str)
+dir.create(dir_name, showWarnings = FALSE)
 Y = mydata[, y_str]
-
-dir.create(file.path(sprintf('%s/%s/%s', dir_root, x_str, y_str),
-                     sprintf('perm%s', myseed)), showWarnings = FALSE)
-
-out_fname = sprintf('%s/%s/%s/perm%s/%s.csv', dir_root, x_str, y_str, myseed, m_str)
+dir_name = sprintf('%s/%s/%s/perm%s', dir_root, x_str, y_str, myseed)
+dir.create(dir_name, showWarnings = FALSE)
+out_fname = sprintf('%s/%s.csv', dir_name, m_str)
 print(out_fname)
 
 all_res = run_model4(X, mydata[, m_str], Y, nboot=nboot, data2=mydata)
