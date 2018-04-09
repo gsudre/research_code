@@ -78,12 +78,6 @@ if (!mixed) {
   mydata$NuclearFamID = NA
 }
 
-# shuffle mydata around
-set.seed(as.integer(myseed) %% 2^31)
-perm_labels <- sample.int(dim(mydata)[1], replace = FALSE)
-mydata = mydata[perm_labels, ]
-print(perm_labels[1:10])
-
 dir.create(dir_root, showWarnings = FALSE)
 dir_name = sprintf('%s/%s', dir_root, x_str)
 dir.create(dir_name, showWarnings = FALSE)
@@ -96,6 +90,11 @@ dir.create(dir_name, showWarnings = FALSE)
 out_fname = sprintf('%s/%s.csv', dir_name, m_str)
 print(out_fname)
 
-all_res = run_model4(X, mydata[, m_str], Y, nboot=nboot, data2=mydata)
+# shuffle mydata around, but only change M, as we want the relationship between
+# X and Y to stay the same
+set.seed(as.integer(myseed) %% 2^31)
+perm_labels <- sample.int(dim(mydata)[1], replace = FALSE)
+print(perm_labels[1:10])
+all_res = run_model4(X, mydata[perm_labels, m_str], Y, nboot=nboot, data2=mydata)
 
 write.csv(t(all_res), file=out_fname, row.names=F, quote=F)

@@ -1,7 +1,7 @@
 p = read.table('/scratch/sudregp/1080_rd.txt')  # just to get voxel coordinates
 nvox = nrow(p)
 b=p
-data_dir = '/scratch/sudregp/prs/dti_voxels_fa_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex/PROFILES.0.1.profile/SX_HI/'
+data_dir = '/scratch/sudregp/prs/dti_voxels_rd_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex/PROFILES.0.1.profile/SX_HI/'
 perms = list.files(path=data_dir, pattern="^perm*", include.dirs=T)
 for (perm in perms) {
     print(perm)
@@ -14,5 +14,4 @@ for (perm in perms) {
     }
     write.table(p, file=sprintf('%s/pvals_%s.txt', data_dir, prof, y), row.names=F, col.names=F)
     write.table(b, file=sprintf('%s/betas_%s.txt', data_dir, prof, y), row.names=F, col.names=F)
-  }
 }
