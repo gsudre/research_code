@@ -4,7 +4,7 @@ b=p
 data_dir = '/scratch/sudregp/prs/dti_voxels_rd_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex/PROFILES.0.1.profile/SX_HI/'
 perms = list.files(path=data_dir, pattern="^perm*", include.dirs=T)
 for (perm in perms) {
-    if (!file.exists(sprintf('%s/pvals_%s.txt', data_dir, perm)) {
+    if (!file.exists(sprintf('%s/pvals_%s.txt', data_dir, perm))) {
         print(perm)
         for (i in 1:nvox) {
         if (i %% 1000 == 0) {print(i)}
