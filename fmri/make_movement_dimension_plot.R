@@ -5,32 +5,36 @@
 
 library(ggplot2)
 
-maskids = read.table('~/tmp/ayaka_fmri.txt')[, 1]
-root_dir = '/Volumes/Shaw/data_by_maskID/'
+maskids = read.table('~/tmp/ayaka_fmri2.txt')[, 1]
+root_dir = '/Volumes/T/resting_all/'
 
 all_mvmt = c()
 for (m in maskids) {
-    dir_name = sprintf('%s/%04d/afni/%04d.rest.example11.results/', root_dir,
-                        m, m)
+    # dir_name = sprintf('%s/%04d/afni/%04d.rest.example11.results/', root_dir,
+    #                     m, m)
 
-    if (!file.exists(dir_name)) {
-        dir_name = sprintf('%s/%04d/afni/%04d.rest.example11_HaskinsPeds.results/',
-                            root_dir, m, m)
-    }
+    # if (!file.exists(dir_name)) {
+    #     dir_name = sprintf('%s/%04d/afni/%04d.rest.example11_HaskinsPeds.results/',
+    #                         root_dir, m, m)
+    # }
 
-    if (!file.exists(dir_name)) {
-        dir_name = sprintf('%s/%04d/afni/%04d.rest.compCor.results/',
-                            root_dir, m, m)
-    }
+    # if (!file.exists(dir_name)) {
+    #     dir_name = sprintf('%s/%04d/afni/%04d.rest.compCor.results/',
+    #                         root_dir, m, m)
+    # }
 
-    if (!file.exists(dir_name)) {
-        dir_name = sprintf('%s/%04d/afni/%04d.rest.subjectSpace.results/',
-                            root_dir, m, m)
-    }
+    # if (!file.exists(dir_name)) {
+    #     dir_name = sprintf('%s/%04d/afni/%04d.rest.subjectSpace.results/',
+    #                         root_dir, m, m)
+    # }
 
-    fname = sprintf('%s/dfile_rall.1D', dir_name)
+    # fname = sprintf('%s/dfile_rall.1D', dir_name)
+    
+    fname = sprintf('%s/%04dR/rp_%04dR_001.txt', root_dir, m, m)
     if (file.exists(fname)) {
         mvmt = read.table(fname)
+        # skip first row which is zero
+        mvmt = mvmt[2:nrow(mvmt), ]
         all_mvmt = rbind(all_mvmt, c(m, colMeans(abs(mvmt))))
     } else {
         print(m)
