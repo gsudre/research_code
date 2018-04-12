@@ -13,7 +13,7 @@ data = cbind(maskid, data)
 
 dim(mydata)
 dim(data)
-mydata = merge(mydata, m, by='maskid')
+mydata = merge(mydata, data, by='maskid')
 dim(mydata)
 
 args <- commandArgs(trailingOnly = TRUE)
