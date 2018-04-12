@@ -3,7 +3,7 @@
 mydata<-read.csv('/scratch/sudregp/prs/wnh_aa_struct_scaled_03132018.csv')
 
 load('/scratch/sudregp/prs/rh.volume.10.gzip')
-dir_root = '/scratch/sudregp/prs/struct_voxels_volume10_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex'
+dir_root = '/scratch/sudregp/prs/struct_voxels_volumeRH10_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex'
 
 cnames = sapply(1:163842, function(x) sprintf('v%06d', x))
 colnames(data) = cnames
