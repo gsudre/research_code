@@ -4,13 +4,13 @@ local=T
 
 if (local) {
   jobid=Sys.getenv('SLURM_JOBID')
-  gf_fname = sprintf('/lscratch/%s/wnh_aa_struct_scaled_03132018.csv', jobid)
-  maskid_fname = sprintf('/lscratch/%s/maskids_wnh_aa_struct_scaled_03132018_3tonly.txt', jobid)
+  gf_fname = sprintf('/lscratch/%s/wnh_aa_struct_scaled_04162018_ageDiffSE3.csv', jobid)
+  maskid_fname = sprintf('/lscratch/%s/maskids_wnh_aa_struct_scaled_04162018_ageDiffSE3.txt', jobid)
   voxel_fname = sprintf('/lscratch/%s/rh.volume.10.gzip', jobid)
   dir_root = sprintf('/lscratch/%s/struct_voxels_volumeRH10_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex', jobid)
 } else {
-  gf_fname = '/scratch/sudregp/prs/wnh_aa_struct_scaled_03132018.csv'
-  maskid_fname = '/scratch/sudregp/prs/maskids_wnh_aa_struct_scaled_03132018_3tonly.txt'
+  gf_fname = '/scratch/sudregp/prs/wnh_aa_struct_scaled_04162018_ageDiffSE3.csv'
+  maskid_fname = '/scratch/sudregp/prs/maskids_wnh_aa_struct_scaled_04162018_ageDiffSE3.txt'
   voxel_fname = '/scratch/sudregp/prs/rh.volume.10.gzip'
   dir_root = '/scratch/sudregp/prs/struct_voxels_volumeRH10_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex'
 }
