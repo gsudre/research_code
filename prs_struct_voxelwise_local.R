@@ -1,15 +1,30 @@
 # runs mediation for each voxel individually
 
-mydata<-read.csv('/scratch/sudregp/prs/wnh_aa_struct_scaled_03132018.csv')
+local=T
 
-load('/scratch/sudregp/prs/rh.volume.10.gzip')
-dir_root = '/scratch/sudregp/prs/struct_voxels_volumeRH10_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex'
+if (local) {
+  jobid=Sys.getenv('SLURM_JOBID')
+  gf_fname = sprintf('/lscratch/%s/wnh_aa_struct_scaled_03132018.csv', jobid)
+  maskid_fname = sprintf('/lscratch/%s/maskids_wnh_aa_struct_scaled_03132018_3tonly.txt', jobid)
+  voxel_fname = sprintf('/lscratch/%s/rh.volume.10.gzip', jobid)
+  dir_root = sprintf('/lscratch/%s/struct_voxels_volumeRH10_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex', jobid)
+} else {
+  gf_fname = '/scratch/sudregp/prs/wnh_aa_struct_scaled_03132018.csv'
+  maskid_fname = '/scratch/sudregp/prs/maskids_wnh_aa_struct_scaled_03132018_3tonly.txt'
+  voxel_fname = '/scratch/sudregp/prs/rh.volume.10.gzip'
+  dir_root = '/scratch/sudregp/prs/struct_voxels_volumeRH10_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex'
+}
+
+mydata<-read.csv(gf_fname)
+
+load(voxel_fname)
 
 cnames = sapply(1:163842, function(x) sprintf('v%06d', x))
 colnames(data) = cnames
 
-maskid = read.table('/scratch/sudregp/prs/maskids_wnh_aa_struct_scaled_03132018_3tonly.txt')[,1]
+maskid = read.table(maskid_fname)[,1]
 data = cbind(maskid, data)
+
 
 dim(mydata)
 dim(data)
