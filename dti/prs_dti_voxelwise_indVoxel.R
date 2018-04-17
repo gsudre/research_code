@@ -17,7 +17,7 @@ dim(mydata)
 m_str = args[1]
 Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 'PROFILES.0.2.profile',
        'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
-Ys = c('SX_HI', 'SX_inatt')
+Ys = c('SX_HI', 'SX_INATT')
 
 nboot = 1000
 mixed = T
