@@ -1,15 +1,17 @@
-# runs mediation for each voxel individually
+# runs mediation for each voxel individually. Arguments are voxel name then DTI type
 
-mydata<-read.csv('/scratch/sudregp/prs/dti_wnhaa_304_03272018.csv')
+imuser=Sys.getenv('SLURM_JOBID')
+args <- commandArgs(trailingOnly = TRUE)
 
-load('/scratch/sudregp/prs/dti_fa_voxelwise_08162017.RData')
+mydata<-read.csv(sprintf('/scratch/%s/prs/dti_293_imputed_neuro_updated_clin_04172018_clean.csv', imuser))
+
+load(sprintf('/scratch/%s/prs/dti_%s_voxelwise_08162017.RData', imuser, args[2]))
 
 dim(mydata)
 dim(m)
 mydata = merge(mydata, m, by="MRN")
 dim(mydata)
 
-args <- commandArgs(trailingOnly = TRUE)
 
 # choosing mediators
 m_str = args[1]
@@ -17,9 +19,10 @@ Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 
        'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
 Ys = c('SX_HI', 'SX_inatt')
 
-nboot = 10
+nboot = 1000
 mixed = T
-dir_root = '/scratch/sudregp/prs/dti_voxels_fa_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex'
+dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_293_wnhaa_extendedfamID_lme_1kg9_cov_ageClinPlusSex',
+                    imuser, args[2])
 
 # no need to change anything below here. The functions remove NAs and zscore variables on their own
 run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
@@ -35,7 +38,7 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
                         Y = Y,
                         M = scale(M[!idx]),
                         FAMID = data2[!idx,]$extendedFamID,
-                        age= data2[!idx,]$AGE,
+                        age= data2[!idx,]$AGE_CLIN,
                         sex = data2[!idx,]$Sex)
   
   if (!is.na(run_data[1,]$FAMID)) {
