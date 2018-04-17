@@ -1,6 +1,6 @@
 # runs mediation for each voxel individually. Arguments are voxel name then DTI type
 
-imuser=Sys.getenv('SLURM_JOBID')
+imuser=Sys.getenv('USER')
 args <- commandArgs(trailingOnly = TRUE)
 
 mydata<-read.csv(sprintf('/scratch/%s/prs/dti_293_imputed_neuro_updated_clin_04172018_clean.csv', imuser))
