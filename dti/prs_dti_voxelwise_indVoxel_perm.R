@@ -3,26 +3,40 @@
 # syntax is x_str, y_str, voxel, seed, dti_mode
 args <- commandArgs(trailingOnly = TRUE)
 
-imuser=Sys.getenv('USER')
-mydata<-read.csv(sprintf('/scratch/%s/prs/dti_293_imputed_neuro_updated_clin_04172018_clean.csv', imuser))
+# choosing mediators
+x_str = args[1]
+y_str = args[2]
+m_str = args[3]
+myseed = args[4]
+dti_mode = args[5]
 
-load(sprintf('/scratch/%s/prs/dti_%s_voxelwise_08162017.RData', imuser, args[5]))
+# if we send an extra argument, we're running it locally
+islocal = length(args) > 5
+
+if (islocal) {
+  jobid=Sys.getenv('SLURM_JOBID')
+  data_fname=sprintf('/lscratch/%s/dti_293_imputed_neuro_updated_clin_04172018_clean.csv', jobid)
+  vox_fname=sprintf('/lscratch/%s/dti_%s_voxelwise_08162017.RData', jobid, dti_mode)
+  dir_root = sprintf('/lscratch/%s/dti_voxels_%s_293_wnhaa_extendedfamID_lme_1kg9_cov_ageClinPlusSex',
+                    jobid, dti_mode)
+} else {
+  imuser=Sys.getenv('USER')
+  data_fname=sprintf('/scratch/%s/prs/dti_293_imputed_neuro_updated_clin_04172018_clean.csv', imuser)
+  vox_fname=sprintf('/scratch/%s/prs/dti_%s_voxelwise_08162017.RData', imuser, dti_mode)
+  dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_293_wnhaa_extendedfamID_lme_1kg9_cov_ageClinPlusSex',
+                    imuser, dti_mode)
+}
+
+mydata<-read.csv(data_fname)
+load(vox_fname)
 
 dim(mydata)
 dim(m)
 mydata = merge(mydata, m, by="MRN")
 dim(mydata)
 
-# choosing mediators
-x_str = args[1]
-y_str = args[2]
-m_str = args[3]
-myseed = args[4]
-
 nboot = 1000
 mixed = T
-dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_293_wnhaa_extendedfamID_lme_1kg9_cov_ageClinPlusSex',
-                    imuser, args[5])
 
 # no need to change anything below here. The functions remove NAs and zscore variables on their own
 run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
