@@ -1,16 +1,17 @@
-# runs mediation for each voxel individually
+# runs permuted mediation for each voxel individually
 
-mydata<-read.csv('/scratch/sudregp/prs/dti_wnhaa_304_03272018.csv')
+# syntax is x_str, y_str, voxel, seed, dti_mode
+args <- commandArgs(trailingOnly = TRUE)
 
-load('/scratch/sudregp/prs/dti_rd_voxelwise_08162017.RData')
+imuser=Sys.getenv('USER')
+mydata<-read.csv(sprintf('/scratch/%s/prs/dti_293_imputed_neuro_updated_clin_04172018_clean.csv', imuser))
+
+load(sprintf('/scratch/%s/prs/dti_%s_voxelwise_08162017.RData', imuser, args[5]))
 
 dim(mydata)
 dim(m)
 mydata = merge(mydata, m, by="MRN")
 dim(mydata)
-
-# syntax is x_str, y_str, voxel, seed
-args <- commandArgs(trailingOnly = TRUE)
 
 # choosing mediators
 x_str = args[1]
@@ -20,7 +21,8 @@ myseed = args[4]
 
 nboot = 1000
 mixed = T
-dir_root = '/scratch/sudregp/prs/dti_voxels_rd_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex'
+dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_293_wnhaa_extendedfamID_lme_1kg9_cov_ageClinPlusSex',
+                    imuser, args[5])
 
 # no need to change anything below here. The functions remove NAs and zscore variables on their own
 run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
@@ -36,7 +38,7 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
                         Y = Y,
                         M = scale(M[!idx]),
                         FAMID = data2[!idx,]$extendedFamID,
-                        age= data2[!idx,]$AGE,
+                        age= data2[!idx,]$AGE_CLIN,
                         sex = data2[!idx,]$Sex)
   
   if (!is.na(run_data[1,]$FAMID)) {
