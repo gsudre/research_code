@@ -10,7 +10,7 @@ cp /scratch/${USER}/prs/dti_${dti_mode}_voxelwise_08162017.RData .
 cp /scratch/${USER}/prs/mean_fa_skeleton_mask.nii.gz .
 for i in {1..12014}; do 
     v=`printf v%05d $i`;
-    echo Rscript --vanilla ~/research_code/dti/prs_dti_voxelwise_indVoxel_perm.R $x $y $v $perm $dti_mode T; >> swarm.voxels_perm;
+    echo "Rscript --vanilla ~/research_code/dti/prs_dti_voxelwise_indVoxel_perm.R $x $y $v $perm $dti_mode T;" >> swarm.voxels_perm;
 done
 
 # split voxels into 8 files
