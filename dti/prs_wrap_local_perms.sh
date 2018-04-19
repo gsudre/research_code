@@ -10,7 +10,7 @@ cp /scratch/${USER}/prs/dti_${dti_mode}_voxelwise_08162017.RData .
 cp /scratch/${USER}/prs/mean_fa_skeleton_mask.nii.gz .
 for i in {1..12014}; do 
     v=`printf v%05d $i`;
-    echo Rscript --vanilla ~/research_code/dti/prs_dti_voxelwise_indVoxel_perm.R $x $y $v $perm $dti_mode T >> swarm.voxels_perm;
+    echo Rscript --vanilla ~/research_code/dti/prs_dti_voxelwise_indVoxel_perm.R $x $y $v $perm $dti_mode T; >> swarm.voxels_perm;
 done
 
 # split voxels into 8 files
@@ -20,10 +20,13 @@ for f in `ls x*`; do bash $f & done
 
 # wait until we have all voxels
 cd /lscratch/${SLURM_JOBID}/dti_voxels_*/*/*/perm*
-while [ `ls -1 | wc -l` -lt 12014 ]; do 
-    echo not yet;
-    sleep 5m;
-done
+
+# wait until all background jobs are complete
+wait
+# while [ `ls -1 | wc -l` -lt 12014 ]; do 
+#     echo not yet;
+#     sleep 5m;
+# done
 
 # let's construct a collection script from scratch. R assumes wd is where we start it
 echo 'imuser=Sys.getenv("USER")
@@ -50,9 +53,9 @@ write.table(acme_b, file="acme_betas.txt", row.names=F, col.names=F)
 write.table(tot_p, file="tot_pvals.txt", row.names=F, col.names=F)
 write.table(tot_b, file="tot_betas.txt", row.names=F, col.names=F)
 write.table(ade_p, file="ade_pvals.txt", row.names=F, col.names=F)
-write.table(ade_b, file="ade_betas.txt", row.names=F, col.names=F)' >> myscript.R
+write.table(ade_b, file="ade_betas.txt", row.names=F, col.names=F)' >> /lscratch/${SLURM_JOBID}/myscript.R
 
-Rscript --vanilla myscript.R
+Rscript --vanilla /lscratch/${SLURM_JOBID}/myscript.R
 
 # mass convert compiled files to NIFTI
 module load afni
