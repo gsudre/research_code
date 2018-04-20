@@ -1,18 +1,20 @@
 # runs mediation for each voxel individually
+args <- commandArgs(trailingOnly = TRUE)
+m_file = args[1]
+local = args[2]
+hemi = args[3]
 
-local=T
-
-if (local) {
+if (local='lscratch') {
   jobid=Sys.getenv('SLURM_JOBID')
   gf_fname = sprintf('/lscratch/%s/wnh_aa_struct_scaled_04162018_ageDiffSE3.csv', jobid)
   maskid_fname = sprintf('/lscratch/%s/maskids_wnh_aa_struct_scaled_04162018_ageDiffSE3.txt', jobid)
-  voxel_fname = sprintf('/lscratch/%s/rh.volume.10.gzip', jobid)
-  dir_root = sprintf('/lscratch/%s/struct_voxels_volumeRH10_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex', jobid)
+  voxel_fname = sprintf('%s/%s.volume.10.gzip', jobid, hemi)
+  dir_root = sprintf('%s/struct_voxels_volume_%s_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex', jobid, hemi)
 } else {
-  gf_fname = '/scratch/sudregp/prs/wnh_aa_struct_scaled_04162018_ageDiffSE3.csv'
-  maskid_fname = '/scratch/sudregp/prs/maskids_wnh_aa_struct_scaled_04162018_ageDiffSE3.txt'
-  voxel_fname = '/scratch/sudregp/prs/rh.volume.10.gzip'
-  dir_root = '/scratch/sudregp/prs/struct_voxels_volumeRH10_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex'
+  gf_fname = sprintf('%s/wnh_aa_struct_scaled_04162018_ageDiffSE3.csv', local)
+  maskid_fname = sprintf('%s/maskids_wnh_aa_struct_scaled_04162018_ageDiffSE3.txt', local)
+  voxel_fname = sprintf('%s/%s.volume.10.gzip', local, hemi)
+  dir_root = sprintf('%s/struct_voxels_volume_%s_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex', local, hemi)
 }
 
 mydata<-read.csv(gf_fname)
@@ -32,10 +34,7 @@ mydata = merge(mydata, data, by='maskid')
 mydata$SX_TOTAL = mydata$SX_INATT + mydata$SX_HI
 dim(mydata)
 
-args <- commandArgs(trailingOnly = TRUE)
-
 # choosing mediators
-m_file = args[1]
 Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 'PROFILES.0.2.profile',
        'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
 Ys = c('SX_HI', 'SX_INATT', 'SX_TOTAL')
@@ -57,7 +56,7 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
                         Y = Y,
                         M = scale(M[!idx]),
                         FAMID = data2[!idx,]$extendedFamID,
-                        age= data2[!idx,]$AGE,
+                        age= data2[!idx,]$AGE_CLIN,
                         sex = data2[!idx,]$Sex)
   
   if (!is.na(run_data[1,]$FAMID)) {
