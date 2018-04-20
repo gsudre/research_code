@@ -29,15 +29,16 @@ data = cbind(maskid, data)
 dim(mydata)
 dim(data)
 mydata = merge(mydata, data, by='maskid')
+mydata$SX_TOTAL = mydata$SX_INATT + mydata$SX_HI
 dim(mydata)
 
 args <- commandArgs(trailingOnly = TRUE)
 
 # choosing mediators
-m_str = args[1]
+m_file = args[1]
 Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 'PROFILES.0.2.profile',
        'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
-Ys = c('SX_HI', 'SX_inatt')
+Ys = c('SX_HI', 'SX_INATT', 'SX_TOTAL')
 
 nboot = 10
 mixed = T
@@ -98,6 +99,8 @@ if (!mixed) {
   mydata$NuclearFamID = NA
 }
 
+vox_list = read.table(m_file)[, 1]
+
 dir.create(dir_root, showWarnings = FALSE)
 for (x_str in Xs) {
   dir.create(file.path(dir_root, x_str), showWarnings = FALSE)
@@ -105,13 +108,12 @@ for (x_str in Xs) {
   for (y_str in Ys) {
     dir.create(file.path(sprintf('%s/%s', dir_root, x_str), y_str), showWarnings = FALSE)
     Y = mydata[, y_str]
-    
-    out_fname = sprintf('%s/%s/%s/%s.csv', dir_root, x_str, y_str, m_str)
-    print(out_fname)
-    
-    all_res = run_model4(X, mydata[, m_str], Y, nboot=nboot, data2=mydata)
-    
-    write.csv(t(all_res), file=out_fname, row.names=F, quote=F)
+    for (m_str in vox_list) {
+      out_fname = sprintf('%s/%s/%s/%s.csv', dir_root, x_str, y_str, m_str)
+      print(out_fname)
+      all_res = run_model4(X, mydata[, m_str], Y, nboot=nboot, data2=mydata)
+      write.csv(t(all_res), file=out_fname, row.names=F, quote=F)
+    }
   }
 }
 
