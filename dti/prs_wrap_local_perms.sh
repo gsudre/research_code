@@ -10,23 +10,22 @@ cp /scratch/${USER}/prs/dti_${dti_mode}_voxelwise_08162017.RData .
 cp /scratch/${USER}/prs/mean_fa_skeleton_mask.nii.gz .
 for i in {1..12014}; do 
     v=`printf v%05d $i`;
-    echo "Rscript --vanilla ~/research_code/dti/prs_dti_voxelwise_indVoxel_perm.R $x $y $v $perm $dti_mode T;" >> swarm.voxels_perm;
+    echo "$v" >> voxel_list;
 done
 
 # split voxels into 8 files
-split -l 1502 swarm.voxels_perm
+split -l 1502 voxel_list
 module load R
-for f in `ls x*`; do bash $f & done
+for f in `ls x*`; do
+    Rscript --vanilla ~/research_code/dti/prs_dti_voxelwise_voxelList_perm.R \
+        $x $y /lscratch/${SLURM_JOBID}/${f} $perm $dti_mode T &
+done
 
 # wait until we have all voxels
 cd /lscratch/${SLURM_JOBID}/dti_voxels_*/*/*/perm*
 
 # wait until all background jobs are complete
 wait
-# while [ `ls -1 | wc -l` -lt 12014 ]; do 
-#     echo not yet;
-#     sleep 5m;
-# done
 
 # let's construct a collection script from scratch. R assumes wd is where we start it
 echo 'imuser=Sys.getenv("USER")
