@@ -4,18 +4,15 @@ m_file = args[1]
 local = args[2]
 hemi = args[3]
 
-if (local='lscratch') {
+if (local=='lscratch') {
   jobid=Sys.getenv('SLURM_JOBID')
-  gf_fname = sprintf('/lscratch/%s/wnh_aa_struct_scaled_04162018_ageDiffSE3.csv', jobid)
-  maskid_fname = sprintf('/lscratch/%s/maskids_wnh_aa_struct_scaled_04162018_ageDiffSE3.txt', jobid)
-  voxel_fname = sprintf('%s/%s.volume.10.gzip', jobid, hemi)
-  dir_root = sprintf('%s/struct_voxels_volume_%s_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex', jobid, hemi)
-} else {
-  gf_fname = sprintf('%s/wnh_aa_struct_scaled_04162018_ageDiffSE3.csv', local)
-  maskid_fname = sprintf('%s/maskids_wnh_aa_struct_scaled_04162018_ageDiffSE3.txt', local)
-  voxel_fname = sprintf('%s/%s.volume.10.gzip', local, hemi)
-  dir_root = sprintf('%s/struct_voxels_volume_%s_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex', local, hemi)
+  local=sprintf('/lscratch/%s/', jobid)
 }
+
+gf_fname = sprintf('%s/struct_updated_clin_and_vol_278_04192018.csv', local)
+maskid_fname = sprintf('%s/maskids_struct_updated_clin_and_vol_278_04192018.txt', local)
+voxel_fname = sprintf('%s/%s.volume.10.gzip', local, hemi)
+dir_root = sprintf('%s/struct_voxels_volume_%s_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex', local, hemi)
 
 mydata<-read.csv(gf_fname)
 

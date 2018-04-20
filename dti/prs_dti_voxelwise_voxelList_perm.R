@@ -33,6 +33,7 @@ load(vox_fname)
 dim(mydata)
 dim(m)
 mydata = merge(mydata, m, by="MRN")
+mydata$SX_TOTAL = mydata$SX_INATT + mydata$SX_HI
 dim(mydata)
 
 nboot = 1000
