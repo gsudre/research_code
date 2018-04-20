@@ -21,11 +21,11 @@ for f in `ls x*`; do
         $x $y /lscratch/${SLURM_JOBID}/${f} $perm $dti_mode T &
 done
 
-# wait until we have all voxels
-cd /lscratch/${SLURM_JOBID}/dti_voxels_*/*/*/perm*
-
 # wait until all background jobs are complete
 wait
+
+# wait until we have all voxels
+cd /lscratch/${SLURM_JOBID}/dti_voxels_*/*/*/perm*
 
 # let's construct a collection script from scratch. R assumes wd is where we start it
 echo 'imuser=Sys.getenv("USER")
