@@ -107,7 +107,15 @@ for (x_str in Xs) {
     for (m_str in vox_list) {
       out_fname = sprintf('%s/%s/%s/%s.csv', dir_root, x_str, y_str, m_str)
       print(out_fname)
-      all_res = run_model4(X, mydata[, m_str], Y, nboot=nboot, data2=mydata)
+      # some voxels are all zeros! give them a bad result
+      if (sum(mydata[, m_str]==0) == nrow(mydata)) {
+        res_names = c('nobs', 'tot', 'tot_p', 'acme', 'acme_p', 'ade', 'ade_p', 'prop', 'prop_p',
+                   'tot_2p5ci', 'tot_97p5ci', 'acme_2p5ci', 'acme_97p5ci', 'ade_2p5ci', 'ade_97p5ci', 'prop_2p5ci', 'prop_97p5ci')
+        all_res = rep(1, length(res_names))
+        names(all_res) = res_names    
+      } else {
+        all_res = run_model4(X, mydata[, m_str], Y, nboot=nboot, data2=mydata)
+      }
       write.csv(t(all_res), file=out_fname, row.names=F, quote=F)
     }
   }
