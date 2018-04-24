@@ -5,7 +5,7 @@
 
 library(ggplot2)
 
-maskids = read.table('~/tmp/ayaka_fmri2.txt')[, 1]
+maskids = read.table('~/tmp/ayaka2.txt')[, 1]
 root_dir = '/Volumes/T/resting_all/'
 
 all_mvmt = c()
@@ -40,10 +40,15 @@ for (m in maskids) {
         print(m)
     }
 }
-pca = prcomp(all_mvmt[, 2:6], scale=T)
+pca = prcomp(all_mvmt[, 2:7], scale=T)
 p = ggplot(as.data.frame(pca$x), aes(x=PC1, y=PC2)) + geom_point()
 print(p)
 
 df = as.data.frame(cbind(all_mvmt[, 1], pca$x[, 'PC1'], pca$x[, 'PC2']))
 colnames(df) = c('maskid', 'PC1', 'PC2')
 write.csv(df, file='~/tmp/rsfmri_movement_PCs.csv', row.names=F)
+
+df2 = as.data.frame(all_mvmt)
+colnames(df2)[1] = 'maskid'
+df2$enorm = sqrt(rowSums(all_mvmt[, 2:7] ^ 2))
+write.csv(df2, file='~/tmp/rsfmri_movement_raw.csv', row.names=F)
