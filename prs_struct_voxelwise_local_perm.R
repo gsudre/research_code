@@ -116,7 +116,7 @@ vox_list = read.table(m_file)[, 1]
 X = mydata[, x_str]
 Y = mydata[, y_str]
 for (m_str in vox_list) {
-    out_fname = sprintf('%s/%s/%s/%s.csv', dir_root, x_str, y_str, m_str)
+    out_fname = sprintf('%s/%s.csv', dir_name, m_str)
     print(out_fname)
     # some voxels are all zeros! give them a bad result
     if (sum(mydata[, m_str]==0) == nrow(mydata)) {
