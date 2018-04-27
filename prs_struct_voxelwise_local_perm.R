@@ -125,7 +125,7 @@ for (m_str in vox_list) {
         all_res = rep(1, length(res_names))
         names(all_res) = res_names    
     } else {
-        all_res = run_model4(X, mydata[, m_str], Y, nboot=nboot, data2=mydata)
+        all_res = run_model4(X, mydata[perm_labels, m_str], Y, nboot=nboot, data2=mydata)
     }
     write.csv(t(all_res), file=out_fname, row.names=F, quote=F)
 }
