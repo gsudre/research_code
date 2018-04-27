@@ -8,7 +8,7 @@ module load R
 cd /lscratch/$SLURM_JOBID
 
 # for i in {1..163842}; do v=`printf v%06d $i`; echo $v >> voxel_list.txt; done
-cp /data/${USER}/prs/voxel_list_struct ./voxel_list.txt
+cp /data/${USER}/prs/voxel_list_struct.txt ./voxel_list.txt
 
 cp /scratch/${USER}/prs/struct_updated_clin_and_vol_278_04192018.csv .
 cp /scratch/${USER}/prs/maskids_struct_updated_clin_and_vol_278_04192018_3tonly.txt .
