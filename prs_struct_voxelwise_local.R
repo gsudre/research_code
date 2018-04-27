@@ -32,11 +32,13 @@ mydata$SX_TOTAL = mydata$SX_INATT + mydata$SX_HI
 dim(mydata)
 
 # choosing mediators
-Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 'PROFILES.0.2.profile',
-       'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
-Ys = c('SX_HI', 'SX_INATT', 'SX_TOTAL')
+# Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 'PROFILES.0.2.profile',
+#        'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
+# Ys = c('SX_HI', 'SX_INATT', 'SX_TOTAL')
+Xs = c('PROFILES.0.1.profile')
+Ys = c('SX_HI')
 
-nboot = 10
+nboot = 1000
 mixed = T
 
 # no need to change anything below here. The functions remove NAs and zscore variables on their own

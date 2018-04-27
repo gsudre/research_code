@@ -36,7 +36,7 @@ dim(mydata)
 
 # choosing mediators
 
-nboot = 2
+nboot = 1000
 mixed = T
 
 # no need to change anything below here. The functions remove NAs and zscore variables on their own
