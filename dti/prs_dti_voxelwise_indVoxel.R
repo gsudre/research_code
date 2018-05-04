@@ -10,7 +10,6 @@ load(sprintf('/scratch/%s/prs/dti_%s_voxelwise_05042018.RData', imuser, args[2])
 dim(mydata)
 dim(m)
 mydata = merge(mydata, m, by="MRN")
-mydata$SX_TOTAL = mydata$SX_INATT + mydata$SX_HI
 mydata$motion = scale(mydata$norm.trans) + scale(mydata$norm.rot)
 dim(mydata)
 
@@ -19,7 +18,7 @@ dim(mydata)
 m_str = args[1]
 Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 'PROFILES.0.2.profile',
        'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
-Ys = c('SX_HI', 'SX_inatt', 'SX_TOTAL')
+Ys = c('SX_HI', 'SX_inatt', 'SX_total')
 
 nboot = 1000
 mixed = T
