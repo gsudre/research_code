@@ -9,10 +9,10 @@ if (local=='lscratch') {
   local=sprintf('/lscratch/%s/', jobid)
 }
 
-gf_fname = sprintf('%s/struct_updated_clin_and_vol_278_04192018.csv', local)
-maskid_fname = sprintf('%s/maskids_struct_updated_clin_and_vol_278_04192018_3tonly.txt', local)
+gf_fname = sprintf('%s/structSE2_prs_05042018.csv', local)
+maskid_fname = sprintf('%s/struct355.txt', local)
 voxel_fname = sprintf('%s/%s.volume.10.gzip', local, hemi)
-dir_root = sprintf('%s/struct_voxels_volume_%s_273_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex', local, hemi)
+dir_root = sprintf('%s/struct_voxels_volume_%s_355_wnhaa_famID_lme_1kg9_cov_agePlusSex', local, hemi)
 
 mydata<-read.csv(gf_fname)
 
@@ -28,7 +28,6 @@ data = cbind(maskid, data)
 dim(mydata)
 dim(data)
 mydata = merge(mydata, data, by='maskid')
-mydata$SX_TOTAL = mydata$SX_INATT + mydata$SX_HI
 dim(mydata)
 
 # choosing mediators
@@ -54,7 +53,7 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
   run_data = data.frame(X = scale(X[!idx]),
                         Y = Y,
                         M = scale(M[!idx]),
-                        FAMID = data2[!idx,]$extendedFamID,
+                        FAMID = data2[!idx,]$famID,
                         age= data2[!idx,]$AGE_CLIN,
                         sex = data2[!idx,]$Sex)
   
@@ -94,7 +93,7 @@ res = c(results$nobs, results$tau.coef, results$tau.p, results$d.avg, results$d.
 }
 
 if (!mixed) {
-  mydata$NuclearFamID = NA
+  mydata$famID = NA
 }
 
 vox_list = read.table(m_file)[, 1]
