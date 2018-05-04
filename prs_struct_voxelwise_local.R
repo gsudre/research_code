@@ -27,7 +27,7 @@ data = cbind(maskid, data)
 
 dim(mydata)
 dim(data)
-mydata = merge(mydata, data, by='maskid')
+mydata = merge(mydata, data, by='Mask.ID')
 dim(mydata)
 
 # choosing mediators
