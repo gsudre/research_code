@@ -22,7 +22,7 @@ Ys = c('SX_HI', 'SX_inatt', 'SX_total')
 
 nboot = 1000
 mixed = T
-dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_336_wnhaa_extendedfamID_lme_1kg9_cov_ageClinPlusSexPlusMotion',
+dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_336_wnhaa_famID_lme_1kg9_cov_ageClinPlusSexPlusMotion',
                     imuser, args[2])
 
 # no need to change anything below here. The functions remove NAs and zscore variables on their own

@@ -15,15 +15,15 @@ islocal = length(args) > 5
 
 if (islocal) {
   jobid=Sys.getenv('SLURM_JOBID')
-  data_fname=sprintf('/lscratch/%s/dti_293_imputed_neuro_updated_clin_04172018_clean.csv', jobid)
-  vox_fname=sprintf('/lscratch/%s/dti_%s_voxelwise_08162017.RData', jobid, dti_mode)
-  dir_root = sprintf('/lscratch/%s/dti_voxels_%s_293_wnhaa_extendedfamID_lme_1kg9_cov_ageClinPlusSex',
+  data_fname=sprintf('/lscratch/%s/dti_prs_05042018.csv', jobid)
+  vox_fname=sprintf('/lscratch/%s/dti_%s_voxelwise_05042018.RData', jobid, dti_mode)
+  dir_root = sprintf('/lscratch/%s/dti_voxels_%s_336_wnhaa_famID_lme_1kg9_cov_ageClinPlusSexPlusMotion',
                     jobid, dti_mode)
 } else {
   imuser=Sys.getenv('USER')
-  data_fname=sprintf('/scratch/%s/prs/dti_293_imputed_neuro_updated_clin_04172018_clean.csv', imuser)
-  vox_fname=sprintf('/scratch/%s/prs/dti_%s_voxelwise_08162017.RData', imuser, dti_mode)
-  dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_293_wnhaa_extendedfamID_lme_1kg9_cov_ageClinPlusSex',
+  data_fname=sprintf('/scratch/%s/prs/dti_prs_05042018.csv', imuser)
+  vox_fname=sprintf('/scratch/%s/prs/dti_%s_voxelwise_05042018.RData', imuser, dti_mode)
+  dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_336_wnhaa_famID_lme_1kg9_cov_ageClinPlusSexPlusMotion',
                     imuser, dti_mode)
 }
 
@@ -33,7 +33,7 @@ load(vox_fname)
 dim(mydata)
 dim(m)
 mydata = merge(mydata, m, by="MRN")
-mydata$SX_TOTAL = mydata$SX_INATT + mydata$SX_HI
+mydata$motion = as.numeric((scale(mydata$norm_trans) + scale(mydata$norm_rot))/2)
 dim(mydata)
 
 nboot = 1000
@@ -54,12 +54,13 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
                         M = scale(M[!idx]),
                         FAMID = data2[!idx,]$extendedFamID,
                         age= data2[!idx,]$AGE_CLIN,
-                        sex = data2[!idx,]$Sex)
+                        sex = data2[!idx,]$Sex,
+                        motion = data2[!idx,]$motion)
   
   if (!is.na(run_data[1,]$FAMID)) {
     library(lme4)
-    fm = as.formula('M ~ X + age + sex + (1|FAMID)')
-    fy = as.formula('Y ~ X + M + age + sex + (1|FAMID)')
+    fm = as.formula('M ~ X + age + sex + motion + (1|FAMID)')
+    fy = as.formula('Y ~ X + M + age + sex + motion + (1|FAMID)')
     model.M <- lmer(fm, data=run_data)
     if (imdiscrete) {
       model.Y <- glmer(fy, data=run_data, family=binomial(link='logit'))
@@ -68,8 +69,8 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
     }
     results <- mediate(model.M, model.Y, treat='X', mediator='M', boot=F, sims=nboot)
   } else {
-    fm = as.formula('M ~ X + age + sex')
-    fy = as.formula('Y ~ X + M + age + sex')
+    fm = as.formula('M ~ X + age + sex + motion')
+    fy = as.formula('Y ~ X + M + age + sex + motion')
     model.M <- lm(fm, data=run_data)
     if (imdiscrete) {
       model.Y <- glm(fy, data=run_data, family=binomial(link='logit'))
@@ -92,7 +93,7 @@ res = c(results$nobs, results$tau.coef, results$tau.p, results$d.avg, results$d.
 }
 
 if (!mixed) {
-  mydata$NuclearFamID = NA
+  mydata$famID = NA
 }
 
 dir.create(dir_root, showWarnings = FALSE)
