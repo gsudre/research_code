@@ -21,8 +21,8 @@ load(voxel_fname)
 cnames = sapply(1:163842, function(x) sprintf('v%06d', x))
 colnames(data) = cnames
 
-maskid = read.table(maskid_fname)[,1]
-data = cbind(maskid, data)
+Mask.ID = read.table(maskid_fname)[,1]
+data = cbind(Mask.ID, data)
 
 
 dim(mydata)
