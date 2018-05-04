@@ -10,7 +10,7 @@ load(sprintf('/scratch/%s/prs/dti_%s_voxelwise_05042018.RData', imuser, args[2])
 dim(mydata)
 dim(m)
 mydata = merge(mydata, m, by="MRN")
-mydata$motion = scale(mydata$norm_trans) + scale(mydata$norm_rot)
+mydata$motion = as.numeric((scale(mydata$norm_trans) + scale(mydata$norm_rot))/2)
 dim(mydata)
 
 
@@ -79,7 +79,7 @@ res = c(results$nobs, results$tau.coef, results$tau.p, results$d.avg, results$d.
 }
 
 if (!mixed) {
-  mydata$NuclearFamID = NA
+  mydata$famID = NA
 }
 
 dir.create(dir_root, showWarnings = FALSE)
