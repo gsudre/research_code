@@ -37,6 +37,15 @@ mergeOnClosestDate = function(df1, df2, my_ids, x.id='MRN', x.date='DOA', y.id='
   return(res_df)
 }
 
+mergeOnClosestAge = function(df1, df2, my_ids, x.id='MRN', x.age='age', y.id='MRN', y.age='age') {  
+  # apply the merge function to all ids
+  merged_ids <- lapply(my_ids, merge_func, df1, df2, my_ids, x.id, x.age, y.id, y.age)
+  # bind by rows the ID-specific merged dataframes
+  res_df = do.call(rbind, merged_ids)
+
+  return(res_df)
+}
+
 # # So, an example on how to run it would be:
 
 # # read in both files
