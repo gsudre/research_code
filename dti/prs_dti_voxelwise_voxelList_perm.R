@@ -52,7 +52,7 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
   run_data = data.frame(X = scale(X[!idx]),
                         Y = Y,
                         M = scale(M[!idx]),
-                        FAMID = data2[!idx,]$extendedFamID,
+                        FAMID = data2[!idx,]$famID,
                         age= data2[!idx,]$AGE_CLIN,
                         sex = data2[!idx,]$Sex,
                         motion = data2[!idx,]$motion)
