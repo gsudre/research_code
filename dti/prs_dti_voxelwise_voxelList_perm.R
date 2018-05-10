@@ -15,15 +15,15 @@ islocal = length(args) > 5
 
 if (islocal) {
   jobid=Sys.getenv('SLURM_JOBID')
-  data_fname=sprintf('/lscratch/%s/dti_prs_05042018.csv', jobid)
-  vox_fname=sprintf('/lscratch/%s/dti_%s_voxelwise_05042018.RData', jobid, dti_mode)
-  dir_root = sprintf('/lscratch/%s/dti_voxels_%s_336_wnhaa_famID_lme_1kg9_cov_ageClinPlusSexPlusMotion',
+  data_fname=sprintf('/lscratch/%s/dti_prs_05092018.csv', jobid)
+  vox_fname=sprintf('/lscratch/%s/dti_%s_voxelwise_05092018.RData', jobid, dti_mode)
+  dir_root = sprintf('/lscratch/%s/dti_voxels_%s_387_wnhaa_famID_lme_1kg9_cov_ageClinPlusSex',
                     jobid, dti_mode)
 } else {
   imuser=Sys.getenv('USER')
-  data_fname=sprintf('/scratch/%s/prs/dti_prs_05042018.csv', imuser)
-  vox_fname=sprintf('/scratch/%s/prs/dti_%s_voxelwise_05042018.RData', imuser, dti_mode)
-  dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_336_wnhaa_famID_lme_1kg9_cov_ageClinPlusSexPlusMotion',
+  data_fname=sprintf('/scratch/%s/prs/dti_prs_05092018.csv', imuser)
+  vox_fname=sprintf('/scratch/%s/prs/dti_%s_voxelwise_05092018.RData', imuser, dti_mode)
+  dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_387_wnhaa_famID_lme_1kg9_cov_ageClinPlusSex',
                     imuser, dti_mode)
 }
 
@@ -59,8 +59,8 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
   
   if (!is.na(run_data[1,]$FAMID)) {
     library(lme4)
-    fm = as.formula('M ~ X + age + sex + motion + (1|FAMID)')
-    fy = as.formula('Y ~ X + M + age + sex + motion + (1|FAMID)')
+    fm = as.formula('M ~ X + age + sex + (1|FAMID)')
+    fy = as.formula('Y ~ X + M + age + sex + (1|FAMID)')
     model.M <- lmer(fm, data=run_data)
     if (imdiscrete) {
       model.Y <- glmer(fy, data=run_data, family=binomial(link='logit'))
@@ -69,8 +69,8 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
     }
     results <- mediate(model.M, model.Y, treat='X', mediator='M', boot=F, sims=nboot)
   } else {
-    fm = as.formula('M ~ X + age + sex + motion')
-    fy = as.formula('Y ~ X + M + age + sex + motion')
+    fm = as.formula('M ~ X + age + sex')
+    fy = as.formula('Y ~ X + M + age + sex')
     model.M <- lm(fm, data=run_data)
     if (imdiscrete) {
       model.Y <- glm(fy, data=run_data, family=binomial(link='logit'))

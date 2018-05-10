@@ -5,16 +5,16 @@ x=$3
 y=$4
 
 cd /lscratch/${SLURM_JOBID}
-cp /scratch/${USER}/prs/dti_prs_05042018.csv .
-cp /scratch/${USER}/prs/dti_${dti_mode}_voxelwise_05042018.RData .
-cp /scratch/${USER}/prs/mean_336_fa_skeleton_mask.nii.gz .
-for i in {1..12275}; do 
+cp /scratch/${USER}/prs/dti_prs_05092018.csv .
+cp /scratch/${USER}/prs/dti_${dti_mode}_voxelwise_05092018.RData .
+cp /scratch/${USER}/prs/mean_387_fa_skeleton_mask.nii.gz .
+for i in {1..12166}; do 
     v=`printf v%05d $i`;
     echo "$v" >> voxel_list;
 done
 
 # split voxels into 8 files
-split -l 1535 voxel_list
+split -l 1521 voxel_list
 module load R
 for f in `ls x*`; do
     Rscript --vanilla ~/research_code/dti/prs_dti_voxelwise_voxelList_perm.R \
@@ -58,12 +58,11 @@ Rscript --vanilla /lscratch/${SLURM_JOBID}/myscript.R
 
 # mass convert compiled files to NIFTI
 module load afni
+mask=/lscratch/${SLURM_JOBID}/mean_387_fa_skeleton_mask.nii.gz
 for r in acme tot ade; do
-    cat ${r}_pvals.txt | 3dUndump -master /lscratch/${SLURM_JOBID}/mean_336_fa_skeleton_mask.nii.gz \
-        -mask /lscratch/${SLURM_JOBID}/mean_336_fa_skeleton_mask.nii.gz -datum float \
+    cat ${r}_pvals.txt | 3dUndump -master $mask -mask $mask -datum float \
         -prefix ${r}_pvals.nii.gz -overwrite -;
-    cat ${r}_betas.txt | 3dUndump -master /lscratch/${SLURM_JOBID}/mean_336_fa_skeleton_mask.nii.gz \
-        -mask /lscratch/${SLURM_JOBID}/mean_336_fa_skeleton_mask.nii.gz -datum float \
+    cat ${r}_betas.txt | 3dUndump -master $mask -mask $mask -datum float \
         -prefix ${r}_betas.nii.gz -overwrite -;
     done;
 3dTcat -output dti_${dti_mode}_${x}_${y}_perm${perm}.nii.gz acme_betas.nii.gz acme_pvals.nii.gz \

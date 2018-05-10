@@ -34,7 +34,7 @@ dim(mydata)
 # Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 'PROFILES.0.2.profile',
 #        'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
 # Ys = c('SX_HI', 'SX_INATT', 'SX_TOTAL')
-Xs = c('PROFILES.0.1.profile')
+Xs = c('PROFILES.0.3.profile')
 Ys = c('SX_HI')
 
 nboot = 1000
