@@ -12,10 +12,10 @@ if (local=='lscratch') {
   local=sprintf('/lscratch/%s/', jobid)
 }
 
-gf_fname = sprintf('%s/struct_updated_clin_and_vol_278_04192018.csv', local)
-maskid_fname = sprintf('%s/maskids_struct_updated_clin_and_vol_278_04192018_3tonly.txt', local)
-voxel_fname = sprintf('%s/%s.volume.10.gzip', local, hemi)
-dir_root = sprintf('%s/struct_voxels_volume_%s_273_wnhaa_extendedfamID_lme_1kg9_cov_agePlusSex', local, hemi)
+gf_fname = sprintf('%s/structSE2_prs_05042018.csv', local)
+maskid_fname = sprintf('%s/struct355.txt', local)
+voxel_fname = sprintf('%s/%s.volume_355.10.gzip', local, hemi)
+dir_root = sprintf('%s/struct_voxels_volume_%s_355_wnhaa_famID_lme_1kg9_cov_agePlusSex', local, hemi)
 
 mydata<-read.csv(gf_fname)
 
