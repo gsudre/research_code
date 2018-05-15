@@ -53,14 +53,14 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
                         Y = Y,
                         M = scale(M[!idx]),
                         FAMID = data2[!idx,]$famID,
-                        age= data2[!idx,]$AGE_CLIN,
+                        age= data2[!idx,]$age_at_scan,
                         sex = data2[!idx,]$Sex,
                         motion = data2[!idx,]$motion)
   
   if (!is.na(run_data[1,]$FAMID)) {
     library(lme4)
-    fm = as.formula('M ~ X + age + sex + (1|FAMID)')
-    fy = as.formula('Y ~ X + M + age + sex + (1|FAMID)')
+    fm = as.formula('M ~ X + (1|FAMID)')
+    fy = as.formula('Y ~ X + M + (1|FAMID)')
     model.M <- lmer(fm, data=run_data)
     if (imdiscrete) {
       model.Y <- glmer(fy, data=run_data, family=binomial(link='logit'))
@@ -69,8 +69,8 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
     }
     results <- mediate(model.M, model.Y, treat='X', mediator='M', boot=F, sims=nboot)
   } else {
-    fm = as.formula('M ~ X + age + sex')
-    fy = as.formula('Y ~ X + M + age + sex')
+    fm = as.formula('M ~ X')
+    fy = as.formula('Y ~ X + M')
     model.M <- lm(fm, data=run_data)
     if (imdiscrete) {
       model.Y <- glm(fy, data=run_data, family=binomial(link='logit'))
