@@ -3,6 +3,8 @@ args <- commandArgs(trailingOnly = TRUE)
 m_file = args[1]
 local = args[2]
 hemi = args[3]
+x_str = args[4]
+y_str = args[5]
 
 if (local=='lscratch') {
   jobid=Sys.getenv('SLURM_JOBID')
@@ -34,8 +36,8 @@ dim(mydata)
 # Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 'PROFILES.0.2.profile',
 #        'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
 # Ys = c('SX_HI', 'SX_INATT', 'SX_TOTAL')
-Xs = c('PROFILES.0.3.profile')
-Ys = c('SX_HI')
+# Xs = c('PROFILES.0.3.profile')
+# Ys = c('SX_HI')
 
 nboot = 1000
 mixed = T
@@ -99,27 +101,21 @@ if (!mixed) {
 vox_list = read.table(m_file)[, 1]
 
 dir.create(dir_root, showWarnings = FALSE)
-for (x_str in Xs) {
-  dir.create(file.path(dir_root, x_str), showWarnings = FALSE)
-  X = mydata[, x_str]
-  for (y_str in Ys) {
-    dir.create(file.path(sprintf('%s/%s', dir_root, x_str), y_str), showWarnings = FALSE)
-    Y = mydata[, y_str]
-    for (m_str in vox_list) {
-      out_fname = sprintf('%s/%s/%s/%s.csv', dir_root, x_str, y_str, m_str)
-      print(out_fname)
-      # some voxels are all zeros! give them a bad result
-      if (sum(mydata[, m_str]==0) == nrow(mydata)) {
-        res_names = c('nobs', 'tot', 'tot_p', 'acme', 'acme_p', 'ade', 'ade_p', 'prop', 'prop_p',
-                   'tot_2p5ci', 'tot_97p5ci', 'acme_2p5ci', 'acme_97p5ci', 'ade_2p5ci', 'ade_97p5ci', 'prop_2p5ci', 'prop_97p5ci')
-        all_res = rep(1, length(res_names))
-        names(all_res) = res_names    
-      } else {
-        all_res = run_model4(X, mydata[, m_str], Y, nboot=nboot, data2=mydata)
-      }
-      write.csv(t(all_res), file=out_fname, row.names=F, quote=F)
-    }
+dir.create(file.path(dir_root, x_str), showWarnings = FALSE)
+X = mydata[, x_str]
+dir.create(file.path(sprintf('%s/%s', dir_root, x_str), y_str), showWarnings = FALSE)
+Y = mydata[, y_str]
+for (m_str in vox_list) {
+  out_fname = sprintf('%s/%s/%s/%s.csv', dir_root, x_str, y_str, m_str)
+  print(out_fname)
+  # some voxels are all zeros! give them a bad result
+  if (sum(mydata[, m_str]==0) == nrow(mydata)) {
+    res_names = c('nobs', 'tot', 'tot_p', 'acme', 'acme_p', 'ade', 'ade_p', 'prop', 'prop_p',
+                'tot_2p5ci', 'tot_97p5ci', 'acme_2p5ci', 'acme_97p5ci', 'ade_2p5ci', 'ade_97p5ci', 'prop_2p5ci', 'prop_97p5ci')
+    all_res = rep(1, length(res_names))
+    names(all_res) = res_names    
+  } else {
+    all_res = run_model4(X, mydata[, m_str], Y, nboot=nboot, data2=mydata)
   }
+  write.csv(t(all_res), file=out_fname, row.names=F, quote=F)
 }
-
-
