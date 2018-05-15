@@ -15,15 +15,15 @@ islocal = length(args) > 5
 
 if (islocal) {
   jobid=Sys.getenv('SLURM_JOBID')
-  data_fname=sprintf('/lscratch/%s/dti_prs_05142018.csv', jobid)
-  vox_fname=sprintf('/lscratch/%s/dti_%s_voxelwise_05142018.RData', jobid, dti_mode)
-  dir_root = sprintf('/lscratch/%s/dti_voxels_%s_387_wnhaa_famID_lme_1kg9_resids',
+  data_fname=sprintf('/lscratch/%s/dti_prs_05152018.csv', jobid)
+  vox_fname=sprintf('/lscratch/%s/dti_%s_voxelwise_05152018.RData', jobid, dti_mode)
+  dir_root = sprintf('/lscratch/%s/dti_voxels_%s_352_wnhaa_famID_lme_1kg9_resids',
                     jobid, dti_mode)
 } else {
   imuser=Sys.getenv('USER')
-  data_fname=sprintf('/scratch/%s/prs/dti_prs_05142018.csv', imuser)
-  vox_fname=sprintf('/scratch/%s/prs/dti_%s_voxelwise_05142018.RData', imuser, dti_mode)
-  dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_387_wnhaa_famID_lme_1kg9_resids',
+  data_fname=sprintf('/scratch/%s/prs/dti_prs_05152018.csv', imuser)
+  vox_fname=sprintf('/scratch/%s/prs/dti_%s_voxelwise_05152018.RData', imuser, dti_mode)
+  dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_352_wnhaa_famID_lme_1kg9_resids',
                     imuser, dti_mode)
 }
 
