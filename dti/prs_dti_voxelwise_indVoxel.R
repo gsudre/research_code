@@ -39,7 +39,7 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
                         Y = Y,
                         M = scale(M[!idx]),
                         FAMID = data2[!idx,]$famID,
-                        age= data2[!idx,]$AGE_CLIN,
+                        age= data2[!idx,]$age_at_scan,
                         sex = data2[!idx,]$Sex,
                         motion = data2[!idx,]$motion)
   
