@@ -3,9 +3,9 @@
 imuser=Sys.getenv('USER')
 args <- commandArgs(trailingOnly = TRUE)
 
-mydata<-read.csv(sprintf('/scratch/%s/prs/dti_prs_05092018.csv', imuser))
+mydata<-read.csv(sprintf('/scratch/%s/prs/dti_prs_05142018.csv', imuser))
 
-load(sprintf('/scratch/%s/prs/dti_%s_voxelwise_05092018.RData', imuser, args[2]))
+load(sprintf('/scratch/%s/prs/dti_%s_voxelwise_05142018.RData', imuser, args[2]))
 
 dim(mydata)
 dim(m)
@@ -22,7 +22,7 @@ Ys = c('SX_HI', 'SX_inatt', 'SX_total')
 
 nboot = 1000
 mixed = T
-dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_387_wnhaa_famID_lme_1kg9_cov_ageClinPlusSex',
+dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_387_wnhaa_famID_lme_1kg9_residuals',
                     imuser, args[2])
 
 # no need to change anything below here. The functions remove NAs and zscore variables on their own
@@ -45,8 +45,8 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
   
   if (!is.na(run_data[1,]$FAMID)) {
     library(lme4)
-    fm = as.formula('M ~ X + age + sex + (1|FAMID)')
-    fy = as.formula('Y ~ X + M + age + sex + (1|FAMID)')
+    fm = as.formula('M ~ X + (1|FAMID)')
+    fy = as.formula('Y ~ X + M + (1|FAMID)')
     model.M <- lmer(fm, data=run_data)
     if (imdiscrete) {
       model.Y <- glmer(fy, data=run_data, family=binomial(link='logit'))
@@ -55,8 +55,8 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
     }
     results <- mediate(model.M, model.Y, treat='X', mediator='M', boot=F, sims=nboot)
   } else {
-    fm = as.formula('M ~ X + age + sex')
-    fy = as.formula('Y ~ X + M + age + sex')
+    fm = as.formula('M ~ X')
+    fy = as.formula('Y ~ X + M')
     model.M <- lm(fm, data=run_data)
     if (imdiscrete) {
       model.Y <- glm(fy, data=run_data, family=binomial(link='logit'))
