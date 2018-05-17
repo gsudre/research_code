@@ -24,14 +24,13 @@ load(voxel_fname)
 cnames = sapply(1:163842, function(x) sprintf('v%06d', x))
 colnames(data) = cnames
 
-maskid = read.table(maskid_fname)[,1]
-data = cbind(maskid, data)
+Mask.ID = read.table(maskid_fname)[,1]
+data = cbind(Mask.ID, data)
 
 
 dim(mydata)
 dim(data)
-mydata = merge(mydata, data, by='maskid')
-mydata$SX_TOTAL = mydata$SX_INATT + mydata$SX_HI
+mydata = merge(mydata, data, by='Mask.ID')
 dim(mydata)
 
 # choosing mediators
@@ -52,8 +51,8 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
   run_data = data.frame(X = scale(X[!idx]),
                         Y = Y,
                         M = scale(M[!idx]),
-                        FAMID = data2[!idx,]$extendedFamID,
-                        age= data2[!idx,]$AGE_CLIN,
+                        FAMID = data2[!idx,]$famID,
+                        age= data2[!idx,]$age_at_scan,
                         sex = data2[!idx,]$Sex)
   
   if (!is.na(run_data[1,]$FAMID)) {
