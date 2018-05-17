@@ -57,7 +57,7 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
   
   if (!is.na(run_data[1,]$FAMID)) {
     library(lme4)
-    fm = as.formula('M ~ X + age(1|FAMID)')
+    fm = as.formula('M ~ X + (1|FAMID)')
     fy = as.formula('Y ~ X + M + (1|FAMID)')
     model.M <- lmer(fm, data=run_data)
     if (imdiscrete) {
