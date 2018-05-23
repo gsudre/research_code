@@ -3,7 +3,7 @@
 imuser=Sys.getenv('USER')
 args <- commandArgs(trailingOnly = TRUE)
 
-mydata<-read.csv(sprintf('/scratch/%s/prs/dti_prs_05152018.csv', imuser))
+mydata<-read.csv(sprintf('/scratch/%s/prs/dti_prs_05232018.csv', imuser))
 
 load(sprintf('/scratch/%s/prs/dti_%s_voxelwise_05152018.RData', imuser, args[2]))
 
@@ -18,11 +18,11 @@ dim(mydata)
 m_str = args[1]
 Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 'PROFILES.0.2.profile',
        'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
-Ys = c('SX_HI', 'SX_inatt', 'SX_total')
+Ys = c('SX_HI_checked', 'SX_inatt_checked', 'SX_total_checked')
 
 nboot = 1000
 mixed = T
-dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_352_wnhaa_famID_lme_1kg9_residuals',
+dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_352_wnhaa_famID_lme_1kg9_residuals_checked',
                     imuser, args[2])
 
 # no need to change anything below here. The functions remove NAs and zscore variables on their own

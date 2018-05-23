@@ -1,5 +1,8 @@
 # TODO:
 # - incorporate SX from old papers
+# - grab medication field
+# - add assumed symptoms (for NVs)
+# - check that we don't have any duplicate MRN-date combinations
 
 library(gdata)
 
