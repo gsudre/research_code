@@ -5,7 +5,7 @@ x=$3
 y=$4
 
 cd /lscratch/${SLURM_JOBID}
-cp /scratch/${USER}/prs/dti_prs_05152018.csv .
+cp /scratch/${USER}/prs/dti_prs_05232018.csv .
 cp /scratch/${USER}/prs/dti_${dti_mode}_voxelwise_05152018.RData .
 cp /scratch/${USER}/prs/mean_352_fa_skeleton_mask.nii.gz .
 for i in {1..12301}; do 
