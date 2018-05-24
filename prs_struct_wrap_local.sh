@@ -9,9 +9,9 @@ cd /lscratch/$SLURM_JOBID
 # for i in {1..163842}; do v=`printf v%06d $i`; echo $v >> voxel_list.txt; done
 cp /data/${USER}/prs/voxel_list_struct.txt ./voxel_list.txt
 
-cp /scratch/${USER}/prs/structSE2_prs_05042018.csv .
-cp /scratch/${USER}/prs/struct355.txt .
-cp /scratch/${USER}/prs/${hemi}.volume_residuals_355.10.gzip .
+cp /scratch/${USER}/prs/struct_prs_05232018.csv .
+cp /scratch/${USER}/prs/struct301.txt .
+cp /scratch/${USER}/prs/${hemi}.volume_residuals_301.10.gzip .
 split -l 2926 voxel_list.txt  # adapted to 56 cores!
 
 for f in `ls x*`; do
@@ -43,6 +43,6 @@ write.table(1-a,file="ade_pvals.txt",row.names=F,col.names=F)' >> /lscratch/${SL
 Rscript --vanilla /lscratch/${SLURM_JOBID}/myscript.R
 
 # combine and copy everything
-tar -zcvf struct_voxels_355_residuals_${hemi}_${x}_${y}.tar.gz *pvals* *betas*;
+tar -zcvf struct_voxels_301_residuals_${hemi}_${x}_${y}.tar.gz *pvals* *betas*;
 
-cp struct_voxels_355_residuals_${hemi}_${x}_${y}.tar.gz /scratch/${USER}/prs/
+cp struct_voxels_301_residuals_${hemi}_${x}_${y}.tar.gz /scratch/${USER}/prs/
