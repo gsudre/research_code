@@ -12,7 +12,7 @@ cp /data/${USER}/prs/voxel_list_struct.txt ./voxel_list.txt
 
 cp /scratch/${USER}/prs/struct_prs_05232018.csv .
 cp /scratch/${USER}/prs/struct301.txt .
-cp /scratch/${USER}/prs/${hemi}.volume_residuals_301.10.gzip .
+cp /scratch/${USER}/prs/${hemi}.thickness_residuals_301.10.gzip .
 split -l 5121 voxel_list.txt  # adapted to 32 cores!
 
 for f in `ls x*`; do

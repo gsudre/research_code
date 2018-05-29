@@ -13,8 +13,8 @@ if (local=='lscratch') {
 
 gf_fname = sprintf('%s/struct_prs_05232018.csv', local)
 maskid_fname = sprintf('%s/struct301.txt', local)
-voxel_fname = sprintf('%s/%s.volume_residuals_301.10.gzip', local, hemi)
-dir_root = sprintf('%s/struct_voxels_volume_%s_301_wnh_famID_lme_1kg9_residuals_checked', local, hemi)
+voxel_fname = sprintf('%s/%s.thickness_residuals_301.10.gzip', local, hemi)
+dir_root = sprintf('%s/struct_voxels_thickness_%s_301_wnh_famID_lme_1kg9_residuals_checked', local, hemi)
 
 mydata<-read.csv(gf_fname)
 
