@@ -143,8 +143,11 @@ x = as.character(sx$DOA)
 idx = grepl('-', x)
 new_date = vector(length=length(sx$DOA))
 new_date[idx] = format(as.Date(x[idx], format='%Y-%m-%d'), format='%m/%d/%Y')
-idx = grepl('/', x)
+idx = grepl('/', x) & lapply(x, nchar) < 10
 new_date[idx] = format(as.Date(x[idx], format='%m/%d/%y'), format='%m/%d/%Y')
+# the remaining ones are already %m/%d/%Y
+idx = grepl('/', x) & lapply(x, nchar) == 10
+new_date[idx] = x[idx]
 sx$DOA = new_date
 
 # report errors
