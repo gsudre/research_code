@@ -1,5 +1,4 @@
 # TODO:
-# - incorporate SX from old papers
 # - grab medication field
 # - add assumed symptoms (for NVs)
 # - check that we don't have any duplicate MRN-date combinations
@@ -8,12 +7,13 @@ library(gdata)
 
 dir_name = '/Volumes/Shaw/Clinical_Interviews/'
 caadid_fname = sprintf('%s/CAADID data 5-21-18.xlsx', dir_name)
-nv_fname = sprintf('%s/nv_interviews_051518.xlsx', dir_name)
-dica_fname = sprintf('%s/DICA 5-21-18.xlsx', dir_name)
+nv_fname = sprintf('%s/nv_interviews_053018.xlsx', dir_name)
+dica_fname = sprintf('%s/DICA 5-30-18.xlsx', dir_name)
 caadidS_fname = sprintf('%s/Simplex/CAADID data simplex.xlsx', dir_name)
 nvS_fname = sprintf('%s/Simplex/nv_interviews_simplex.xlsx', dir_name)
 dicaS_fname = sprintf('%s/Simplex/DICA simplex.xlsx', dir_name)
 family_fname = '/Volumes/Shaw/Family Study List/Family Study List 5-21-18.xlsx'
+papers_fname = sprintf('%s/sx_from_papers.xlsx', dir_name)
 
 # cleaning up CAADID
 print(caadid_fname)
@@ -120,6 +120,17 @@ family$other_dx = do.call(paste, df[, other_dx])
 idx = family$DOA=='' | family$SX_inatt=='' | family$SX_hi==''
 family = family[!idx, ]
 sx = rbind(sx, family)
+
+# cleaning up data from papers
+print(papers_fname)
+df = read.xls(papers_fname, sheet = 1, header = TRUE, colClasses='character')  # bypassing some weird error in conversion
+print(sprintf('Found %d records.', nrow(df)))
+papers = df[, c('MRN', 'date_of_scan', 'inatt', 'hi')]
+colnames(papers) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi')
+papers$source = 'OldPapers'
+other_dx = c("med")
+papers$other_dx = df[, other_dx]
+sx = rbind(sx, papers)
 
 sx_bk = sx
 
