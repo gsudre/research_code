@@ -3,7 +3,7 @@
 imuser=Sys.getenv('USER')
 args <- commandArgs(trailingOnly = TRUE)
 
-mydata<-read.csv(sprintf('/scratch/%s/prs/dti_prs_05232018.csv', imuser))
+mydata<-read.csv(sprintf('/scratch/%s/prs/dti_prs_06122018.csv', imuser))
 
 load(sprintf('/scratch/%s/prs/dti_%s_voxelwise_05152018.RData', imuser, args[2]))
 
