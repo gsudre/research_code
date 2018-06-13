@@ -9,7 +9,7 @@ cd /lscratch/$SLURM_JOBID
 # for i in {1..163842}; do v=`printf v%06d $i`; echo $v >> voxel_list.txt; done
 cp /data/${USER}/prs/voxel_list_struct.txt ./voxel_list.txt
 
-cp /scratch/${USER}/prs/struct_prs_05232018.csv .
+cp /scratch/${USER}/prs/struct_prs_06122018.csv .
 cp /scratch/${USER}/prs/struct301.txt .
 cp /scratch/${USER}/prs/${hemi}.thickness_residuals_301.10.gzip .
 split -l 2926 voxel_list.txt  # adapted to 56 cores!
