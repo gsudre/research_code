@@ -61,7 +61,7 @@ for (r in 1:nrow(nv1)) {
 sink('~/Documents/nv_consistency_check_06112018.txt')
 
 # do the same as above, but the seed file keeps changing
-mydir = '~/tmp/2016' #8/philip'
+mydir = '~/tmp/2018_philip' #8/philip'
 fnames = dir(path=mydir)
 for (f in 1:(length(fnames)-1)) {
   seed_fname = sprintf('%s/%s', mydir, fnames[f])
@@ -69,8 +69,8 @@ for (f in 1:(length(fnames)-1)) {
   
   print(sprintf('Comparing %s and %s', seed_fname, fname))
   
-  df_seed = read.xls(seed_fname, sheet = 1, header = TRUE, colClasses='character')
-  df = read.xls(fname, sheet = 1, header = TRUE, colClasses='character')
+  df_seed = read.xls(seed_fname, sheet = 'philip_recode', header = TRUE, colClasses='character')
+  df = read.xls(fname, sheet = 'philip_recode', header = TRUE, colClasses='character')
   
   nv1 = df_seed[, c('Medical.Record...MRN...Subjects', 'record.date.collected...NV.Interview',
                'inattention.symptoms', 'HI.symptoms')]
@@ -126,15 +126,15 @@ for (f in 1:(length(fnames)-1)) {
 
 
 # same as above, but for 2 files
-fnames = c('~/tmp/2016//nv_interviews_070716.xlsx', '~/tmp/2016//nv_interviews_120816.xlsx')
+fnames = c('~/tmp/2018_philip/nv_interviews_042018.xlsx', '~/tmp/2018_philip/nv_interviews_050818.xlsx')
 for (f in 1:(length(fnames)-1)) {
   seed_fname = sprintf('%s', fnames[f])
   fname = sprintf('%s', fnames[f + 1])
   
   print(sprintf('Comparing %s and %s', seed_fname, fname))
   
-  df_seed = read.xls(seed_fname, sheet = 1, header = TRUE, colClasses='character')
-  df = read.xls(fname, sheet = 1, header = TRUE, colClasses='character')
+  df_seed = read.xls(seed_fname, sheet = 'philip_recode', header = TRUE, colClasses='character')
+  df = read.xls(fname, sheet = 'philip_recode', header = TRUE, colClasses='character')
   
   nv1 = df_seed[, c('Medical.Record...MRN...Subjects', 'record.date.collected...NV.Interview',
                     'inattention.symptoms', 'HI.symptoms')]

@@ -2,13 +2,14 @@
 # - grab medication field
 # - add assumed symptoms (for NVs)
 # - check that we don't have any duplicate MRN-date combinations
+# - add a flag saying whether the subject has a on medication entry along with off
 
 library(gdata)
 
 dir_name = '/Volumes/Shaw/Clinical_Interviews/'
-caadid_fname = sprintf('%s/CAADID data 6-4-18.xlsx', dir_name)
-nv_fname = sprintf('%s/nv_interviews_060718.xlsx', dir_name)
-dica_fname = sprintf('%s/DICA 6-7-18.xlsx', dir_name)
+caadid_fname = sprintf('%s/CAADID data 6-19-18.xlsx', dir_name)
+nv_fname = sprintf('%s/nv_interviews_20180619.xlsx', dir_name)
+dica_fname = sprintf('%s/DICA 6-19-18.xlsx', dir_name)
 caadidS_fname = sprintf('%s/Simplex/CAADID data simplex.xlsx', dir_name)
 nvS_fname = sprintf('%s/Simplex/nv_interviews_simplex.xlsx', dir_name)
 dicaS_fname = sprintf('%s/Simplex/DICA simplex.xlsx', dir_name)

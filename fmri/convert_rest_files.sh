@@ -1,7 +1,7 @@
 # Convert raw DICOMs to HEAD and BRIK, structural and functional
 maskids=$1
 out_file=$2
-net_dir=/mnt/shaw/
+net_dir=$3
 while read m; do
 	echo $m
 	# only continue if we don't have an afni folder already, or if there is a
