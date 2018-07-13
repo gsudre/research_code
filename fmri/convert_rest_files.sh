@@ -23,15 +23,14 @@ while read m; do
 		cnt=1
 		while read d; do
 			grep rest $net_dir/data_by_maskID/${m}/${d}/*README* > ~/tmp/rest;
+			awk '{for(i=1;i<=NF;i++) {if ($i ~ /Series/) print $i}}' ~/tmp/rest | sed "s/Series://g" > ~/tmp/rest_clean
 			# for each rest line
 			while read line; do
-				stringarray=($(echo $line | tr "," "\n"));
-				mr=($(echo ${stringarray[2]} | tr ":" "\n"));
-				mr_dir=${mr[1]};
+				mr_dir=`echo $line | sed "s/,//g"`;
 				Dimon -infile_prefix "../${d}/${mr_dir}/*.dcm" \
 					-gert_to3d_prefix rest${cnt} -gert_create_dataset
 				let cnt=$cnt+1;
-			done < ~/tmp/rest;
+			done < ~/tmp/rest_clean;
 		done < ~/tmp/date_dirs;
 
 		# spit out how many files we converted
