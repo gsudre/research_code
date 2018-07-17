@@ -1,12 +1,14 @@
+# Reproducing the analysis outlined in He, Chen, Evans - 2008 - Structural insights into aberrant topological patterns of large-scale cortical networks in Alzheimer's disease
+#
+# GS, 07/2018, revising version from 10/2013
+#
+
 gf1_fname = '~/tmp/gf_low_roi.csv'
 gf2_fname = '~/tmp/gf_high_roi.csv'
 
-gf1 = read.csv(gf1_fname)
-gf2 = read.csv(gf2_fname)
+data1 = read.csv(gf1_fname)[,2:57]
+data2 = read.csv(gf2_fname)[,2:57]
 
-library(ppcor)
-corr1 = abs(pcor(gf1))
-corr2 = abs(pcor(gf2))
 gtitle1 = 'Low'
 gtitle2 = 'High'
 
@@ -14,12 +16,19 @@ gtitle2 = 'High'
 delta = F
 # data3 = pmatl
 # data4 = rmatl
-sparsity = seq(.06,.4,.02)
+sparsity = seq(.06,.2,.02)
 
 # permutations for lambda and gamma
-num_perms = 100
+num_perms = 10
 # permutations for statistics
 nperms = 50
+
+
+
+
+library(ppcor)
+corr1 = pcor(data1)$estimate
+corr2 = pcor(data2)$estimate
 
 library(igraph)
 createNetwork <- function(data, sparsity) {
@@ -233,6 +242,7 @@ for (s in sparsity) {
     gamma2[cnt] = getGamma(net2)
     cnt = cnt + 1
 }
+dev.new()
 maxY = max(ceiling(max(gamma1,na.rm=T)),ceiling(max(gamma2,na.rm=T)))
 par(mfrow=c(1,2))
 plot(sparsity, lambda1, type="l", col='black', ylim=c(0, maxY), lwd=2)
@@ -271,6 +281,7 @@ for (s in sparsity) {
 }
 diff_cc = cc1-cc2
 maxY = max(max(cc2),max(cc1))
+dev.new()
 par(mfrow=c(1,2))
 plot(sparsity, cc1, type="l", col='black', ylab='Cp', ylim=c(0, maxY), lwd=2)
 lines(sparsity, cc2, type="l", col='grey', lwd=2)
@@ -307,6 +318,7 @@ for (s in sparsity) {
 }
 diff_apl = apl1-apl2
 maxY = max(max(apl2),max(apl1))
+dev.new()
 par(mfrow=c(1,2))
 plot(sparsity, apl1, type="l", col='black', ylab='Cp', ylim=c(0, maxY), lwd=2)
 lines(sparsity, apl2, type="l", col='grey', lwd=2)
@@ -322,6 +334,7 @@ title('Difference')
 
 #### Figure 4 ####
 library(MESS)
+dev.new()
 par(mfrow=c(1,2))
 y = auc(sparsity,nullcc)
 x = 0
@@ -390,6 +403,7 @@ for (s in sparsity) {
     max2[cnt] = max(clusters(createNetwork(corr2, s))$csize)
     cnt = cnt + 1
 }
+dev.new()
 plot(sparsity,max1,type='l',lwd=2,col='black',ylim=c(5,dim(corr1)[1]+2),ylab='Size of largest component')
 lines(sparsity,max2,type='l',lwd=2,col='grey')
 legend('bottomright', c(gtitle1, gtitle2), col=c('black','grey'), lwd=2)
@@ -413,6 +427,7 @@ if (delta) {
 x = seq(1,dim(corr1)[2])
 maxY = max(max(res$uci),max(diff_bt))
 minY = min(min(res$lci),min(diff_bt))
+dev.new()
 plot(x, res$m, ylim=c(minY, maxY),ylab='Diff Betweenness',xaxt='n',xlab='')
 axis(1, at=x, lab=colnames(corr1), las=2)
 arrows(x, res$uci, x, res$lci, angle=90, code=3, length=.1)
