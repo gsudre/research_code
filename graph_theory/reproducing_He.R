@@ -1,15 +1,25 @@
-# need to run on of the dissiimlarity scripts first to make data matrices
-corr1 = pcorDelta
-corr2 = rcorDelta
-# data1 = pmatb
-# data2 = rmatb
-gtitle1 = 'Persistent'
-gtitle2 = 'Remission'
+gf1_fname = '~/tmp/gf_low_roi.csv'
+gf2_fname = '~/tmp/gf_high_roi.csv'
+
+gf1 = read.csv(gf1_fname)
+gf2 = read.csv(gf2_fname)
+
+library(ppcor)
+corr1 = abs(pcor(gf1))
+corr2 = abs(pcor(gf2))
+gtitle1 = 'Low'
+gtitle2 = 'High'
+
 # when delta==T, data1=G1B, data2=G2B, data3=G1L, data4=G2L, so that delta1=data3-data1
-# delta = T
+delta = F
 # data3 = pmatl
 # data4 = rmatl
 sparsity = seq(.06,.4,.02)
+
+# permutations for lambda and gamma
+num_perms = 100
+# permutations for statistics
+nperms = 50
 
 library(igraph)
 createNetwork <- function(data, sparsity) {
@@ -30,7 +40,6 @@ createNetwork <- function(data, sparsity) {
 }
 
 getGamma <- function(net) {
-    num_perms = 100
     d = mean(degree(net))
     # degree needs to be even, so get the closest even number to the degree
     if (floor(d) %% 2 == 0) {
@@ -49,7 +58,6 @@ getGamma <- function(net) {
 }
 
 getLambda <- function(mynet) {
-    num_perms = 100
     d = mean(degree(mynet))
     # degree needs to be even, so get the closest even number to the degree
     if (floor(d) %% 2 == 0) {
@@ -69,7 +77,6 @@ getLambda <- function(mynet) {
 
 permuteMetric <- function(data1, data2, sparsity, fun) 
 {
-    nperms = 1000
     ds <- vector(mode = "numeric", length = nperms) 
     all_data = rbind(data1, data2)
     n1 = dim(data1)[1]
@@ -92,7 +99,6 @@ permuteMetric <- function(data1, data2, sparsity, fun)
 
 permuteDeltaMetric <- function(data1B, data2B, data1L, data2L, sparsity, fun) 
 {
-    nperms = 1000
     ds <- vector(mode = "numeric", length = nperms) 
     all_dataB = rbind(data1B, data2B)
     all_dataL = rbind(data1L, data2L)
@@ -123,7 +129,6 @@ permuteDeltaMetric <- function(data1B, data2B, data1L, data2L, sparsity, fun)
 
 permuteBetweeness <- function(data1, data2, sparsity) 
 {
-    nperms = 1000
     nrois = dim(data1)[2]
     ds <- matrix(nrow=nperms,ncol=nrois)
     all_data = rbind(data1, data2)
@@ -157,7 +162,6 @@ permuteBetweeness <- function(data1, data2, sparsity)
 
 permuteDeltaBetweeness <- function(data1B, data2B, data1L, data2L, sparsity) 
 {
-    nperms = 1000
     nrois = dim(data1)[2]
     ds <- matrix(nrow=nperms,ncol=nrois) 
     all_dataB = rbind(data1B, data2B)
