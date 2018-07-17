@@ -1,14 +1,14 @@
 # need to run on of the dissiimlarity scripts first to make data matrices
 corr1 = pcorDelta
 corr2 = rcorDelta
-data1 = pmatb
-data2 = rmatb
+# data1 = pmatb
+# data2 = rmatb
 gtitle1 = 'Persistent'
 gtitle2 = 'Remission'
 # when delta==T, data1=G1B, data2=G2B, data3=G1L, data4=G2L, so that delta1=data3-data1
-delta = T
-data3 = pmatl
-data4 = rmatl
+# delta = T
+# data3 = pmatl
+# data4 = rmatl
 sparsity = seq(.06,.4,.02)
 
 library(igraph)
