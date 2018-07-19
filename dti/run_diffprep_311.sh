@@ -12,6 +12,7 @@ template_dir=/data/${USER}/fatcat_proc_mni_ref/
 # grab bval from a random .dcm. Assumes it's constant for all volumes
 dcm_file=`ls -1 ${top_dir}/${m}/edti/*/*100.dcm | head -1`;
 dcm_tag=`dicom_hdr $dcm_file | grep "0043 1039"`
+echo $dcm_tag
 bval=`echo $dcm_tag | awk '{print $NF}' | sed "s/\/\///g" | awk 'BEGIN {FS="\\"}; {print $1}'`
 
 echo $bval
