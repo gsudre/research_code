@@ -1,26 +1,32 @@
 # Runs FATCAT using ROI labels from Freesurfer pipeline
 
+# where all subject directories reside
 data_dir=$1
-out_dir=$2
-subj=$3
+subj=$2
 
-mkdir ${out_dir}/${subj};
-cd ${out_dir}/${subj};
+mkdir ${data_dir}/${subj}/fatcat;
+cd ${data_dir}/${subj}/fatcat;
 
-# Guess the axis flip to use (it's likely not be necessary, as the DWI should come out correctly from TORTOISE)
-\@GradFlipTest -in_dwi ${data_dir}/${subj}/DWI.nii \
-    -in_col_matA ${data_dir}/${subj}/BMTXT_AFNI.txt \
-    -prefix GradFlipTest_rec.txt \
-    -mask ${data_dir}/${subj}/MASK.nii;
+proc_dir=${data_dir}/${subj}/diffprep311_proc/
+
+if [ -e ${proc_dir}/diffprep311_DMC_DR.nii ]; then
+    dwi_root=diffprep311_DMC_DR;
+else
+    dwi_root=diffprep311_DMC;
+fi
+
+# Guess the axis flip to use
+\@GradFlipTest -in_dwi ${proc_dir}/${dwi_root}.nii \
+    -in_col_matT ${proc_dir}/${dwi_root}.bmtxt \
+    -prefix GradFlipTest_rec.txt;
 
 # for the actual tract estimation using uncertainties:
 myflip=`cat GradFlipTest_rec.txt`;
-fat_proc_dwi_to_dt -in_dwi ${data_dir}/${subj}/DWI.nii \
-    -in_col_matA ${data_dir}/${subj}/BMTXT_AFNI.txt \
+fat_proc_dwi_to_dt -in_dwi -in_dwi ${proc_dir}/${dwi_root}.nii \
+    -in_col_matT ${proc_dir}/${dwi_root}.bmtxt \
     -prefix dwi \
-    -mask ${data_dir}/${subj}/MASK.nii \
-    -in_struc_res ${data_dir}/${subj}/edti_DMCstructural.nii \
-    -in_ref_orig ${data_dir}/${subj}/edti_DMCtemplate.nii $myflip;
+    -in_struc_res ${proc_dir}/${dwi_root}structural.nii \
+    -in_ref_orig ${proc_dir}/t2w.nii -mask_from_struc $myflip;
 
 # for further QC of the results:
 fat_proc_decmap                                     \
@@ -37,7 +43,7 @@ fat_proc_map_to_dti                                                \
     -followers_surf  $suma_dir/std.141.*.gii         \
     -followers_ndset $suma_dir/std.141.*.niml.dset   \
     -followers_spec  $suma_dir/std.141.*.spec        \
-    -base            ${data_dir}/${subj}/DWI.nii'[0]'         \
+    -base            ${proc_dir}/${dwi_root}.nii'[0]'         \
     -prefix          fs
 
 # selecting our ROIs:
