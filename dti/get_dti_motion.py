@@ -45,7 +45,7 @@ for line in fid:
             removed_str = ';'.join(['%d' % d for d in list(removed)])
             # AFNI takes keep_str as 0 based!
             keep_str = ';'.join(['%d' % (d-1) for d in good])
-            subj_movement.append([maskid] + list(mean_mvmt) +
+            subj_movement.append(['%04d' % maskid] + list(mean_mvmt) +
                                 [translation, rotation, nvolumes,
                                 len(good), len(removed), removed_str, keep_str])
         else:

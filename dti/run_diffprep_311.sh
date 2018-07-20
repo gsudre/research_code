@@ -6,7 +6,9 @@
 # shouldn't be necessary
 top_dir=$1;
 m=$2;
-
+# this has to be a csv file of maskid and the entire AFNI string, already 0-based
+# and separated by ;, which will then be converted to ,
+keep_volumes=$3;
 template_dir=/data/${USER}/fatcat_proc_mni_ref/
 
 # grab bval from a random .dcm. Assumes it's constant for all volumes
@@ -49,4 +51,16 @@ DIFFPREP -i ${top_dir}/${m}/diffprep311_proc/diffprep311.list \
     --structural ${top_dir}/${m}/diffprep311_proc/t2w.nii \
     --reg_settings example_registration_settings.dmc --do_QC 0
 
+# Now we crop out the bad volumes (if any) identified in previous analysis
+vol_str=`grep $m $keep_volumes | sed "s/;/,/g" | sed "s/${m},//g"`;
 
+if [ ${#vol_str} -ge 2 ]; then
+    echo "Removing bad volumes..."
+    fat_proc_filter_dwis                                 \
+        -in_dwi        ${top_dir}/${m}/diffprep311_proc/diffprep311_DMC.nii     \
+        -in_col_matT   ${top_dir}/${m}/diffprep311_proc/diffprep311_DMC.bmtxt    \
+        -select        "$vol_str"        -no_qc_view           \
+        -prefix        ${top_dir}/${m}/diffprep311_proc/diffprep311_DMC_DR
+else
+    echo "No volumes to be removed found for $m"
+fi
