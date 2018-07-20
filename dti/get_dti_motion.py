@@ -26,23 +26,30 @@ for line in fid:
         nvolumes = data.shape[0]
         # look for the path to all slices
         path_file = glob.glob(path % maskid + '/*DMC*_R1.path')
-        slices = np.recfromtxt(path_file[-1])
-        # we only need to look at the first directory to figure out what
-        # slices are missing. It's repeated across directories
-        good = [int(sl.split('.')[-1]) for sl in slices
-                if sl.find('SL0001') > 0]
-        # matrices are zero-based
-        good_idx = np.array(good) - 1
-        removed = np.setdiff1d(np.arange(1, nvolumes), good)
-        print 'Good slices: %d/%d, Removed:' % (len(good),
-                                                nvolumes), list(removed)
-        mean_mvmt = np.mean(np.abs(data[good_idx, :6]), axis=0)
-        translation = np.sqrt(np.sum(mean_mvmt[:3]**2))
-        rotation = np.sqrt(np.sum(mean_mvmt[3:]**2))
-        removed_str = ';'.join(['%d' % d for d in list(removed)])
-        subj_movement.append([maskid] + list(mean_mvmt) +
-                             [translation, rotation, nvolumes,
-                              len(good), len(removed), removed_str])
+        if len(path_file) > 0:
+            slices = np.recfromtxt(path_file[-1])
+            # we only need to look at the first directory to figure out what
+            # slices are missing. It's repeated across directories
+            good = [int(sl.split('.')[-1]) for sl in slices
+                    if sl.find('SL0001') > 0]
+            # the .path file stores all volumes used for each slice in 1-base
+            # matrices are zero-based
+            good_idx = np.array(good) - 1
+            removed = np.setdiff1d(np.arange(1, nvolumes), good)
+            print 'Good slices: %d/%d, Removed:' % (len(good),
+                                                    nvolumes), list(removed)
+            mean_mvmt = np.mean(np.abs(data[good_idx, :6]), axis=0)
+            translation = np.sqrt(np.sum(mean_mvmt[:3]**2))
+            rotation = np.sqrt(np.sum(mean_mvmt[3:]**2))
+            # 1-based list of volumes removed
+            removed_str = ';'.join(['%d' % d for d in list(removed)])
+            # AFNI takes keep_str as 0 based!
+            keep_str = ';'.join(['%d' % (d-1) for d in good])
+            subj_movement.append([maskid] + list(mean_mvmt) +
+                                [translation, rotation, nvolumes,
+                                len(good), len(removed), removed_str, keep_str])
+        else:
+            print '\nWARNING: Did not find R1 .path file for', maskid, '\n'
     else:
         print '\nWARNING: Did not find transformation file for', maskid, '\n'
     if len(trans_file) > 1:
@@ -50,7 +57,7 @@ for line in fid:
 
 table = [['mask id', 'meanX trans', 'meanY trans', 'meanZ trans',
           'meanX rot', 'meanY rot', 'meanZ rot', 'norm trans', 'norm rot',
-          'numVolumes', 'goodSlices', 'missingSlices', 'removedSlices']]
+          'numVolumes', 'goodVolumes', 'missingVolumes', 'removedVolumes', 'keepVolumes']]
 table = table + subj_movement
 fout = open(home + '/tmp/mean_dti_movement.csv', 'w')
 wr = csv.writer(fout)
