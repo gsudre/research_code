@@ -21,8 +21,11 @@ if [ -e ${top_dir}/${m}/edti/cdiflistOriginalAndReplayedCombined ]; then
 	gradient_file=${top_dir}/${m}/edti/cdiflistOriginalAndReplayedCombined;
 elif [ -e ${top_dir}/${m}/edti/cdiflist09 ]; then
 	gradient_file=${top_dir}/${m}/edti/cdiflist09;
-else
+elif [ -e ${top_dir}/${m}/edti/cdiflist08 ]; then
 	gradient_file=${top_dir}/${m}/edti/cdiflisl08;
+else
+	echo 'Could not find any gradient file!';
+	exit 1;
 fi
 
 echo Using $gradient_file
@@ -37,6 +40,9 @@ fat_proc_axialize_anat -inset ${top_dir}/${m}/edti/t2_struc.nii \
     -refset ${template_dir}/mni_icbm152_t2_relx_tal_nlin_sym_09a_ACPCE.nii.gz \
     -extra_al_wtmask ${template_dir}/mni_icbm152_t2_relx_tal_nlin_sym_09a_ACPCE_wtell.nii.gz \
     -out_match_ref;
+
+cd ${top_dir}/${m}/diffprep311_proc;
+gunzip t2w.nii.gz;
 
 DIFFPREP -i ${top_dir}/${m}/diffprep311_proc/diffprep311.list \
     --structural ${top_dir}/${m}/diffprep311_proc/t2w.nii \
