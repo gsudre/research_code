@@ -4,7 +4,7 @@ subj=$1
 
 # subj_dir=/mnt/shaw/data_by_maskID/$subj/afni
 # freesurfer_dir=/mnt/shaw/freesurfer5.3_subjects/$subj
-subj_dir=/scratch/sudregp/$subj
+subj_dir=/scratch/sudregp/rsfmri/$subj
 freesurfer_dir=~/data/MEG_structural/freesurfer/$subj
 SUMA_dir=~/data/MEG_structural/freesurfer/$subj/SUMA
 
