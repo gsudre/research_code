@@ -22,10 +22,10 @@ fi
 
 # for the actual tract estimation using uncertainties:
 myflip=`cat GradFlipTest_rec.txt`;
-fat_proc_dwi_to_dt -in_dwi -in_dwi ${proc_dir}/${dwi_root}.nii \
+fat_proc_dwi_to_dt -in_dwi ${proc_dir}/${dwi_root}.nii \
     -in_col_matT ${proc_dir}/${dwi_root}.bmtxt \
     -prefix dwi \
-    -in_struc_res ${proc_dir}/${dwi_root}structural.nii \
+    -in_struc_res ${proc_dir}/${dwi_root}_structural.nii \
     -in_ref_orig ${proc_dir}/t2w.nii -mask_from_struc $myflip;
 
 # for further QC of the results:
