@@ -36,6 +36,11 @@ ImportDICOM -i ${top_dir}/${m}/edti/ \
     -o ${top_dir}/${m}/diffprep311 \
     -b $bval -g $gradient_file;
 
+if [ ! -e ${top_dir}/${m}/diffprep311_proc/diffprep311.list ]; then
+    echo 'Could not import DTI data properly! Exiting';
+	exit 1;
+fi
+
 # I think the exit code here was killing my script... just a quick hack
 junk=`fat_proc_axialize_anat -inset ${top_dir}/${m}/edti/t2_struc.nii \
     -prefix ${top_dir}/${m}/diffprep311_proc/t2w \
