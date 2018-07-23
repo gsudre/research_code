@@ -41,8 +41,13 @@ if [ ! -e ${top_dir}/${m}/diffprep311_proc/diffprep311.list ]; then
 	exit 1;
 fi
 
+# make sure the T2 is in RAI, otherwise we get issues integrating with Freesurfer
+3dresample -orient RAI -rmode NN \
+    -input ${top_dir}/${m}/edti/t2_struc.nii \
+    -prefix ${top_dir}/${m}/diffprep311_proc/t2_struc_RAI.nii;
+
 # I think the exit code here was killing my script... just a quick hack
-junk=`fat_proc_axialize_anat -inset ${top_dir}/${m}/edti/t2_struc.nii \
+junk=`fat_proc_axialize_anat -inset ${top_dir}/${m}/diffprep311_proc/t2_struc_RAI.nii \
     -prefix ${top_dir}/${m}/diffprep311_proc/t2w \
     -mode_t2w \
     -refset ${template_dir}/mni_icbm152_t2_relx_tal_nlin_sym_09a_ACPCE.nii.gz \
