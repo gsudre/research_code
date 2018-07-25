@@ -82,13 +82,12 @@ done
 # finally, do the tracking:
 gm_netw=sel_fs_aparc+aseg_REN_gm_GMI.nii.gz
 3dTrackID                             \
-    -mode MINIP                        \
+    -mode PROB                        \
     -dti_in   dt                      \
     -netrois  $gm_netw                \
     -uncert   dt_UNC.nii.gz           \
-    -prefix   o.minip                  \
+    -prefix   o.pr00                  \
     -nifti                            \
-   -mini_num 7   \
     -no_indipair_out                  \
     -dump_rois AFNI                   \
     -alg_Thresh_FA      0.2           \
@@ -96,5 +95,4 @@ gm_netw=sel_fs_aparc+aseg_REN_gm_GMI.nii.gz
     -alg_Nseed_Vox      5             \
     -alg_Nmonte      1000             \
     -echo_edu                         \
-    -logic AND    \
     -overwrite
