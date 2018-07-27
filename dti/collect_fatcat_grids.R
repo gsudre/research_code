@@ -14,16 +14,17 @@ subj_dir = '~/data/fatcat/parsed/'
 subjs = as.numeric(read.table(sprintf('%s/paul_parsed.txt', subj_dir))[,1])
 expected_rois = 87
 
+library(plyr)  # for rbind.fill
+
 data = c()
 for (s in subjs) {
   print(s)
-  subj_data = c(subj)
+  subj_data = c(s)
   # file numbers with the data matrices
   files = 4:18
   # read in the ROI labels
   titles = read.table(sprintf('%s/%04d.03', subj_dir, s),
                       stringsAsFactors=F)[1,]
-  if length(titles) == expected_rois {
     for (f in files) {
         fpath = sprintf('%s/%04d.%02d', subj_dir, s, f)
         # figure out the type of data in the matrix
@@ -43,9 +44,12 @@ for (s in subjs) {
     }
     # stack each mask id vector onto each other as rows
     names(subj_data)[1] = 'mask.id'
+  if (length(titles) == expected_rois) {
     data = rbind(data, subj_data)
 } else {
-    print(sprintf('Ignoring %02d: different number of ROIs (%d)', subj, length(titles)))
+    print(sprintf('Different number of ROIs (%d): filling missing with NA', length(titles)))
+	data = rbind.fill(as.data.frame(data), as.data.frame(t(subj_data)))
+}
 }
 # rename it so that each row is a mask id
 save(data, file=sprintf('%s/output.RData', subj_dir))
