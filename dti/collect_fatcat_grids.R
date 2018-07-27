@@ -47,6 +47,7 @@ for (s in subjs) {
   if (length(titles) == expected_rois) {
     data = rbind(data, subj_data)
 } else {
+	# this is much slower than regular bind, so we only do it when needed
     print(sprintf('Different number of ROIs (%d): filling missing with NA', length(titles)))
 	data = rbind.fill(as.data.frame(data), as.data.frame(t(subj_data)))
 }
