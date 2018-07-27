@@ -10,8 +10,8 @@
 #
 # GS 07/2018
 
-subj_dir = '~/tmp/parsed/'
-subjs = c(0677, 0584, 0447) #read.table(sprintf('%s/paul_parsed.txt', subj_dir))[,1]
+subj_dir = '~/data/fatcat/parsed/'
+subjs = as.numeric(read.table(sprintf('%s/paul_parsed.txt', subj_dir))[,1])
 data = c()
 for (s in subjs) {
   print(s)
@@ -43,3 +43,5 @@ for (s in subjs) {
 }
 # rename it so that each row is a mask id
 rownames(data) = sapply(subjs, function(x) sprintf('%04d', x))
+save(data, file=sprintf('%s/output.RData', subj_dir))
+write.csv(data, file=sprintf('%s/output.csv', subj_dir))
