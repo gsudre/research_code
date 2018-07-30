@@ -4,8 +4,8 @@
 data_dir=$1
 subj=$2
 
-mkdir ${data_dir}/${subj}/fatcat;
-cd ${data_dir}/${subj}/fatcat;
+mkdir ${data_dir}/${subj}/fatcat2;
+cd ${data_dir}/${subj}/fatcat2;
 
 proc_dir=${data_dir}/${subj}/exported/
 
@@ -21,7 +21,7 @@ fat_proc_dwi_to_dt -in_dwi ${proc_dir}/DWI.nii \
     -prefix dwi \
     -in_struc_res ${proc_dir}/edti_DMCstructural.nii \
     -in_ref_orig ${proc_dir}/edti_DMCtemplate.nii \
-    -mask ${proc_dir}/MASK.nii $myflip;
+    -mask_from_struc $myflip;
 
 # for further QC of the results:
 fat_proc_decmap                                     \
