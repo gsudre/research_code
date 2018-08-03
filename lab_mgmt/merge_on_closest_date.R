@@ -32,6 +32,10 @@ mergeOnClosestDate = function(df1, df2, my_ids, x.id='MRN', x.date='DOA', y.id='
   res_df = do.call(rbind, merged_ids)
 
   # reformat dates to be in the usual format, instead of separated by hyphens
+  if (x.date == y.date) {
+    x.date = sprintf('%s.x', x.date)
+    y.date = sprintf('%s.y', y.date)
+  }
   res_df[, eval(x.date)] = format(res_df[, eval(x.date)], format='%m/%d/%Y')
   res_df[, eval(y.date)] = format(res_df[, eval(y.date)], format='%m/%d/%Y')
   return(res_df)
@@ -57,4 +61,3 @@ mergeOnClosestAge = function(df1, df2, my_ids, x.id='MRN', x.age='age', y.id='MR
 # df3 = mergeOnClosestDate(df1, df2, my_ids, y.id='Medical.Record...MRN', y.date='record.date.collected...GAS')
 # # write out the results
 # write.csv(df3, row.names=F, file='~/tmp/merged.csv')
-
