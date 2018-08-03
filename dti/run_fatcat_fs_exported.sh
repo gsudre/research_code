@@ -4,20 +4,20 @@
 data_dir=$1
 subj=$2
 
-mkdir ${data_dir}/${subj}/fatcat2;
-cd ${data_dir}/${subj}/fatcat2;
+mkdir ${data_dir}/${subj}/fatcat;
+cd ${data_dir}/${subj}/fatcat;
 
 proc_dir=${data_dir}/${subj}/exported/
 
 # Guess the axis flip to use
-\@GradFlipTest -in_dwi ${proc_dir}/DWI.nii \
-    -in_col_matA ${proc_dir}/BMTXT_AFNI.txt \
+\@GradFlipTest -in_dwi ${proc_dir}/${subj}.nii \
+    -in_col_matT ${proc_dir}/${m}.bmtxt \
     -prefix GradFlipTest_rec.txt;
 
 # for the actual tract estimation using uncertainties:
 myflip=`cat GradFlipTest_rec.txt`;
-fat_proc_dwi_to_dt -in_dwi ${proc_dir}/DWI.nii \
-    -in_col_matA ${proc_dir}/BMTXT_AFNI.txt \
+fat_proc_dwi_to_dt -in_dwi ${proc_dir}/${subj}.nii \
+    -in_col_matT ${proc_dir}/${m}.bmtxt \
     -prefix dwi \
     -in_struc_res ${proc_dir}/edti_DMCstructural.nii \
     -in_ref_orig ${proc_dir}/edti_DMCtemplate.nii \
