@@ -9,7 +9,7 @@ library(gdata)
 dir_name = '/Volumes/Shaw/Clinical_Interviews/'
 caadid_fname = sprintf('%s/CAADID data 7-24-18.xlsx', dir_name)
 nv_fname = sprintf('%s/nv_interviews_20180730.xlsx', dir_name)
-dica_fname = sprintf('%s/DICA 7-30-18.xlsx', dir_name)
+dica_fname = sprintf('%s/DICA 4-9-18.xlsx', dir_name)
 caadidS_fname = sprintf('%s/Simplex/CAADID data simplex.xlsx', dir_name)
 nvS_fname = sprintf('%s/Simplex/nv_interviews_simplex.xlsx', dir_name)
 dicaS_fname = sprintf('%s/Simplex/DICA simplex.xlsx', dir_name)
@@ -43,12 +43,15 @@ sx = rbind(caadid, nv)
 print(dica_fname)
 df = read.xls(dica_fname, sheet = 1, header = TRUE, colClasses='character')
 print(sprintf('Found %d records.', nrow(df)))
-dica = df[, c('ID', 'Date', 'X..of.inatten', 'X..H.I', 'Comments', 'Meds')]
+dica = df[, c('ID', 'Date', 'X..of.inatten', 'X..H.I', 'Meds')]
+colnames(dica_clean) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi', 'source')
+other_dx = c("What.med", "Dose.in.mg", "Weight.in.kg", "COMMENTS", "Age.Onset", "Comments", "Name.of.Meds", "Notes")
+dica$other_dx = do.call(paste, df[, other_dx])
 # keep all entries off medication
-dica_off = dica[grepl('off', dica$Meds, ignore.case=T), 1:5]
+dica_off = dica[grepl('off', dica$Meds, ignore.case=T), 1:6]
 dica_off$source = 'DICA_off'
 # for the on meds, just keep them if there isn't an off meds entry yet
-dica_on = dica[grepl('on', dica$Meds, ignore.case=T), 1:5]
+dica_on = dica[grepl('on', dica$Meds, ignore.case=T), 1:6]
 dica_on$source = 'DICA_on'
 keep_me = c()
 for (i in 1:nrow(dica_on)) {
@@ -58,6 +61,7 @@ for (i in 1:nrow(dica_on)) {
   }
 }
 dica_clean = rbind(dica_off, dica_on[keep_me,])
+dica_clean$Meds = NULL
 print(sprintf('Cleaned to %d records.', nrow(dica_clean)))
 colnames(dica_clean) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi', 'other_dx', 'source')
 sx = rbind(sx, dica_clean)

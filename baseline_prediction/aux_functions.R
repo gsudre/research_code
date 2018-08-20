@@ -1,5 +1,5 @@
 # figure out the baseline scans. For 9 months, min_time_diff = .75
-get_baseline_scans = function(data, min_time_diff=0) {
+get_single_scans = function(data, min_time_diff=0, last_scan=F) {
     keep = vector()
     for (mrn in unique(data$MRN)) {
         idx = which(data$MRN == mrn)
@@ -8,7 +8,7 @@ get_baseline_scans = function(data, min_time_diff=0) {
             cat(sprintf('ERROR: Scans for %d are not more than %.2f apart!',
                         mrn, min_time_diff))
         }
-        keep = append(keep, idx[sort(mrn_ages, index.return=T)$ix[1]])
+        keep = append(keep, idx[sort(mrn_ages, index.return=T, decreasing = last_scan)$ix[1]])
     }
     data = data[keep,]
     return (data)
