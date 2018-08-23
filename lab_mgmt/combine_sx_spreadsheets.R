@@ -58,6 +58,9 @@ for (i in 1:nrow(dica_on)) {
   idx = dica_off$ID==dica_on[i,]$ID & dica_off$Date==dica_on[i,]$Date
   if (sum(idx) == 0) {
     keep_me = c(keep_me, i)
+  } else {
+    # mark in the dica off that we have an entry with DICA_on as well
+    dica_off[idx,]$other_dx = sprintf('hasOnMeds; %s', dica_off[idx,]$other_dx)
   }
 }
 dica_clean = rbind(dica_off, dica_on[keep_me,])
