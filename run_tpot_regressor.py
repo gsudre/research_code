@@ -1,4 +1,3 @@
-import multiprocessing
 import sys
 import pandas as pd
 import os
@@ -52,9 +51,6 @@ ypred = dummy.predict(X)
 print('CPUs:', cpus)
 print('dummy:', -metrics.mean_squared_error(y, ypred))
 
-if __name__ == '__main__':
-    multiprocessing.set_start_method('forkserver', force=True)
+tpot.fit(X, y)
 
-    tpot.fit(X, y)
-
-    tpot.export(export_fname)
+tpot.export(export_fname)

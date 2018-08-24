@@ -5,7 +5,6 @@ import numpy as np
 from tpot import TPOTClassifier
 from sklearn.dummy import DummyClassifier
 from sklearn import metrics, preprocessing
-import multiprocessing
 
 
 data_fname = sys.argv[1]
@@ -43,7 +42,6 @@ y = df[target]
 lbl = preprocessing.LabelEncoder()
 y2 = lbl.fit_transform(y)
 
-multiprocessing.set_start_method('forkserver', force=True)
 tpot = TPOTClassifier(verbosity=2,
                      config_dict=config_str, n_jobs=cpus, 
                      periodic_checkpoint_folder=home+'/data/tpot/checkpoints',
