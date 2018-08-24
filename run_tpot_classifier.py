@@ -17,7 +17,11 @@ if config_str == 'None':
 else:
     config_str = config_str.replace('_', ' ')
 export_fname = sys.argv[5]
-metric_str = sys.argv[6]
+if sys.argv[6] == '-1':
+    cpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '2'))
+else:
+    cpus = int(sys.argv[6])
+metric_str = sys.argv[7]
 
 print(data_fname)
 print(clin_fname)
@@ -27,7 +31,7 @@ print(export_fname)
 print(metric_str)
 
 home = os.path.expanduser('~')
-cpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '2'))
+
 data = pd.read_csv(data_fname)
 clin = pd.read_csv(clin_fname)
 

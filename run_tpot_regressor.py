@@ -18,6 +18,10 @@ if config_str == 'None':
 else:
     config_str = config_str.replace('_', ' ')
 export_fname = sys.argv[5]
+if sys.argv[6] == '-1':
+    cpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '2'))
+else:
+    cpus = int(sys.argv[6])
 
 print(data_fname)
 print(clin_fname)
@@ -26,7 +30,6 @@ print(config_str)
 print(export_fname)
 
 home = os.path.expanduser('~')
-cpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '2'))
 data = pd.read_csv(data_fname)
 clin = pd.read_csv(clin_fname)
 
@@ -35,7 +38,7 @@ voxels = [cname for cname in data.columns if cname.find('v')==0]
 junk = stats.mstats.winsorize(df[target],inplace=True,limits=(.01, .01))
 X = df[voxels]
 y = df[target]
-multiprocessing.set_start_method('forkserver')
+multiprocessing.set_start_method('forkserver', force=True)
 
 tpot = TPOTRegressor(verbosity=2,
                      config_dict=config_str, n_jobs=cpus, 
