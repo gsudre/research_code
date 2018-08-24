@@ -6,6 +6,7 @@ from scipy import stats
 from tpot import TPOTRegressor
 from sklearn.dummy import DummyRegressor
 from sklearn import metrics
+import multiprocessing
 
 
 data_fname = sys.argv[1]
@@ -34,6 +35,8 @@ voxels = [cname for cname in data.columns if cname.find('v')==0]
 junk = stats.mstats.winsorize(df[target],inplace=True,limits=(.01, .01))
 X = df[voxels]
 y = df[target]
+multiprocessing.set_start_method('forkserver')
+
 tpot = TPOTRegressor(verbosity=2,
                      config_dict=config_str, n_jobs=cpus, 
                      periodic_checkpoint_folder=home+'/data/tpot/checkpoints',
