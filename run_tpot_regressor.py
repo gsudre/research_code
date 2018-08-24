@@ -38,6 +38,7 @@ voxels = [cname for cname in data.columns if cname.find('v')==0]
 junk = stats.mstats.winsorize(df[target],inplace=True,limits=(.01, .01))
 X = df[voxels]
 y = df[target]
+multiprocessing.set_start_method('forkserver', force=True)
 
 tpot = TPOTRegressor(verbosity=2,
                      config_dict=config_str, n_jobs=cpus, 
@@ -51,8 +52,5 @@ ypred = dummy.predict(X)
 print('CPUs:', cpus)
 print('dummy:', -metrics.mean_squared_error(y, ypred))
 
-if __name__ == '__main__':
-    multiprocessing.set_start_method('forkserver')
-    tpot.fit(X, y)
-
+tpot.fit(X, y)
 tpot.export(export_fname)
