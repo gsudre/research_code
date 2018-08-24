@@ -6,7 +6,6 @@ from scipy import stats
 from tpot import TPOTRegressor
 from sklearn.dummy import DummyRegressor
 from sklearn import metrics
-import multiprocessing as mp
 
 
 data_fname = sys.argv[1]
@@ -47,13 +46,10 @@ tpot = TPOTRegressor(verbosity=2,
                     memory='auto', random_state=42)
 
 dummy = DummyRegressor()
+dummy.fit(X, y)
+ypred = dummy.predict(X)
+print('dummy:', -metrics.mean_squared_error(y, ypred))
 
-if __name__ == '__main__':
-    mp.set_start_method('forkserver')
-    dummy.fit(X, y)
-    ypred = dummy.predict(X)
-    print('dummy:', -metrics.mean_squared_error(y, ypred))
-
-    tpot.fit(X, y)
+tpot.fit(X, y)
 
 tpot.export(export_fname)
