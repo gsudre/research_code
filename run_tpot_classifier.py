@@ -19,12 +19,12 @@ else:
 export_fname = sys.argv[5]
 metric_str = sys.argv[6]
 
-print data_fname
-print clin_fname
-print target
-print config_str
-print export_fname
-print metric_str
+print(data_fname)
+print(clin_fname)
+print(target)
+print(config_str)
+print(export_fname)
+print(metric_str)
 
 home = os.path.expanduser('~')
 cpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '2'))
@@ -51,7 +51,7 @@ dummy.fit(X, y2)
 ypred = dummy.predict(X)
 scr = metrics.get_scorer(metric_str)
 
-print 'CPUs:', cpus
-print 'dummy:', scr(dummy, y2.reshape(-1, 1), ypred)
+print('CPUs:', cpus)
+print('dummy:', scr(dummy, y2.reshape(-1, 1), ypred))
 tpot.fit(X, y2)
 tpot.export(export_fname)

@@ -19,11 +19,11 @@ else:
     config_str = config_str.replace('_', ' ')
 export_fname = sys.argv[5]
 
-print data_fname
-print clin_fname
-print target
-print config_str
-print export_fname
+print(data_fname)
+print(clin_fname)
+print(target)
+print(config_str)
+print(export_fname)
 
 home = os.path.expanduser('~')
 cpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '2'))
@@ -46,7 +46,7 @@ dummy = DummyRegressor()
 dummy.fit(X, y)
 ypred = dummy.predict(X)
 
-print 'CPUs:', cpus
-print 'dummy:', -metrics.mean_squared_error(y, ypred)
+print('CPUs:', cpus)
+print('dummy:', -metrics.mean_squared_error(y, ypred))
 tpot.fit(X, y)
 tpot.export(export_fname)
