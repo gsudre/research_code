@@ -39,7 +39,7 @@ y = df[target]
 lbl = preprocessing.LabelEncoder()
 y2 = lbl.fit_transform(y)
 
-multiprocessing.set_start_method('forkserver')
+multiprocessing.set_start_method('forkserver', force=True)
 tpot = TPOTClassifier(verbosity=2,
                      config_dict=config_str, n_jobs=cpus, 
                      periodic_checkpoint_folder=home+'/data/tpot/checkpoints',
