@@ -13,14 +13,15 @@ clin = h2o.importFile(clin_fname)
 data = h2o.importFile(data_fname)
 df = h2o.merge(clin, data, by='mask.id')
 
-# we need to classify factors
-if (action == 'c') {
-  df[, target] = as.factor(df[, target])
-}
-
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
+pca = prcomp(df[, x], scale=T)
+a = cbind(pca$x, as.vector(df[, target]))
+colnames(a)[264] = 
+df2 = as.h2o(a)
+df2[, target] = as.factor(df2[, y])
+x = colnames(df2)[grepl(pattern = '^PC', colnames(df2))]
 
-aml <- h2o.automl(x = x, y = target, training_frame = df,
+aml <- h2o.automl(x = x, y = target, training_frame = df2,
                   seed=42,
                   max_runtime_secs = NULL,
                   max_models = NULL)
