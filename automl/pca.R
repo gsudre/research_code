@@ -48,7 +48,7 @@ x = colnames(df2)[grepl(pattern = '^PC', colnames(df2))]
 aml <- h2o.automl(x = x, y = target, training_frame = df2,
                   seed=42,
                   max_runtime_secs = NULL,
-                  max_models = 10)
+                  max_models = NULL)
 
 print(data_fname)
 print(clin_fname)
