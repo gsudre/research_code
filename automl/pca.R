@@ -53,5 +53,6 @@ aml <- h2o.automl(x = x, y = target, training_frame = df2,
 print(data_fname)
 print(clin_fname)
 print(target)
+print(dim(df2))
 print(aml@leaderboard)
 h2o.saveModel(aml@leader, path = export_fname)
