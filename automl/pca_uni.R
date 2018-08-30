@@ -40,8 +40,6 @@ if (! grepl(pattern = 'group', target)) {
                res = cor.test(myx, a[, target], method='spearman');
                return(res$p.value)
                })
-  # winsorizing after correlations to avoid ties
-  a[, target] = winsorize(a[, target])
 } else {
   a[, target] = as.factor(a[, target])
   b = sapply(as.data.frame(a[,x]),
@@ -51,28 +49,32 @@ if (! grepl(pattern = 'group', target)) {
              })
 }
 keep_me = b <= .05
+a = a[, keep_me]
+a = cbind(a, as.vector(df[, target]))
+colnames(a)[ncol(a)] = target
 
-if (sum(b) > 0) {
-  a = a[, keep_me]
-  
-  # transform it back to h2o data frame
-  df2 = as.h2o(a)
-  # groups need to be factors, after the h2o dataframe is created!
-  if (grepl(pattern = 'group', target)) {
-    df2[, target] = as.factor(df2[, target])
-  }
-  
-  x = colnames(df2)[grepl(pattern = '^PC', colnames(df2))]
-  aml <- h2o.automl(x = x, y = target, training_frame = df2,
-                    seed=42,
-                    max_runtime_secs = NULL,
-                    max_models = NULL)
-  print(dim(df2))
-} else {
-  print('No variables left')
+# winsorize and get univariates if it's a continuous variable
+if (! grepl(pattern = 'group', target)) {
+  # winsorizing after correlations to avoid ties
+  a[, target] = winsorize(a[, target])
 }
+
+# transform it back to h2o data frame
+df2 = as.h2o(a)
+# groups need to be factors, after the h2o dataframe is created!
+if (grepl(pattern = 'group', target)) {
+  df2[, target] = as.factor(df2[, target])
+}
+
+x = colnames(df2)[grepl(pattern = '^PC', colnames(df2))]
+aml <- h2o.automl(x = x, y = target, training_frame = df2,
+                  seed=42,
+                  max_runtime_secs = NULL,
+                  max_models = NULL)
+
 print(data_fname)
 print(clin_fname)
 print(target)
+print(dim(df2))
 print(aml@leaderboard)
 h2o.saveModel(aml@leader, path = export_fname)
