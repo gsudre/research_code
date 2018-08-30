@@ -64,14 +64,14 @@ curMaskId = max(curMaskId) + 1
 # assign a mask ID for each DICOM we find
 dicoms = glob.glob(tmpFolder + '/*-DICOM*')
 file2maskid = []
-print 'Found these DICOM files in ' + tmpFolder + ':\n'
+print('Found these DICOM files in ' + tmpFolder + ':\n')
 for file in dicoms:
-    print file
+    print(file)
     file2maskid.append(curMaskId)
-    print 'Mask ID:', curMaskId
+    print('Mask ID:', curMaskId)
     curMaskId += 1
 
-raw_input('\nPress any key to start sorting, or Ctrl+C to quit...')
+input('\nPress any key to start sorting, or Ctrl+C to quit...')
 
 # lists to store info for CSV
 subjectNames = []
@@ -103,7 +103,7 @@ for fidx, file in enumerate(dicoms):
         os.makedirs(dir)
 
     # Unpack the DICOMs to the tree
-    print 'Unpacking ' + file
+    print('Unpacking ' + file)
     tar = tarfile.open(file)
     tar.extractall(targetFolder)
     tar.close()
@@ -113,10 +113,10 @@ for fidx, file in enumerate(dicoms):
 
     rtData = glob.glob(tmpFolder + '/E' + scanId + '.*')
     if len(rtData) == 0:
-        print 'WARNING: Could not find real-time data!'
+        print('WARNING: Could not find real-time data!')
         rtCopied = 'N'
     else:
-        print 'Unpacking ' + rtData[0]
+        print('Unpacking ' + rtData[0])
         tar = tarfile.open(rtData[0])
         tar.extractall(targetFolder)
         tar.close()
@@ -126,13 +126,13 @@ for fidx, file in enumerate(dicoms):
         ecgData = glob.glob(targetFolder + '/E' + scanId + '/ECG_*')
         respData = glob.glob(targetFolder + '/E' + scanId + '/Resp_*')
         if len(ecgData) != len(respData):
-            print '\tDifferent numbers of respiration and ECG data!'
+            print('\tDifferent numbers of respiration and ECG data!')
         elif len(ecgData) == 1:
-            print '\tOnly found one set of physiological data!'
+            print('\tOnly found one set of physiological data!')
         # adults should have 4 + 1 physiological files
         elif len(ecgData) != 5:
-            print '\tFound unexpected number of physiological files ' +\
-                  '(%d)!' % len(ecgData)
+            print('\tFound unexpected number of physiological files ' +\
+                  '(%d)!' % len(ecgData))
 
     # moving extracted files inside maskId folder
     folder2move = glob.glob(targetFolder + '/*' + mrn + '/*')
@@ -176,5 +176,5 @@ for i in range(len(subjectMRNs)):
               '\n')
 fid.close()
 
-print 'Done storing files in server and outputting CSV.'
-print 'REMEMBER: add any extra notes to the Notes column in', csvOutput
+print('Done storing files in server and outputting CSV.')
+print('REMEMBER: add any extra notes to the Notes column in', csvOutput)
