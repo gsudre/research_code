@@ -29,7 +29,10 @@ df = h2o.merge(clin, data, by='mask.id')
 # identify voxels and run PCA
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
 pca = prcomp(df[, x], scale=T)
-a = cbind(pca$x, as.vector(df[, target]))
+eigs <- pca$sdev^2
+vexp = cumsum(eigs)/sum(eigs)
+keep_me = vexp <= .95
+a = cbind(pca$x[, keep_me], as.vector(df[, target]))
 colnames(a)[ncol(a)] = target
 x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
 

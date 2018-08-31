@@ -29,7 +29,10 @@ df = h2o.merge(clin, data, by='mask.id')
 # identify voxels and run PCA
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
 pca = prcomp(df[, x], scale=T)
-a = cbind(pca$x, as.vector(df[, target]))
+eigs <- pca$sdev^2
+vexp = cumsum(eigs)/sum(eigs)
+keep_me = vexp <= .95
+a = cbind(pca$x[, keep_me], as.vector(df[, target]))
 colnames(a)[ncol(a)] = target
 
 # winsozrize if it's a continuous variable
@@ -48,7 +51,7 @@ x = colnames(df2)[grepl(pattern = '^PC', colnames(df2))]
 aml <- h2o.automl(x = x, y = target, training_frame = df2,
                   seed=42,
                   max_runtime_secs = NULL,
-                  max_models = NULL)
+                  max_models = 10)
 
 print(data_fname)
 print(clin_fname)

@@ -5,13 +5,13 @@ from rpy2.robjects import r
 from rpy2.robjects.numpy2ri import numpy2ri
 
 
-dir_name = '/Users/sudregp/tmp/'
-subj_file = 'subjs_diffeo.txt'
+dir_name = '/data/sudregp/tmp/'
+subj_file = 'base_subjs.txt'
 r_output_file = 'mean_sampling'
 tract_names = ['left_cst', 'left_ifo', 'left_ilf', 'left_slf', 'left_unc',
                'right_cst', 'right_ifo', 'right_ilf', 'right_slf', 'right_unc',
                'cc']
-var_names = ['FA', 'ADC', 'PD', 'AD', 'RD', 'eig1', 'eig2', 'eig3']
+var_names = ['FA', 'ADC', 'PD', 'AD', 'RD']#, 'eig1', 'eig2', 'eig3']
 
 # find out the subject names so we can have nice names on the table rows
 subj_names = []
