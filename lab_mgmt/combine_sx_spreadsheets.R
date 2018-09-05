@@ -7,13 +7,13 @@
 library(gdata)
 
 dir_name = '/Volumes/Shaw/Clinical_Interviews/'
-caadid_fname = sprintf('%s/CAADID data 7-24-18.xlsx', dir_name)
-nv_fname = sprintf('%s/nv_interviews_20180730.xlsx', dir_name)
-dica_fname = sprintf('%s/DICA 4-9-18.xlsx', dir_name)
+caadid_fname = sprintf('%s/CAADID data 9-5-18.xlsx', dir_name)
+nv_fname = sprintf('%s/nv_interviews_20180824.xlsx', dir_name)
+dica_fname = sprintf('%s/DICA 08-27-2018.xlsx', dir_name)
 caadidS_fname = sprintf('%s/Simplex/CAADID data simplex.xlsx', dir_name)
 nvS_fname = sprintf('%s/Simplex/nv_interviews_simplex.xlsx', dir_name)
 dicaS_fname = sprintf('%s/Simplex/DICA simplex.xlsx', dir_name)
-family_fname = '/Volumes/Shaw/Family Study List/Family Study List 5-21-18.xlsx'
+family_fname = '/Volumes/Shaw/Family Study List/Family Study List 6-8-18.xlsx'
 papers_fname = sprintf('%s/sx_from_papers.xlsx', dir_name)
 
 # cleaning up CAADID
@@ -43,19 +43,18 @@ sx = rbind(caadid, nv)
 print(dica_fname)
 df = read.xls(dica_fname, sheet = 1, header = TRUE, colClasses='character')
 print(sprintf('Found %d records.', nrow(df)))
-dica = df[, c('ID', 'Date', 'X..of.inatten', 'X..H.I', 'Meds')]
-colnames(dica_clean) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi', 'source')
-other_dx = c("What.med", "Dose.in.mg", "Weight.in.kg", "COMMENTS", "Age.Onset", "Comments", "Name.of.Meds", "Notes")
+dica = df[, c('MRN', 'Date', 'X..of.inatten', 'X..H.I', 'Meds')]
+other_dx = c("Medication.name", "Dose.in.mg", "Weight.in.kg", "Age.Onset", "Comments")
 dica$other_dx = do.call(paste, df[, other_dx])
 # keep all entries off medication
-dica_off = dica[grepl('off', dica$Meds, ignore.case=T), 1:6]
+dica_off = dica[grepl('off', dica$Meds, ignore.case=T), ]
 dica_off$source = 'DICA_off'
 # for the on meds, just keep them if there isn't an off meds entry yet
-dica_on = dica[grepl('on', dica$Meds, ignore.case=T), 1:6]
+dica_on = dica[grepl('on', dica$Meds, ignore.case=T), ]
 dica_on$source = 'DICA_on'
 keep_me = c()
 for (i in 1:nrow(dica_on)) {
-  idx = dica_off$ID==dica_on[i,]$ID & dica_off$Date==dica_on[i,]$Date
+  idx = dica_off$MRN==dica_on[i,]$MRN & dica_off$Date==dica_on[i,]$Date
   if (sum(idx) == 0) {
     keep_me = c(keep_me, i)
   } else {
@@ -165,4 +164,4 @@ print(sprintf('%d out of %d with wrong or missing DOA.', length(idx), nrow(sx)))
 idx = which(sx$SX_inatt=='' | sx$SX_hi=='')
 print(sprintf('%d out of %d with blank SX.', length(idx), nrow(sx)))
 
-write.csv(sx, file='~/data/baseline_prediction/clinical_08012018.csv', row.names=F)
+write.csv(sx, file='~/data/baseline_prediction/clinical_09052018.csv', row.names=F)
