@@ -48,8 +48,7 @@ if (! grepl(pattern = 'group', target)) {
                return(res$p.value)
              })
 }
-b = p.adjust(b, method='fdr')
-keep_me = b <= .05
+keep_me = b <= .01
 a = a[, keep_me]
 
 print(dim(a))
@@ -65,13 +64,10 @@ if (grepl(pattern = 'group', target)) {
 }
 
 x = colnames(df2)[grepl(pattern = '^v', colnames(df2))]
-
-print(sprintf('Running model on %d features', ncol(df2)-1))
 aml <- h2o.automl(x = x, y = target, training_frame = df2,
                   seed=42,
-                  max_runtime_secs = 3600*24*2,
-                  max_models = NULL,
-                exclude_algos = c("GBM", "StackedEnsemble", "DRF"))
+                  max_runtime_secs = NULL,
+                  max_models = NULL)
 
 print(data_fname)
 print(clin_fname)
