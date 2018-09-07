@@ -19,7 +19,6 @@ path = net_dir + '/data_by_maskID/%04d/edti_proc/'
 subj_movement = []
 for line in fid:
     maskid = int(line)
-    print(maskid)
     # find what's the name of the transformations folder
     trans_file = glob.glob(path % maskid + '/*rpd.transformations')
     if len(trans_file) > 0:
@@ -29,7 +28,7 @@ for line in fid:
         # look for the path to all slices
         path_file = glob.glob(path % maskid + '/*DMC*_R1.path')
         if len(path_file) > 0:
-            slices = np.recfromtxt(path_file[-1])
+            slices = np.genfromtxt(path_file[-1], dtype='str')
             # we only need to look at the first directory to figure out what
             # slices are missing. It's repeated across directories
             good = [int(sl.split('.')[-1]) for sl in slices
@@ -51,11 +50,11 @@ for line in fid:
                                 [translation, rotation, nvolumes,
                                 len(good), len(removed), removed_str, keep_str])
         else:
-            print('\nWARNING: Did not find R1 .path file for', maskid, '\n')
+            print('\nWARNING: Did not find R1 .path file for %04d' % maskid, '\n')
     else:
-        print('\nWARNING: Did not find transformation file for', maskid, '\n')
+        print('\nWARNING: Did not find transformation file for %04d' % maskid, '\n')
     if len(trans_file) > 1:
-        print('\nWARNING! More than one transformation file for %d\n' % maskid)
+        print('\nWARNING! More than one transformation file for %04d\n' % maskid)
 
 table = [['mask id', 'meanX trans', 'meanY trans', 'meanZ trans',
           'meanX rot', 'meanY rot', 'meanZ rot', 'norm trans', 'norm rot',
