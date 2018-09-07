@@ -5,13 +5,18 @@ batchFile=~/tortoise_in_biowulf/tortoise.bat
 start_dir=`pwd`
 bw_dir=/data/NCR_SBRB/tmp/tortoise/
 data_dir=/mnt/shaw/data_by_maskID/
+bw_templates_dir=~/tortoise_in_biowulf/
 tmp_script=ssh_pipes.sh
+
+# prepare batch and xml folders
+ssh -q helix.nih.gov \"if [ ! -d ${bw_dir}/xml ]; then mkdir ${bw_dir}/xml; fi\"
+ssh -q helix.nih.gov \"if [ ! -d ${bw_dir}/bat ]; then mkdir ${bw_dir}/bat; fi\"
 
 # for each mask id in the file
 while read m; do 
     echo "Working on ${m}"    
 
-    cp ~/tortoise_in_biowulf/tortoise_template.bat ${batchFile}
+    cp ${bw_templates_dir}/tortoise_template.bat ${batchFile}
     suffix=''
 
     # piping inside the loop was breaking it. Will need to do it later. -n flag didn't work because I actually need the stdin pipe.
@@ -25,9 +30,10 @@ while read m; do
         echo "gtar czf - edti | ssh -q helix.nih.gov \"cd ${bw_dir}/${m}; tar xzf -\"" >> $tmp_script
     fi
 
-    # setting up XML file
-    cp ~/tortoise_in_biowulf/0000_template.xml ~/tortoise_in_biowulf/${m}.xml
-    perl -p -i -e "s/0000/${m}/g" ~/tortoise_in_biowulf/${m}.xml
+    # setting up XML file. Replace 0000 by mask id and struct_File by the 
+    # correct filename
+    cp ${bw_templates_dir}/0000_template.xml ${bw_templates_dir}/${m}.xml
+    perl -p -i -e "s/0000/${m}/g" ${bw_templates_dir}/${m}.xml
     if [ -e ${data_dir}/${m}/edti/t2_struc_midsag_acpc.nii ]; then
         struct_fname=t2_struc_midsag_acpc.nii;
     elif [ -e ${data_dir}/${m}/edti/t2_struc_acpc.nii ]; then
@@ -35,19 +41,20 @@ while read m; do
     else
         struct_fname=t2_struc.nii;
     fi
-    perl -p -i -e "s/STRUCT_FILE/${struct_fname}/g" ~/tortoise_in_biowulf/${m}.xml
-    scp -q ~/tortoise_in_biowulf/${m}.xml helix.nih.gov:~/tortoiseXMLfiles/
-    rm ~/tortoise_in_biowulf/${m}.xml
+    perl -p -i -e "s/STRUCT_FILE/${struct_fname}/g" ${bw_templates_dir}/${m}.xml
+    ssh -q helix.nih.gov \"mkdir ${bw_dir}/${m}\"
+    scp -q ${bw_templates_dir}/${m}.xml helix.nih.gov:${bw_dir}/xml/
+    rm ${bw_templates_dir}/${m}.xml
 
     # adding mask id to the current batch file
-    echo "./diffprep.sh \"'/home/sudregp/tortoiseXMLfiles/${m}.xml'\" &" >> ${batchFile}
+    echo "./diffprep.sh \"'${bw_dir}/xml/${m}.xml'\" &" >> ${batchFile}
 
     # setup batch file suffix
     suffix=${suffix}'_'${m}
 
     echo "wait" >> ${batchFile}
-    mv ${batchFile} ~/tortoise_in_biowulf/tortoise${suffix}.bat
-    scp -q ~/tortoise_in_biowulf/tortoise${suffix}.bat helix.nih.gov:~/scripts/
+    mv ${batchFile} ${bw_templates_dir}/tortoise${suffix}.bat
+    scp -q ${bw_templates_dir}/tortoise${suffix}.bat helix.nih.gov:${bw_dir}/bat/
 done < ${maskids}
 
 echo "cd ${start_dir}" >> $tmp_script
