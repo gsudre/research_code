@@ -28,6 +28,13 @@ while read m; do
     # setting up XML file
     cp ~/tortoise_in_biowulf/0000_template.xml ~/tortoise_in_biowulf/${m}.xml
     perl -p -i -e "s/0000/${m}/g" ~/tortoise_in_biowulf/${m}.xml
+    if [ -e ${data_dir}/${m}/edti/t2_struc_midsag_acpc.nii ]; then
+        struct_fname=t2_struc_midsag_acpc.nii;
+    elif [ -e ${data_dir}/${m}/edti/t2_struc_acpc.nii ]; then
+        struct_fname=t2_struc_acpc.nii;
+    else
+        struct_fname=t2_struc.nii;
+    perl -p -i -e "s/STRUCT_FILE/${struct_fname}/g" ~/tortoise_in_biowulf/${m}.xml
     scp -q ~/tortoise_in_biowulf/${m}.xml helix.nih.gov:~/tortoiseXMLfiles/
     rm ~/tortoise_in_biowulf/${m}.xml
 
