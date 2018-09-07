@@ -8,11 +8,13 @@ import os
 import sys
 
 
-path = '/mnt/shaw/data_by_maskID/%04d/edti_proc/'
 home = os.path.expanduser('~')
 
 fname = sys.argv[1]
+net_dir = sys.argv[2]
+
 fid = open(fname, 'r')
+path = net_dir + '/data_by_maskID/%04d/edti_proc/'
 
 subj_movement = []
 for line in fid:
