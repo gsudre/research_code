@@ -3,7 +3,7 @@
 maskids=$1
 batchFile=~/tortoise_in_biowulf/tortoise.bat
 start_dir=`pwd`
-bw_dir=/scratch/sudregp/tortoise/
+bw_dir=/data/NCR_SBRB/tmp/tortoise/
 data_dir=/mnt/shaw/data_by_maskID/
 tmp_script=ssh_pipes.sh
 
