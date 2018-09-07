@@ -19,7 +19,7 @@ while read m; do
     echo "ssh -q biowulf.nih.gov \"mkdir ${bw_dir}/${m}\"" >> $tmp_script
     echo "cd ${data_dir}/${m}" >> $tmp_script
     if [ -d ${data_dir}/${m}/edti_proc ]; then
-        echo "gtar czf - edti edti_proc | ssh -q biowulf.nih.gov \"cd ${bw_dir}/${m}; tar xzf -\"" >> $tmp_script
+        echo "gtar czf - edti edti_proc/edti.* | ssh -q biowulf.nih.gov \"cd ${bw_dir}/${m}; tar xzf -\"" >> $tmp_script
     else
         echo "Could not find edti_proc";
         echo "gtar czf - edti | ssh -q biowulf.nih.gov \"cd ${bw_dir}/${m}; tar xzf -\"" >> $tmp_script
