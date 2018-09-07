@@ -1,7 +1,6 @@
 #!/bin/sh
 
 maskids=$1
-batchFile=~/tortoise_in_biowulf/tortoise.bat
 start_dir=`pwd`
 bw_dir=/data/NCR_SBRB/tmp/tortoise/
 data_dir=/mnt/shaw/data_by_maskID/
@@ -15,9 +14,6 @@ ssh -q helix.nih.gov "if [ ! -d ${bw_dir}/bat ]; then mkdir ${bw_dir}/bat; fi"
 # for each mask id in the file
 while read m; do 
     echo "Working on ${m}"    
-
-    cp ${bw_templates_dir}/tortoise_template.bat ${batchFile}
-    suffix=''
 
     # piping inside the loop was breaking it. Will need to do it later. -n flag didn't work because I actually need the stdin pipe.
     echo "echo \"Copying over eDTI files for ${m}\"" >> $tmp_script
@@ -45,15 +41,15 @@ while read m; do
     scp -q ${bw_templates_dir}/${m}.xml helix.nih.gov:${bw_dir}/xml/;
     rm ${bw_templates_dir}/${m}.xml
 
-    # adding mask id to the current batch file
+    # creating batch_file
+    batchFile=tortoise_${m}.bat;
+    echo "#!/bin/bash" > ${batchFile};
+    echo "cd ${bw_dir}/bat;" >> ${batchFile};
     echo "./diffprep.sh \"'${bw_dir}/xml/${m}.xml'\" &" >> ${batchFile}
-
-    # setup batch file suffix
-    suffix=${suffix}'_'${m}
-
     echo "wait" >> ${batchFile}
-    mv ${batchFile} ${bw_templates_dir}/tortoise${suffix}.bat
-    scp -q ${bw_templates_dir}/tortoise${suffix}.bat helix.nih.gov:${bw_dir}/bat/
+    mv ${batchFile} ${bw_templates_dir}/
+    scp -q ${bw_templates_dir}/${batchFile} helix.nih.gov:${bw_dir}/bat/
+    
 done < ${maskids}
 
 echo "cd ${start_dir}" >> $tmp_script
