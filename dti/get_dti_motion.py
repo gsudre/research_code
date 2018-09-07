@@ -19,7 +19,7 @@ for line in fid:
     maskid = int(line)
     print maskid
     # find what's the name of the transformations folder
-    trans_file = glob.glob(path % maskid + '/*DMC*.transformations')
+    trans_file = glob.glob(path % maskid + '/*rpd.transformations')
     if len(trans_file) > 0:
         print 'Working on', trans_file[-1]
         data = np.genfromtxt(trans_file[-1])
