@@ -17,11 +17,11 @@ fid = open(fname, 'r')
 subj_movement = []
 for line in fid:
     maskid = int(line)
-    print maskid
+    print(maskid)
     # find what's the name of the transformations folder
     trans_file = glob.glob(path % maskid + '/*rpd.transformations')
     if len(trans_file) > 0:
-        print 'Working on', trans_file[-1]
+        print('Working on', trans_file[-1])
         data = np.genfromtxt(trans_file[-1])
         nvolumes = data.shape[0]
         # look for the path to all slices
@@ -36,8 +36,8 @@ for line in fid:
             # matrices are zero-based
             good_idx = np.array(good) - 1
             removed = np.setdiff1d(np.arange(1, nvolumes), good)
-            print 'Good slices: %d/%d, Removed:' % (len(good),
-                                                    nvolumes), list(removed)
+            print('Good slices: %d/%d, Removed:' % (len(good),
+                                                    nvolumes), list(removed))
             mean_mvmt = np.mean(np.abs(data[good_idx, :6]), axis=0)
             translation = np.sqrt(np.sum(mean_mvmt[:3]**2))
             rotation = np.sqrt(np.sum(mean_mvmt[3:]**2))
@@ -49,11 +49,11 @@ for line in fid:
                                 [translation, rotation, nvolumes,
                                 len(good), len(removed), removed_str, keep_str])
         else:
-            print '\nWARNING: Did not find R1 .path file for', maskid, '\n'
+            print('\nWARNING: Did not find R1 .path file for', maskid, '\n')
     else:
-        print '\nWARNING: Did not find transformation file for', maskid, '\n'
+        print('\nWARNING: Did not find transformation file for', maskid, '\n')
     if len(trans_file) > 1:
-        print '\nWARNING! More than one transformation file for %d\n' % maskid
+        print('\nWARNING! More than one transformation file for %d\n' % maskid)
 
 table = [['mask id', 'meanX trans', 'meanY trans', 'meanZ trans',
           'meanX rot', 'meanY rot', 'meanZ rot', 'norm trans', 'norm rot',
