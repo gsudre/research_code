@@ -42,8 +42,7 @@ while read m; do
         struct_fname=t2_struc.nii;
     fi
     perl -p -i -e "s/STRUCT_FILE/${struct_fname}/g" ${bw_templates_dir}/${m}.xml
-    ssh -q helix.nih.gov \"mkdir ${bw_dir}/${m}\"
-    scp -q ${bw_templates_dir}/${m}.xml helix.nih.gov:${bw_dir}/xml/
+    scp -q ${bw_templates_dir}/${m}.xml helix.nih.gov:${bw_dir}/xml/;
     rm ${bw_templates_dir}/${m}.xml
 
     # adding mask id to the current batch file
