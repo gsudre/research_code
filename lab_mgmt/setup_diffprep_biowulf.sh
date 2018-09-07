@@ -34,6 +34,7 @@ while read m; do
         struct_fname=t2_struc_acpc.nii;
     else
         struct_fname=t2_struc.nii;
+    fi
     perl -p -i -e "s/STRUCT_FILE/${struct_fname}/g" ~/tortoise_in_biowulf/${m}.xml
     scp -q ~/tortoise_in_biowulf/${m}.xml helix.nih.gov:~/tortoiseXMLfiles/
     rm ~/tortoise_in_biowulf/${m}.xml
