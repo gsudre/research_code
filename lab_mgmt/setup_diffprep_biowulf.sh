@@ -9,8 +9,8 @@ bw_templates_dir=~/tortoise_in_biowulf/
 tmp_script=ssh_pipes.sh
 
 # prepare batch and xml folders
-ssh -q helix.nih.gov \"if [ ! -d ${bw_dir}/xml ]; then mkdir ${bw_dir}/xml; fi\"
-ssh -q helix.nih.gov \"if [ ! -d ${bw_dir}/bat ]; then mkdir ${bw_dir}/bat; fi\"
+ssh -q helix.nih.gov "if [ ! -d ${bw_dir}/xml ]; then mkdir ${bw_dir}/xml; fi"
+ssh -q helix.nih.gov "if [ ! -d ${bw_dir}/bat ]; then mkdir ${bw_dir}/bat; fi"
 
 # for each mask id in the file
 while read m; do 
