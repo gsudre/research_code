@@ -3,9 +3,9 @@
 imuser=Sys.getenv('USER')
 args <- commandArgs(trailingOnly = TRUE)
 
-mydata<-read.csv(sprintf('/scratch/%s/prs/dti_prs_06122018.csv', imuser))
+mydata<-read.csv(sprintf('/data/%s/prs/dti_wnh_res_and_scaled_09112018_newMvmt.csv', imuser))
 
-load(sprintf('/scratch/%s/prs/dti_%s_voxelwise_05152018.RData', imuser, args[2]))
+load(sprintf('/data/%s/prs/dti_%s_voxelwise_09112018.RData', imuser, args[2]))
 
 dim(mydata)
 dim(m)
@@ -16,13 +16,16 @@ dim(mydata)
 
 # choosing mediators
 m_str = args[1]
-Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 'PROFILES.0.2.profile',
-       'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
-Ys = c('SX_HI_checked', 'SX_inatt_checked', 'SX_total_checked')
+# Xs = c('PROFILES.0.01.profile','PROFILES.0.05.profile', 'PROFILES.0.1.profile', 'PROFILES.0.2.profile',
+#        'PROFILES.0.3.profile', 'PROFILES.0.4.profile', 'PROFILES.0.5.profile')
+Xs = c('ADHD_PROFILES.0.01.profile','ADHD_PROFILES.0.05.profile', 'ADHD_PROFILES.0.1.profile',
+       'ADHD_PROFILES.0.2.profile', 'ADHD_PROFILES.0.3.profile', 'ADHD_PROFILES.0.4.profile',
+       'ADHD_PROFILES.0.5.profile')
+Ys = c('SX_HI_dti')#, 'SX_inatt_checked', 'SX_total_checked')
 
 nboot = 1000
 mixed = T
-dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_352_wnhaa_famID_lme_1kg9_residuals_checked',
+dir_root = sprintf('/scratch/%s/prs/dti_voxels_%s_confirm',
                     imuser, args[2])
 
 # no need to change anything below here. The functions remove NAs and zscore variables on their own
@@ -38,10 +41,7 @@ run_model4 = function(X, M, Y, nboot=1000, short=T, data2) {
   run_data = data.frame(X = scale(X[!idx]),
                         Y = Y,
                         M = scale(M[!idx]),
-                        FAMID = data2[!idx,]$famID,
-                        age= data2[!idx,]$age_at_scan,
-                        sex = data2[!idx,]$Sex,
-                        motion = data2[!idx,]$motion)
+                        FAMID = data2[!idx,]$Extended_ID)
   
   if (!is.na(run_data[1,]$FAMID)) {
     library(lme4)
