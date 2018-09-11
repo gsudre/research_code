@@ -10,7 +10,6 @@ load(sprintf('/data/%s/prs/dti_%s_voxelwise_09112018.RData', imuser, args[2]))
 dim(mydata)
 dim(m)
 mydata = merge(mydata, m, by="MRN")
-mydata$motion = as.numeric((scale(mydata$norm_trans) + scale(mydata$norm_rot))/2)
 dim(mydata)
 
 
