@@ -8,8 +8,8 @@ library(gdata)
 
 dir_name = '/Volumes/Shaw/Clinical_Interviews/'
 caadid_fname = sprintf('%s/CAADID data 9-5-18.xlsx', dir_name)
-nv_fname = sprintf('%s/nv_interviews_20180824.xlsx', dir_name)
-dica_fname = sprintf('%s/DICA 08-27-2018.xlsx', dir_name)
+nv_fname = sprintf('%s/nv_interviews_20180910.xlsx', dir_name)
+dica_fname = sprintf('%s/DICA 09-10-2018.xlsx', dir_name)
 caadidS_fname = sprintf('%s/Simplex/CAADID data simplex.xlsx', dir_name)
 nvS_fname = sprintf('%s/Simplex/nv_interviews_simplex.xlsx', dir_name)
 dicaS_fname = sprintf('%s/Simplex/DICA simplex.xlsx', dir_name)
@@ -164,4 +164,4 @@ print(sprintf('%d out of %d with wrong or missing DOA.', length(idx), nrow(sx)))
 idx = which(sx$SX_inatt=='' | sx$SX_hi=='')
 print(sprintf('%d out of %d with blank SX.', length(idx), nrow(sx)))
 
-write.csv(sx, file='~/data/baseline_prediction/clinical_09052018.csv', row.names=F)
+write.csv(sx, file='~/data/baseline_prediction/clinical_09112018.csv', row.names=F)
