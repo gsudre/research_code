@@ -26,40 +26,48 @@ if (Sys.info()['sysname'] == 'Darwin') {
 }
 h2o.init(ip='localhost', nthreads=future::availableCores(), max_mem_size=max_mem)
 
+print('Loading files')
 # merging phenotype and clinical data
-clin = h2o.importFile(clin_fname)
-data = h2o.importFile(data_fname)
-print('Done loading files')
-df = h2o.merge(clin, data, by='mask.id')
-print('Done merging files')
-
+clin = read.csv(clin_fname)
+load(data_fname)  #variable is data
+# remove constant variables that screw up PCA and univariate tests
+print('Removing constant variables')
+feat_var = apply(data, 2, var, na.rm=TRUE)
+data = data[, feat_var != 0]
+print('Merging files')
+df = merge(clin, data, by='mask.id')
+print('Looking for data columns')
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
 
+print('Running univariate analysis')
 # winsorize and get univariates if it's a continuous variable
 if (! grepl(pattern = 'group', target)) {
-  y = as.vector(df[, target])
-  b = sapply(as.data.frame(df[,x]),
+  b = sapply(df[,x],
              function(myx) {
-               res = cor.test(myx, y, method='spearman');
+               res = cor.test(myx, df[, target], method='spearman');
                return(res$p.value)
              })
   # winsorizing after correlations to avoid ties
   df[, target] = winsorize(df[, target])
 } else {
   df[, target] = as.factor(df[, target])
-  y = as.factor(as.vector(df[, target]))
-  b = sapply(as.data.frame(df[,x]),
+  b = sapply(df[,x],
              function(myx) {
-               res = kruskal.test(myx, y);
+               res = kruskal.test(myx, df[, target]);
                return(res$p.value)
              })
 }
-print('Done running univariate')
 keep_me = b <= .05
 x = x[keep_me]
 
+print('Converting to H2O')
+df2 = as.h2o(df)
+if (grepl(pattern = 'group', target)) {
+  df2[, target] = as.factor(df2[, target])
+}
+
 print(sprintf('Running model on %d features', length(x)))
-aml <- h2o.automl(x = x, y = target, training_frame = df,
+aml <- h2o.automl(x = x, y = target, training_frame = df2,
                   seed=42,
                   max_runtime_secs = 3600*24*2,
                   max_models = NULL,

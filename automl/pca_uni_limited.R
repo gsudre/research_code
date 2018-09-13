@@ -26,24 +26,29 @@ if (Sys.info()['sysname'] == 'Darwin') {
 }
 h2o.init(ip='localhost', nthreads=future::availableCores(), max_mem_size=max_mem)
 
+print('Loading files')
 # merging phenotype and clinical data
-clin = h2o.importFile(clin_fname)
-data = h2o.importFile(data_fname)
-print('Done loading files')
-df = h2o.merge(clin, data, by='mask.id')
-print('Done merging files')
-
-# identify voxels and run PCA
+clin = read.csv(clin_fname)
+load(data_fname)  #variable is data
+# remove constant variables that screw up PCA and univariate tests
+print('Removing constant variables')
+feat_var = apply(data, 2, var, na.rm=TRUE)
+data = data[, feat_var != 0]
+print('Merging files')
+df = merge(clin, data, by='mask.id')
+print('Looking for data columns')
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
+
+print('Running PCA')
 pca = prcomp(df[, x], scale=T)
 eigs <- pca$sdev^2
 vexp = cumsum(eigs)/sum(eigs)
 keep_me = vexp <= .95
-a = cbind(pca$x[, keep_me], as.vector(df[, target]))
+a = cbind(pca$x[, keep_me], df[, target])
 colnames(a)[ncol(a)] = target
-x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
-print('Finished PCA')
 
+print('Running univariate')
+x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
 # winsorize and get univariates if it's a continuous variable
 if (! grepl(pattern = 'group', target)) {
   b = sapply(as.data.frame(a[,x]),
@@ -59,7 +64,6 @@ if (! grepl(pattern = 'group', target)) {
                return(res$p.value)
              })
 }
-print('Finished univariate.')
 keep_me = b <= .05
 a = a[, keep_me]
 a = cbind(a, as.vector(df[, target]))
@@ -72,8 +76,8 @@ if (! grepl(pattern = 'group', target)) {
 }
 
 # transform it back to h2o data frame
+print('Converting to H2O')
 df2 = as.h2o(a)
-print('Finished conversion to H2O.')
 # groups need to be factors, after the h2o dataframe is created!
 if (grepl(pattern = 'group', target)) {
   df2[, target] = as.factor(df2[, target])
