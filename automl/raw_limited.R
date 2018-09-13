@@ -41,7 +41,7 @@ if (grepl(pattern = 'group', target)) {
   df[, target] = as.factor(df[, target])
 }
 
-print(sprintf('Running model on %d features', ncol(df)-1))
+print(sprintf('Running model on %d features', length(x)))
 
 aml <- h2o.automl(x = x, y = target, training_frame = df,
                   seed=42,
