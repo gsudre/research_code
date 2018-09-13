@@ -19,33 +19,31 @@ winsorize = function(x, cut = 0.01){
 
 # starting h2o
 library(h2o)
-h2o.init(ip='localhost', nthreads=future::availableCores(), max_mem_size='30G')
+h2o.init(ip='localhost', nthreads=future::availableCores(), max_mem_size=paste(Sys.getenv('SLURM_MEM_PER_NODE'),'m',sep=''))
 
 # merging phenotype and clinical data
 clin = h2o.importFile(clin_fname)
 data = h2o.importFile(data_fname)
+print('Done loading files')
 df = h2o.merge(clin, data, by='mask.id')
+print('Done merging files')
 
 # identify voxels
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
 
-a = cbind(as.matrix(df[, x]), as.vector(df[, target]))
-colnames(a)[ncol(a)] = target
-
 # winsorize if it's a continuous variable
 if (! grepl(pattern = 'group', target)) {
-  a[, target] = winsorize(a[, target])
+  df[, target] = winsorize(df[, target])
 }
 
-# transform it back to h2o data frame
-df2 = as.h2o(a)
 # groups need to be factors, after the h2o dataframe is created!
 if (grepl(pattern = 'group', target)) {
-  df2[, target] = as.factor(df2[, target])
+  df[, target] = as.factor(df[, target])
 }
 
-print(sprintf('Running model on %d features', ncol(df2)-1))
-aml <- h2o.automl(x = x, y = target, training_frame = df2,
+print(sprintf('Running model on %d features', ncol(df)-1))
+
+aml <- h2o.automl(x = x, y = target, training_frame = df,
                   seed=42,
                   max_runtime_secs = 3600*24*2,
                   max_models = NULL,
