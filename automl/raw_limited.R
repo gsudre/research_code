@@ -19,7 +19,12 @@ winsorize = function(x, cut = 0.01){
 
 # starting h2o
 library(h2o)
-h2o.init(ip='localhost', nthreads=future::availableCores(), max_mem_size=paste(Sys.getenv('SLURM_MEM_PER_NODE'),'m',sep=''))
+if (Sys.info()['sysname'] == 'Darwin') {
+  max_mem = '16G'
+} else {
+  max_mem = paste(Sys.getenv('SLURM_MEM_PER_NODE'),'m',sep='')
+}
+h2o.init(ip='localhost', nthreads=future::availableCores(), max_mem_size=max_mem)
 
 # merging phenotype and clinical data
 clin = h2o.importFile(clin_fname)

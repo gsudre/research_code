@@ -19,12 +19,19 @@ winsorize = function(x, cut = 0.01){
 
 # starting h2o
 library(h2o)
-h2o.init(ip='localhost', nthreads=future::availableCores(), max_mem_size='30G')
+if (Sys.info()['sysname'] == 'Darwin') {
+  max_mem = '16G'
+} else {
+  max_mem = paste(Sys.getenv('SLURM_MEM_PER_NODE'),'m',sep='')
+}
+h2o.init(ip='localhost', nthreads=future::availableCores(), max_mem_size=max_mem)
 
 # merging phenotype and clinical data
 clin = h2o.importFile(clin_fname)
 data = h2o.importFile(data_fname)
+print('Done loading files')
 df = h2o.merge(clin, data, by='mask.id')
+print('Done merging files')
 
 # identify voxels and run PCA
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
