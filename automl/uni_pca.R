@@ -19,51 +19,57 @@ winsorize = function(x, cut = 0.01){
 
 # starting h2o
 library(h2o)
-h2o.init(ip='localhost', nthreads=future::availableCores(), max_mem_size='30G')
+if (Sys.info()['sysname'] == 'Darwin') {
+  max_mem = '16G'
+} else {
+  max_mem = paste(Sys.getenv('SLURM_MEM_PER_NODE'),'m',sep='')
+}
+h2o.init(ip='localhost', nthreads=future::availableCores(), max_mem_size=max_mem)
 
+print('Loading files')
 # merging phenotype and clinical data
-clin = h2o.importFile(clin_fname)
-data = h2o.importFile(data_fname)
-df = h2o.merge(clin, data, by='mask.id')
-
-# identify voxels and run PCA
+clin = read.csv(clin_fname)
+load(data_fname)  #variable is data
+# remove constant variables that screw up PCA and univariate tests
+print('Removing constant variables')
+feat_var = apply(data, 2, var, na.rm=TRUE)
+data = data[, feat_var != 0]
+print('Merging files')
+df = merge(clin, data, by='mask.id')
+print('Looking for data columns')
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
 
-a = cbind(as.matrix(df[, x]), as.vector(df[, target]))
-colnames(a)[ncol(a)] = target
-
+print('Running univariate analysis')
 # winsorize and get univariates if it's a continuous variable
 if (! grepl(pattern = 'group', target)) {
-  b = sapply(as.data.frame(a[,x]),
+  b = sapply(df[,x],
              function(myx) {
-               res = cor.test(myx, a[, target], method='spearman');
+               res = cor.test(myx, df[, target], method='spearman');
                return(res$p.value)
              })
   # winsorizing after correlations to avoid ties
-  a[, target] = winsorize(a[, target])
+  df[, target] = winsorize(df[, target])
 } else {
-  a[, target] = as.factor(a[, target])
-  b = sapply(as.data.frame(a[,x]),
+  df[, target] = as.factor(df[, target])
+  b = sapply(df[,x],
              function(myx) {
-               res = kruskal.test(myx, a[, target]);
+               res = kruskal.test(myx, df[, target]);
                return(res$p.value)
              })
 }
 keep_me = b <= .05
-a = a[, keep_me]
+x = x[keep_me]
 
-print(dim(a))
-
-x = colnames(a)[grepl(pattern = '^v', colnames(a))]
-pca = prcomp(a[, x], scale=T)
+print('Running PCA')
+pca = prcomp(df[, x], scale=T)
 eigs <- pca$sdev^2
 vexp = cumsum(eigs)/sum(eigs)
 keep_me = vexp <= .95
-a = cbind(pca$x[, keep_me], as.vector(df[, target]))
+a = cbind(pca$x[, keep_me], df[, target])
 colnames(a)[ncol(a)] = target
-x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
 
 # transform it back to h2o data frame
+print('Converting to H2O')
 df2 = as.h2o(a)
 # groups need to be factors, after the h2o dataframe is created!
 if (grepl(pattern = 'group', target)) {
@@ -71,6 +77,8 @@ if (grepl(pattern = 'group', target)) {
 }
 
 x = colnames(df2)[grepl(pattern = '^PC', colnames(df2))]
+
+print(sprintf('Running model on %d features', ncol(df2)-1))
 aml <- h2o.automl(x = x, y = target, training_frame = df2,
                   seed=42,
                   max_runtime_secs = NULL,
