@@ -31,7 +31,9 @@ print('Loading files')
 clin = read.csv(clin_fname)
 load(data_fname)  #variable is data
 # remove constant variables that screw up PCA and univariate tests
-print('Removing constant variables')
+print('Removing constant variables and NAs')
+keep_me = colSums(is.na(data)) == 0
+data = data[, keep_me]
 feat_var = apply(data, 2, var, na.rm=TRUE)
 data = data[, feat_var != 0]
 print('Merging files')
