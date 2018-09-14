@@ -48,7 +48,7 @@ if (grepl(pattern = 'group', target)) {
 }
 
 # make sure the SNPs are seen as factors
-if (grepl(pattern = 'snp', data_fname) {
+if (grepl(pattern = 'snp', data_fname)) {
   print('Converting SNPs to categorical variables')
   for (v in x) {
     df2[, v] = as.factor(df2[, v])
