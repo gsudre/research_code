@@ -40,7 +40,7 @@ print('Looking for data columns')
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
 
 print('Converting to H2O')
-df2 = as.h2o(df)
+df2 = as.h2o(df[, c(x, target)])
 if (grepl(pattern = 'group', target)) {
   df2[, target] = as.factor(df2[, target])
 }

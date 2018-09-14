@@ -1,0 +1,178 @@
+---
+title: "Removing correlation for baseline prediction study in a more principled way"
+output:
+  html_notebook: default
+  html_document: default
+---
+
+I think it makes sense to remove the data in a more principled way. First, remove obivous outliers from the normal distributions. Then, remove based on movement and bad slices until we get rid of the correlation.
+
+```{r}
+library(gdata)
+demo = read.xls('~/philip/long_scans_08072018.xlsx', sheet='dti')
+df = read.csv('~/philip/dti_long.csv')
+colnames(demo)[1] ='MRN'
+df2 = merge(df, demo, by.x = 'mask.id', by.y='Mask.ID')
+dim(df2)
+```
+
+Now remove outliers in each of the normal distributions:
+
+```{r}
+mult = 2
+hist(df2$mean_fa, breaks=50)
+ll = mean(df2$mean_fa) - mult*sd(df2$mean_fa)
+ul = mean(df2$mean_fa) + mult*sd(df2$mean_fa)
+abline(v = ll, col='red')
+abline(v = ul, col='red')
+idx_fa = df2$mean_fa < ul & df2$mean_fa > ll
+# hist(df2$mean_ad, breaks=50)
+# idx5 = df2$mean_ad < 1.45 & df2$mean_ad > 1.15
+# hist(df2$mean_rd, breaks=50)
+# idx6 = df2$mean_rd < .65 & df2$mean_rd > .5
+# idx = idx1 & idx2 & idx3 & idx4 & idx5 & idx6
+# sum(idx)
+```
+```{r}
+mult = 2
+hist(df2$mean_ad, breaks=50)
+ll = mean(df2$mean_ad) - mult*sd(df2$mean_ad)
+ul = mean(df2$mean_ad) + mult*sd(df2$mean_ad)
+abline(v = ll, col='red')
+abline(v = ul, col='red')
+idx_ad = df2$mean_ad < ul & df2$mean_ad > ll
+# hist(df2$mean_ad, breaks=50)
+# idx5 = df2$mean_ad < 1.45 & df2$mean_ad > 1.15
+# hist(df2$mean_rd, breaks=50)
+# idx6 = df2$mean_rd < .65 & df2$mean_rd > .5
+# idx = idx1 & idx2 & idx3 & idx4 & idx5 & idx6
+# sum(idx)
+```
+
+```{r}
+mult = 2
+hist(df2$mean_rd, breaks=50)
+ll = mean(df2$mean_rd) - mult*sd(df2$mean_rd)
+ul = mean(df2$mean_rd) + mult*sd(df2$mean_rd)
+abline(v = ll, col='red')
+abline(v = ul, col='red')
+idx_rd = df2$mean_rd < ul & df2$mean_rd > ll
+```
+
+```{r}
+idx = idx_fa & idx_ad & idx_rd
+df3 = df2[idx,]
+dim(df3)
+```
+
+Maybe we also include a check on goodVolumes?
+
+```{r}
+mult = 2
+hist(df3$goodVolumes, breaks=50)
+abline(v = 58, col='red')
+df3 = df3[df3$goodVolumes >=58,]
+```
+
+OK, now we have removed the bad scans based on distribution. Now, let's pick the first one for each subject, and remove them sequentially according to movement:
+
+```{r}
+source('~/research_code/baseline_prediction/aux_functions.R', echo=TRUE)
+df = get_single_scans(df3, last_scan=F)
+dim(df)
+cor.test(df$norm.trans, df$mean_fa)
+cor.test(df$norm.trans, df$mean_ad)
+cor.test(df$norm.trans, df$mean_rd)
+cor.test(df$norm.rot, df$mean_fa)
+cor.test(df$norm.rot, df$mean_ad)
+cor.test(df$norm.rot, df$mean_rd)
+```
+
+Actually, there was no correlation at p=.05... do we need to still remove it? Let's merge it with clinical because maybe after removing other scans some correlation to movement might creep in:
+
+```{r}
+dim(df)
+clin = read.csv('~/philip/long_clin_0815.csv')
+dim(clin)
+m = merge(df,clin)
+dim(m)
+scan_date = as.Date(as.character(m$record.date.collected...Scan), format='%m/%d/%Y')
+doa_date = as.Date(as.character(m$last_DOA), format='%m/%d/%Y')
+d = doa_date - scan_date
+sum(d > 30*6)
+sum(d > 30*12)
+```
+
+OK, so let's see if we have correlations using any of those subject sets:
+
+```{r}
+cor.test(m$norm.trans, m$mean_fa)
+cor.test(m$norm.trans, m$mean_ad)
+cor.test(m$norm.trans, m$mean_rd)
+cor.test(m$norm.rot, m$mean_fa)
+cor.test(m$norm.rot, m$mean_ad)
+cor.test(m$norm.rot, m$mean_rd)
+```
+
+
+So, if we only check the subjects that have some clinical, out of the ones with good data, there is nol correlation between movement and mean variables. But since we're only worried about later assessments, let's dig further:
+
+```{r}
+idx = d > 30*6
+sum(idx)
+cor.test(m[idx,]$norm.trans, m[idx,]$mean_fa)
+cor.test(m[idx,]$norm.trans, m[idx,]$mean_ad)
+cor.test(m[idx,]$norm.trans, m[idx,]$mean_rd)
+cor.test(m[idx,]$norm.rot, m[idx,]$mean_fa)
+cor.test(m[idx,]$norm.rot, m[idx,]$mean_ad)
+cor.test(m[idx,]$norm.rot, m[idx,]$mean_rd)
+```
+
+If we only use the 270 subjects with clinical assessment at least 6 months after scan, also no correlation.
+
+```{r}
+idx = d > 30*12
+sum(idx)
+cor.test(m[idx,]$norm.trans, m[idx,]$mean_fa)
+cor.test(m[idx,]$norm.trans, m[idx,]$mean_ad)
+cor.test(m[idx,]$norm.trans, m[idx,]$mean_rd)
+cor.test(m[idx,]$norm.rot, m[idx,]$mean_fa)
+cor.test(m[idx,]$norm.rot, m[idx,]$mean_ad)
+cor.test(m[idx,]$norm.rot, m[idx,]$mean_rd)
+```
+
+If we only use the 263 subjects with clinical assessment at least 12 months after scan, also no correlation.
+
+And just to be on the safe side, let's run spearman correlations too:
+
+```{r}
+cor.test(m$norm.trans, m$mean_fa, method='spearman')
+cor.test(m$norm.trans, m$mean_ad, method='spearman')
+cor.test(m$norm.trans, m$mean_rd, method='spearman')
+cor.test(m$norm.rot, m$mean_fa, method='spearman')
+cor.test(m$norm.rot, m$mean_ad, method='spearman')
+cor.test(m$norm.rot, m$mean_rd, method='spearman')
+
+idx = d > 30*6
+sum(idx)
+cor.test(m[idx,]$norm.trans, m[idx,]$mean_fa, method='spearman')
+cor.test(m[idx,]$norm.trans, m[idx,]$mean_ad, method='spearman')
+cor.test(m[idx,]$norm.trans, m[idx,]$mean_rd, method='spearman')
+cor.test(m[idx,]$norm.rot, m[idx,]$mean_fa, method='spearman')
+cor.test(m[idx,]$norm.rot, m[idx,]$mean_ad, method='spearman')
+cor.test(m[idx,]$norm.rot, m[idx,]$mean_rd, method='spearman')
+
+idx = d > 30*12
+sum(idx)
+cor.test(m[idx,]$norm.trans, m[idx,]$mean_fa, method='spearman')
+cor.test(m[idx,]$norm.trans, m[idx,]$mean_ad, method='spearman')
+cor.test(m[idx,]$norm.trans, m[idx,]$mean_rd, method='spearman')
+cor.test(m[idx,]$norm.rot, m[idx,]$mean_fa, method='spearman')
+cor.test(m[idx,]$norm.rot, m[idx,]$mean_ad, method='spearman')
+cor.test(m[idx,]$norm.rot, m[idx,]$mean_rd, method='spearman')
+
+```
+
+
+
+
