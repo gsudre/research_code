@@ -47,6 +47,14 @@ if (grepl(pattern = 'group', target)) {
   df2[, target] = as.factor(df2[, target])
 }
 
+# make sure the SNPs are seen as factors
+if (grepl(pattern = 'snp', data_fname) {
+  print('Converting SNPs to categorical variables')
+  for (v in x) {
+    df2[, v] = as.factor(df2[, v])
+  }
+})
+
 print(sprintf('Running model on %d features', length(x)))
 aml <- h2o.automl(x = x, y = target, training_frame = df2,
                   seed=42,
