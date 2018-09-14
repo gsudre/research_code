@@ -53,7 +53,7 @@ if (grepl(pattern = 'snp', data_fname)) {
   for (v in x) {
     df2[, v] = as.factor(df2[, v])
   }
-})
+}
 
 print(sprintf('Running model on %d features', length(x)))
 aml <- h2o.automl(x = x, y = target, training_frame = df2,
