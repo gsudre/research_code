@@ -9,10 +9,12 @@ import pandas as pd
 
 trimmed = [False, True]
 atlases = ['aparc', 'aparc.a2009s']
-rois = [range(5, 10+1) + range(13, 15+1) + [17, 20] + range(25, 33+1) + [36] +
-         range(47, 80+1) + range(82, 115+1),
-        range(5, 10+1) + range(13, 15+1) + [17, 20] + range(25, 33+1) + [36] +
-         range(49, 122+1) + range(124, 197)]
+rois = [list(range(5, 10+1)) + list(range(13, 15+1)) + [17, 20] + \
+        list(range(25, 33+1)) + [36] + list(range(47, 80+1)) + \
+        list(range(82, 115+1)),
+        list(range(5, 10+1)) + list(range(13, 15+1)) + list([17, 20]) + \
+        list(range(25, 33+1)) + [36] + list(range(49, 122+1)) + \
+        list(range(124, 197))]
 
 # fid = open('/Users/sudregp/data/prs/fmri_kids_all.txt', 'r')
 # subjs = [line.rstrip() for line in fid]
@@ -21,16 +23,16 @@ rois = [range(5, 10+1) + range(13, 15+1) + [17, 20] + range(25, 33+1) + [36] +
 # subjs += [line.rstrip() for line in fid]
 # fid.close()
 
-fid = open('/Users/sudregp/data/prs/maskids_503.txt', 'r')
+fid = open('/Users/sudregp/data/baseline_prediction/rsfmri_3minWithClinical.tsv', 'r')
 subjs = [line.rstrip() for line in fid]
 fid.close()
 
 
 for trim in trimmed:
-    print trim
+    print(trim)
     for a, atlas in enumerate(atlases):
-        data_dir = '/Users/sudregp/data/fmri_prs_ss/%s/' % atlas
-        fid = open('/Users/sudregp/data/prs/%s+aseg_REN_all.niml.lt' % atlas)
+        data_dir = '/Users/sudregp/data/baseline_prediction/rsfmri/%s/' % atlas
+        fid = open('/Users/sudregp/data/baseline_prediction/rsfmri/%s+aseg_REN_all.niml.lt' % atlas)
         roi_labels = {}
         for line in fid:
             if line[0] == '"':
@@ -40,7 +42,7 @@ for trim in trimmed:
         for sid, s in enumerate(subjs):
             # as long as the first roi is not empty, we should be fine here
             num_trs = 0
-            print sid, s
+            print(sid, s)
             subj_data = []
             for r in rois[a]:
                 fname = data_dir + '/%s/%d.1D' % (s, r)
