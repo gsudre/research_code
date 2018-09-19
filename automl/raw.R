@@ -37,9 +37,34 @@ data = data[, keep_me]
 feat_var = apply(data, 2, var, na.rm=TRUE)
 data = data[, feat_var != 0]
 print('Merging files')
-df = merge(clin, data, by='mask.id')
+df = merge(clin, data, by='MRN')
 print('Looking for data columns')
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
+
+# checking for subgroup analysis. Options are nonew_OLS_*_slope, nonew_diag_group2,
+# ADHDonly_OLS_*_slope, ADHDonly_diag_group2, nonew_ADHDonly_*, ADHDNOS_OLS_*_slope,
+# ADHDNOS_groupOLS_*_slope, nonew_ADHDNOS_*
+if (grepl('nonew', target)) {
+  df = df[df$diag_group != 'new_onset', ]
+  df$diag_group = factor(df$diag_group)
+  target = sub('nonew_', '', target)
+}
+if (grepl('ADHDonly', target)) {
+  df = df[df$diag_group != 'unaffect', ]
+  df$diag_group = factor(df$diag_group)
+  target = sub('ADHDonly_', '', target)
+}
+if (grepl('ADHDNOS', target)) {
+  df = df[df$DX != 'NV', ]
+  target = sub('ADHDNOS_', '', target)
+  if (grepl('group', target)) {
+    df[, target] = 'nonimprovers'
+    slope = sub('group', '', target)
+    df[df[, slope] < 0, target] = 'improvers'
+    df[, target] = as.factor(df[, target])
+  }
+}
+
 
 print('Converting to H2O')
 df2 = as.h2o(df[, c(x, target)])
