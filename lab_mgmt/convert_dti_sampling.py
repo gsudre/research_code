@@ -5,9 +5,9 @@ from rpy2.robjects import r
 from rpy2.robjects.numpy2ri import numpy2ri
 
 
-dir_name = '/data/sudregp/tmp/'
-subj_file = 'base_subjs.txt'
-r_output_file = 'mean_sampling'
+dir_name = '/Volumes/Shaw/dti_robust_tsa/analysis_may2017/'
+subj_file = '/Users/sudregp/data/baseline_prediction/subjs_diffeo_272.txt'
+r_output_file = 'mean_sampling_272'
 tract_names = ['left_cst', 'left_ifo', 'left_ilf', 'left_slf', 'left_unc',
                'right_cst', 'right_ifo', 'right_ilf', 'right_slf', 'right_unc',
                'cc']
@@ -15,7 +15,7 @@ var_names = ['FA', 'ADC', 'PD', 'AD', 'RD']#, 'eig1', 'eig2', 'eig3']
 
 # find out the subject names so we can have nice names on the table rows
 subj_names = []
-fid = open(dir_name + subj_file, 'r')
+fid = open(subj_file, 'r')
 for line in fid:
     subj_names.append(line.split('_')[0])
 fid.close()
@@ -25,7 +25,7 @@ tract_var_names = []
 
 # for each tract file, read all variables
 for tract in tract_names:
-    print 'opening', tract
+    print('opening', tract)
     # .mean. or .maxFA.
     fid = open(dir_name + 'ixi_template_' + tract + '_def3.med.mean.vtk', 'r')
     data = fid.read()
@@ -36,7 +36,7 @@ for tract in tract_names:
     num_points = int(m_obj.group(1))
 
     for var in var_names:
-        print "looking at variable", var
+        print ("looking at variable", var)
         # make sure the number of subjects matches the list of names
         m_obj = re.search(var + " (\d+) (\d+) float", data)
         thisSubjects = int(m_obj.group(1))
@@ -48,7 +48,7 @@ for tract in tract_names:
             goal_subjects = num_subjects
 
         if thisSubjects != goal_subjects:
-            print "Different number of subjects in " + var
+            print("Different number of subjects in ", var)
         else:
             # figure out where the index of the first number starts
             start_pos = m_obj.end()
