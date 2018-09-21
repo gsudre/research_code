@@ -95,10 +95,9 @@ if (grepl(pattern = 'group', target)) {
 print(sprintf('Running model on %d features', length(x)))
 aml <- h2o.automl(x = x, y = target, training_frame = df2,
                   seed=42,
-                  max_runtime_secs = 3600*24*2,
-                  max_models = NULL,
-                exclude_algos = c("GBM", "StackedEnsemble", "DRF"))
-
+                  max_runtime_secs = NULL,
+                  max_models = NULL)
+                  
 print(data_fname)
 print(clin_fname)
 print(target)
