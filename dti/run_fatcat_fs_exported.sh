@@ -45,7 +45,7 @@ fat_proc_map_to_dti                                                \
 # list all (= 2, probably) renumbered GM maps
 ren_gm=`ls fs_*_REN_gm.nii.gz`
 wmfa="dt_FA.nii.gz"
-wbmask="MASK.nii"
+wbmask="dwi_mask.nii.gz"
 for gm_in in $ren_gm; do
     gm_sel="sel_${gm_in}";
     # apply the ROI (de)selector
