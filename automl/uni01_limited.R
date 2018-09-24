@@ -5,6 +5,7 @@ data_fname = args[1]
 clin_fname = args[2]
 target = args[3]
 export_fname = args[4]
+myseed = as.numeric(args[5])
 
 
 winsorize = function(x, cut = 0.01){
@@ -37,25 +38,64 @@ data = data[, keep_me]
 feat_var = apply(data, 2, var, na.rm=TRUE)
 data = data[, feat_var != 0]
 print('Merging files')
-df = merge(clin, data, by='mask.id')
+df = merge(clin, data, by='MRN')
 print('Looking for data columns')
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
+
+# checking for subgroup analysis. Options are nonew_OLS_*_slope, nonew_diag_group2,
+# ADHDonly_OLS_*_slope, ADHDonly_diag_group2, nonew_ADHDonly_*, ADHDNOS_OLS_*_slope,
+# ADHDNOS_groupOLS_*_slope, nonew_ADHDNOS_*
+if (grepl('nonew', target)) {
+  df = df[df$diag_group != 'new_onset', ]
+  df$diag_group = factor(df$diag_group)
+  target = sub('nonew_', '', target)
+}
+if (grepl('ADHDonly', target)) {
+  df = df[df$diag_group != 'unaffect', ]
+  df$diag_group = factor(df$diag_group)
+  target = sub('ADHDonly_', '', target)
+}
+if (grepl('ADHDNOS', target)) {
+  df = df[df$DX != 'NV', ]
+  target = sub('ADHDNOS_', '', target)
+  if (grepl('group', target)) {
+    df[, target] = 'nonimprovers'
+    slope = sub('group', '', target)
+    df[df[, slope] < 0, target] = 'improvers'
+    df[, target] = as.factor(df[, target])
+  }
+}
+
+set.seed(myseed)
+idx = sample(1:nrow(df), nrow(df), replace=F)
+mylim = floor(.10 * nrow(df))
+data.test = df[idx[1:mylim], ]
+data.train = df[idx[(mylim + 1):nrow(df)], ]
+print(sprintf('Using %d samples for training, %d for testing.',
+              nrow(data.train),
+              nrow(data.test)))
 
 print('Running univariate analysis')
 # winsorize and get univariates if it's a continuous variable
 if (! grepl(pattern = 'group', target)) {
-  b = sapply(df[,x],
+  b = sapply(data.train[, x],
              function(myx) {
-               res = cor.test(myx, df[, target], method='spearman');
+               res = cor.test(myx, data.train[, target], method='spearman');
                return(res$p.value)
              })
   # winsorizing after correlations to avoid ties
-  df[, target] = winsorize(df[, target])
+  data.train[, target] = winsorize(data.train[, target])
+  cut_point_top = max(data.train[, target])
+  cut_point_bottom = min(data.train[, target])
+  i = which(data.test[, target] >= cut_point_top) 
+  data.test[i, target] = cut_point_top
+  j = which(data.test[, target] <= cut_point_bottom) 
+  data.test[j, target] = cut_point_bottom
 } else {
-  df[, target] = as.factor(df[, target])
-  b = sapply(df[,x],
+  data.train[, target] = as.factor(data.train[, target])
+  b = sapply(data.train[,x],
              function(myx) {
-               res = kruskal.test(myx, df[, target]);
+               res = kruskal.test(myx, data.train[, target]);
                return(res$p.value)
              })
 }
@@ -63,29 +103,38 @@ keep_me = b <= .01
 x = x[keep_me]
 
 print('Converting to H2O')
-df2 = as.h2o(df[, c(x, target)])
+dtrain = as.h2o(data.train[, c(x, target)])
+dtest = as.h2o(data.test[, c(x, target)])
 if (grepl(pattern = 'group', target)) {
-  df2[, target] = as.factor(df2[, target])
+  dtrain[, target] = as.factor(dtrain[, target])
+  dtest[, target] = as.factor(dtest[, target])
 }
 
-lb = df2[1:20, ]
-df3 = df2[21:nrow(df2), ]
-fold_numbers <- h2o.kfold_column(df3, nfolds=5, seed=42)
+fold_numbers <- h2o.kfold_column(dtrain, nfolds=5, seed=42)
 names(fold_numbers) <- "fold_numbers"
-df3 <- h2o.cbind(df3, fold_numbers)
-print(h2o.table(lb$diag_group2))
+dtrain <- h2o.cbind(dtrain, fold_numbers)
 
 print(sprintf('Running model on %d features', length(x)))
-aml <- h2o.automl(x = x, y = target, training_frame = df3,
+aml <- h2o.automl(x = x, y = target, training_frame = dtrain,
                   seed=42,
                   fold_column="fold_numbers",
-                  leaderboard=lb,
+                  leaderboard=dtest,
                   max_runtime_secs = NULL,
-                  max_models = 10)
+                  max_models = NULL)
 
 print(data_fname)
 print(clin_fname)
 print(target)
-print(dim(df2))
 print(aml@leaderboard)
 h2o.saveModel(aml@leader, path = export_fname)
+
+# dummy classifier
+if (grepl(pattern = 'group', target)) {
+  print('Class distribution:')
+  print(as.vector(h2o.table(dtrain[,target])['Count'])/nrow(dtrain))
+} else {
+  preds = rep(mean(dtrain[,target]), nrow(dtrain))
+  m = h2o.make_metrics(as.h2o(preds), dtrain[, target])
+  print('MSE prediction mean:')
+  print(m@metrics$MSE)
+}
