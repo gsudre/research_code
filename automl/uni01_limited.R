@@ -68,12 +68,20 @@ if (grepl(pattern = 'group', target)) {
   df2[, target] = as.factor(df2[, target])
 }
 
+lb = df2[1:20, ]
+df3 = df2[21:nrow(df2), ]
+fold_numbers <- h2o.kfold_column(df3, nfolds=5, seed=42)
+names(fold_numbers) <- "fold_numbers"
+df3 <- h2o.cbind(df3, fold_numbers)
+print(h2o.table(lb$diag_group2))
+
 print(sprintf('Running model on %d features', length(x)))
-aml <- h2o.automl(x = x, y = target, training_frame = df2,
+aml <- h2o.automl(x = x, y = target, training_frame = df3,
                   seed=42,
-                  max_runtime_secs = 3600*24*2,
-                  max_models = NULL,
-                exclude_algos = c("GBM", "StackedEnsemble", "DRF"))
+                  fold_column="fold_numbers",
+                  leaderboard=lb,
+                  max_runtime_secs = NULL,
+                  max_models = 10)
 
 print(data_fname)
 print(clin_fname)
