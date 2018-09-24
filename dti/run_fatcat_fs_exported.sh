@@ -38,7 +38,7 @@ fat_proc_map_to_dti                                                \
     -followers_surf  $suma_dir/std.141.*.gii         \
     -followers_ndset $suma_dir/std.141.*.niml.dset   \
     -followers_spec  $suma_dir/std.141.*.spec        \
-    -base            ${proc_dir}/${dwi_root}.nii'[0]'         \
+    -base            ${proc_dir}/${subj}.nii'[0]'         \
     -prefix          fs
 
 # selecting our ROIs:
