@@ -5,6 +5,7 @@ data_fname = args[1]
 clin_fname = args[2]
 target = args[3]
 export_fname = args[4]
+myseed = as.numeric(args[5])
 
 
 winsorize = function(x, cut = 0.01){
@@ -73,29 +74,55 @@ keep_me = vexp <= .95
 a = cbind(pca$x[, keep_me], df[, target])
 colnames(a)[ncol(a)] = target
 
-# winsorize if it's a continuous variable
+set.seed(myseed)
+idx = sample(1:nrow(df), nrow(df), replace=F)
+mylim = floor(.10 * nrow(df))
+data.test = a[idx[1:mylim], ]
+data.train = a[idx[(mylim + 1):nrow(df)], ]
+print(sprintf('Using %d samples for training, %d for testing.',
+              nrow(data.train),
+              nrow(data.test)))
+x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
+
+# winsorize if continuous variable
 if (! grepl(pattern = 'group', target)) {
-  a[, target] = winsorize(a[, target])
+  data.train[, target] = winsorize(data.train[, target])
+  cut_point_top = max(data.train[, target])
+  cut_point_bottom = min(data.train[, target])
+  i = which(data.test[, target] >= cut_point_top) 
+  data.test[i, target] = cut_point_top
+  j = which(data.test[, target] <= cut_point_bottom) 
+  data.test[j, target] = cut_point_bottom
 }
 
-# transform it back to h2o data frame
 print('Converting to H2O')
-df2 = as.h2o(a)
-# groups need to be factors, after the h2o dataframe is created!
+dtrain = as.h2o(data.train[, c(x, target)])
+dtest = as.h2o(data.test[, c(x, target)])
 if (grepl(pattern = 'group', target)) {
-  df2[, target] = as.factor(df2[, target])
+  dtrain[, target] = as.factor(dtrain[, target])
+  dtest[, target] = as.factor(dtest[, target])
 }
-x = colnames(df2)[grepl(pattern = '^PC', colnames(df2))]
 
-print(sprintf('Running model on %d features', ncol(df2)-1))
-aml <- h2o.automl(x = x, y = target, training_frame = df2,
-                  seed=42,
+print(sprintf('Running model on %d features', length(x)))
+aml <- h2o.automl(x = x, y = target, training_frame = dtrain,
+                  seed=myseed,
+                  validation_frame=dtest,
                   max_runtime_secs = NULL,
                   max_models = NULL)
 
 print(data_fname)
 print(clin_fname)
 print(target)
-print(dim(df2))
 print(aml@leaderboard)
 h2o.saveModel(aml@leader, path = export_fname)
+
+# dummy classifier
+if (grepl(pattern = 'group', target)) {
+  print('Class distribution:')
+  print(as.vector(h2o.table(dtrain[,target])['Count'])/nrow(dtrain))
+} else {
+  preds = rep(mean(dtrain[,target]), nrow(dtrain))
+  m = h2o.make_metrics(as.h2o(preds), dtrain[, target])
+  print('MSE prediction mean:')
+  print(m@metrics$MSE)
+}

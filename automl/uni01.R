@@ -5,6 +5,7 @@ data_fname = args[1]
 clin_fname = args[2]
 target = args[3]
 export_fname = args[4]
+myseed = as.numeric(args[5])
 
 
 winsorize = function(x, cut = 0.01){
@@ -65,21 +66,36 @@ if (grepl('ADHDNOS', target)) {
   }
 }
 
+set.seed(myseed)
+idx = sample(1:nrow(df), nrow(df), replace=F)
+mylim = floor(.10 * nrow(df))
+data.test = df[idx[1:mylim], ]
+data.train = df[idx[(mylim + 1):nrow(df)], ]
+print(sprintf('Using %d samples for training, %d for testing.',
+              nrow(data.train),
+              nrow(data.test)))
+
 print('Running univariate analysis')
 # winsorize and get univariates if it's a continuous variable
 if (! grepl(pattern = 'group', target)) {
-  b = sapply(df[,x],
+  b = sapply(data.train[, x],
              function(myx) {
-               res = cor.test(myx, df[, target], method='spearman');
+               res = cor.test(myx, data.train[, target], method='spearman');
                return(res$p.value)
              })
   # winsorizing after correlations to avoid ties
-  df[, target] = winsorize(df[, target])
+  data.train[, target] = winsorize(data.train[, target])
+  cut_point_top = max(data.train[, target])
+  cut_point_bottom = min(data.train[, target])
+  i = which(data.test[, target] >= cut_point_top) 
+  data.test[i, target] = cut_point_top
+  j = which(data.test[, target] <= cut_point_bottom) 
+  data.test[j, target] = cut_point_bottom
 } else {
-  df[, target] = as.factor(df[, target])
-  b = sapply(df[,x],
+  data.train[, target] = as.factor(data.train[, target])
+  b = sapply(data.train[,x],
              function(myx) {
-               res = kruskal.test(myx, df[, target]);
+               res = kruskal.test(myx, data.train[, target]);
                return(res$p.value)
              })
 }
@@ -87,20 +103,33 @@ keep_me = b <= .01
 x = x[keep_me]
 
 print('Converting to H2O')
-df2 = as.h2o(df[, c(x, target)])
+dtrain = as.h2o(data.train[, c(x, target)])
+dtest = as.h2o(data.test[, c(x, target)])
 if (grepl(pattern = 'group', target)) {
-  df2[, target] = as.factor(df2[, target])
+  dtrain[, target] = as.factor(dtrain[, target])
+  dtest[, target] = as.factor(dtest[, target])
 }
 
 print(sprintf('Running model on %d features', length(x)))
-aml <- h2o.automl(x = x, y = target, training_frame = df2,
-                  seed=42,
+aml <- h2o.automl(x = x, y = target, training_frame = dtrain,
+                  seed=myseed,
+                  validation_frame=dtest,
                   max_runtime_secs = NULL,
                   max_models = NULL)
 
 print(data_fname)
 print(clin_fname)
 print(target)
-print(dim(df2))
 print(aml@leaderboard)
 h2o.saveModel(aml@leader, path = export_fname)
+
+# dummy classifier
+if (grepl(pattern = 'group', target)) {
+  print('Class distribution:')
+  print(as.vector(h2o.table(dtrain[,target])['Count'])/nrow(dtrain))
+} else {
+  preds = rep(mean(dtrain[,target]), nrow(dtrain))
+  m = h2o.make_metrics(as.h2o(preds), dtrain[, target])
+  print('MSE prediction mean:')
+  print(m@metrics$MSE)
+}
