@@ -104,7 +104,9 @@ x = x[keep_me]
 
 # PCA is fine to be done in the entire set, as there are no labels
 print('Running PCA')
-pca = prcomp(df[, x], scale=T)
+# quick hack to use na.action on prcomp
+fm_str = sprintf('~ %s', paste0(x, collapse='+ ', sep=' '))
+pca = prcomp(as.formula(fm_str), df[, x], scale=T, na.action=na.exclude)
 eigs <- pca$sdev^2
 vexp = cumsum(eigs)/sum(eigs)
 keep_me = vexp <= .95
