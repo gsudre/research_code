@@ -58,7 +58,7 @@ if (grepl('ADHDonly', target)) {
 if (grepl('ADHDNOS', target)) {
   df = df[df$DX != 'NV', ]
   target = sub('ADHDNOS_', '', target)
-  if (grepl('group', target)) {
+  if (grepl('groupOLS', target) || grepl('grouprandom', target)) {
     df[, target] = 'nonimprovers'
     slope = sub('group', '', target)
     df[df[, slope] < 0, target] = 'improvers'
