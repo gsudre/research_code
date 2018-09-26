@@ -103,6 +103,15 @@ if (grepl(pattern = 'snp', data_fname)) {
   }
 }
 
+# make sure some of the socioeconomic variables are seen as factors
+if (grepl(pattern = 'social', data_fname)) {
+  print('Converting SNPs to categorical variables')
+  for (v in c('v_CategCounty', 'v_CategHomeType')) {
+    dtrain[, v] = as.factor(dtrain[, v])
+    dtest[, v] = as.factor(dtest[, v])
+  }
+}
+
 print(sprintf('Running model on %d features', length(x)))
 aml <- h2o.automl(x = x, y = target, training_frame = dtrain,
                   seed=myseed,
