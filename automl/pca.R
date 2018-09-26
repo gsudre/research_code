@@ -32,11 +32,16 @@ print('Loading files')
 clin = read.csv(clin_fname)
 load(data_fname)  #variable is data
 # remove constant variables that screw up PCA and univariate tests
-print('Removing constant variables and NAs')
-keep_me = colSums(is.na(data)) == 0
-data = data[, keep_me]
+print('Removing constant variables')
 feat_var = apply(data, 2, var, na.rm=TRUE)
-data = data[, feat_var != 0]
+idx = feat_var != 0  # TRUE for features with 0 variance (constant)
+# categorical variables give NA variance, but we want to keep them
+idx[is.na(idx)] = TRUE
+data = data[, idx]
+nNAs = colSums(is.na(data))  # number of NAs in each variable
+# remove variables that are all NAs
+data = data[, nNAs < nrow(data)]
+print(sprintf('Features remaining: %d (%d with NAs)', ncol(data)-1, sum(nNAs>0)))
 print('Merging files')
 df = merge(clin, data, by='MRN')
 print('Looking for data columns')
@@ -67,7 +72,9 @@ if (grepl('ADHDNOS', target)) {
 }
 
 print('Running PCA')
-pca = prcomp(df[, x], scale=T)
+# quick hack to use na.action on prcomp
+fm_str = sprintf('~ %s', paste0(x, collapse='+ ', sep=' '))
+pca = prcomp(as.formula(fm_str), df[, x], scale=T, na.action=na.exclude)
 eigs <- pca$sdev^2
 vexp = cumsum(eigs)/sum(eigs)
 keep_me = vexp <= .95
