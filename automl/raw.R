@@ -31,21 +31,17 @@ print('Loading files')
 # merging phenotype and clinical data
 clin = read.csv(clin_fname)
 load(data_fname)  #variable is data
-# if we have NAs, we cannot run GNB
-keep_me = colSums(is.na(data)) == 0
-if (sum(keep_me) > 0) {
-
-}
 # remove constant variables that screw up PCA and univariate tests
-print('Removing constant variables and NAs')
-nNAs = colSums(is.na(data))  # number of NAs in each variable
-# remove variables that are all NAs
-data = data[, nNAs < nrow(data)]
+print('Removing constant variables')
 feat_var = apply(data, 2, var, na.rm=TRUE)
 idx = feat_var != 0  # TRUE for features with 0 variance (constant)
 # categorical variables give NA variance, but we want to keep them
 idx[is.na(idx)] = TRUE
 data = data[, idx]
+nNAs = colSums(is.na(data))  # number of NAs in each variable
+# remove variables that are all NAs
+data = data[, nNAs < nrow(data)]
+print(sprintf('Features remaining: %d (%d with NAs)', ncol(data)-1, sum(nNAs>0)))
 print('Merging files')
 df = merge(clin, data, by='MRN')
 print('Looking for data columns')
