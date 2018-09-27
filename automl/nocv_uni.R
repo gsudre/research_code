@@ -75,7 +75,7 @@ set.seed(myseed)
 idx = sample(1:nrow(df), nrow(df), replace=F)
 mylim = floor(.10 * nrow(df))
 data.test = df[idx[1:mylim], ]
-data.valid = df[idx[(mylim + 1):(2 * my_lim)], ]
+data.valid = df[idx[(mylim + 1):(2 * mylim)], ]
 data.train = df[idx[(2 * mylim + 1):nrow(df)], ]
 print(sprintf('Using %d samples for training, %d for validation, %d for testing.',
               nrow(data.train),
