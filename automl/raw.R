@@ -133,10 +133,10 @@ h2o.saveModel(aml@leader, path = export_fname)
 # dummy classifier
 if (grepl(pattern = 'group', target)) {
   print('Class distribution:')
-  print(as.vector(h2o.table(df2[,target])['Count'])/nrow(df2))
+  print(as.vector(h2o.table(dtrain[,target])['Count'])/nrow(dtrain))
 } else {
-  preds = rep(mean(df2[,target]), nrow(df2))
-  m = h2o.make_metrics(as.h2o(preds), df2[, target])
+  preds = rep(mean(dtrain[,target]), nrow(dtrain))
+  m = h2o.make_metrics(as.h2o(preds), dtrain[, target])
   print('MSE prediction mean:')
   print(m@metrics$MSE)
 }
