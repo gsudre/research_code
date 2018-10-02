@@ -110,8 +110,18 @@ if (grepl(pattern = 'snp', data_fname)) {
 
 # make sure some of the socioeconomic variables are seen as factors
 if (grepl(pattern = 'social', data_fname)) {
-  print('Converting SNPs to categorical variables')
+  print('Converting some socioeconomics to categorical variables')
   for (v in c('v_CategCounty', 'v_CategHomeType')) {
+    dtrain[, v] = as.factor(dtrain[, v])
+    dtest[, v] = as.factor(dtest[, v])
+  }
+}
+
+# and only some in the binary clinical are factors
+if (grepl(pattern = 'clinic', data_fname)) {
+  print('Converting binary SX variables')
+  xbin = colnames(df)[grepl(pattern = '^vCateg', colnames(df))]
+  for (v in xbin) {
     dtrain[, v] = as.factor(dtrain[, v])
     dtest[, v] = as.factor(dtest[, v])
   }
