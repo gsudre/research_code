@@ -127,6 +127,16 @@ if (grepl(pattern = 'clinic', data_fname)) {
   }
 }
 
+# same thign for adhd200 variables
+if (grepl(pattern = 'adhd', data_fname)) {
+  print('Converting categorical variables')
+  xbin = colnames(df)[grepl(pattern = '^vCateg', colnames(df))]
+  for (v in xbin) {
+    dtrain[, v] = as.factor(dtrain[, v])
+    dtest[, v] = as.factor(dtest[, v])
+  }
+}
+
 print(sprintf('Running model on %d features', length(x)))
 aml <- h2o.automl(x = x, y = target, training_frame = dtrain,
                   seed=myseed,
