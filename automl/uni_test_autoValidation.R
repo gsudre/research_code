@@ -25,7 +25,9 @@ if (Sys.info()['sysname'] == 'Darwin') {
 } else {
   max_mem = paste(Sys.getenv('SLURM_MEM_PER_NODE'),'m',sep='')
 }
-h2o.init(ip='localhost', nthreads=future::availableCores(), max_mem_size=max_mem)
+h2o.init(ip='localhost', nthreads=future::availableCores(),
+         max_mem_size=max_mem,
+         port=sample(50000:60000, 1))  # jobs on same node use different ports
 
 print('Loading files')
 # merging phenotype and clinical data
