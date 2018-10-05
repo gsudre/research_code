@@ -73,6 +73,16 @@ if (grepl('ADHDNOS', target)) {
   }
 }
 
+# use negative seed to randomize the data
+if (myseed < 0) {
+  print('Randomizing target!!!')
+  myseed = -1 * myseed
+  set.seed(myseed)
+  idx = sample(1:nrow(df), nrow(df), replace=F)
+  df[, target] = df[idx, target]
+}
+
+# set seed sgain to replicate old results
 set.seed(myseed)
 idx = sample(1:nrow(df), nrow(df), replace=F)
 mylim = floor(.10 * nrow(df))
