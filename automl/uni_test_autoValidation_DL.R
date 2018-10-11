@@ -72,6 +72,19 @@ if (grepl('ADHDNOS', target)) {
     df[, target] = as.factor(df[, target])
   }
 }
+if (grepl('VS', target)) {
+    groups = strsplit(target, 'VS')
+    group1 = groups[[1]][1]
+    group2 = groups[[1]][2]
+  df = df[df$DX != 'NV', ]
+  target = sub('ADHDNOS_', '', target)
+  if (grepl('groupOLS', target) || grepl('grouprandom', target)) {
+    df[, target] = 'nonimprovers'
+    slope = sub('group', '', target)
+    df[df[, slope] < 0, target] = 'improvers'
+    df[, target] = as.factor(df[, target])
+  }
+}
 
 # use negative seed to randomize the data
 if (myseed < 0) {
@@ -82,12 +95,11 @@ if (myseed < 0) {
   df[, target] = df[idx, target]
 }
 
-# set seed sgain to replicate old results
+# set seed again to replicate old results
+library(caret)
 set.seed(myseed)
-idx = sample(1:nrow(df), nrow(df), replace=F)
-mylim = floor(.10 * nrow(df))
-test_idx = sort(idx[1:mylim])  # H2o only deals with sorted indexes
-train_idx = sort(idx[(mylim + 1):nrow(df)])
+train_idx = sort(createDataPartition(df[, target], p = .9, list = FALSE, times = 1))
+test_idx = sort(setdiff(1:nrow(df), train_idx)) # H2o only deals with sorted indexes
 data.test = df[test_idx, ]
 data.train = df[train_idx, ]
 print(sprintf('Using %d samples for training + validation, %d for testing.',
@@ -163,7 +175,11 @@ print(test_idx)
 # print predictions
 print('Test set predictions:')
 preds = h2o.predict(aml@leader, newdata=dtest[, x])
-print(preds)
+print(preds, n=nrow(preds))
 
 # print all model metrics on test data
 print(h2o.make_metrics(preds[,3], dtest[, target]))
+
+# TODO
+# - implement VS targets
+# - keep only DeepNet results
