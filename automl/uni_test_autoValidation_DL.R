@@ -52,6 +52,9 @@ x = colnames(df)[grepl(pattern = '^v', colnames(df))]
 # checking for subgroup analysis. Options are nonew_OLS_*_slope, nonew_diag_group2,
 # ADHDonly_OLS_*_slope, ADHDonly_diag_group2, nonew_ADHDonly_*, ADHDNOS_OLS_*_slope,
 # ADHDNOS_groupOLS_*_slope, nonew_ADHDNOS_*
+# for pairwise, we can do the usual nvVSper, nvVSrem, perVSrem, then
+# groupOLS_SX_slope_ plus nvVSimp, nvVSnonimp, impVSnonimp, plus all of them
+# using nonew_
 if (grepl('nonew', target)) {
   df = df[df$diag_group != 'new_onset', ]
   df$diag_group = factor(df$diag_group)
@@ -72,18 +75,47 @@ if (grepl('ADHDNOS', target)) {
     df[, target] = as.factor(df[, target])
   }
 }
+# pairwise comparisons
 if (grepl('VS', target)) {
+    if (grepl('groupOLS', target)) {
+        tmp = strsplit(target, '_')[[1]]
+        slope_name = paste(tmp[1:(length(tmp)-1)], collapse='_')
+        slope_name = sub('group', '', slope_name)
+        df[, 'groupSlope'] = 'nonimprovers'
+        df[df[, slope_name] < 0, 'groupSlope'] = 'improvers'
+        df$groupSlope = as.factor(df$groupSlope)
+        target = tmp[length(tmp)]  # get the VS part only
+    }
     groups = strsplit(target, 'VS')
     group1 = groups[[1]][1]
     group2 = groups[[1]][2]
-  df = df[df$DX != 'NV', ]
-  target = sub('ADHDNOS_', '', target)
-  if (grepl('groupOLS', target) || grepl('grouprandom', target)) {
-    df[, target] = 'nonimprovers'
-    slope = sub('group', '', target)
-    df[df[, slope] < 0, target] = 'improvers'
+    keep_me = F
+    if (group1 == 'nv' || group2 == 'nv') {
+        keep_me = keep_me | df$diag_group2 == 1
+    }
+    if (group1 == 'per' || group2 == 'per') {
+        keep_me = keep_me | df$diag_group2 == 3
+        target = 'diag_group2'
+    }
+    if (group1 == 'rem' || group2 == 'rem') {
+        keep_me = keep_me | df$diag_group2 == 2
+        target = 'diag_group2'
+    }
+    if (group1 == 'imp' || group2 == 'imp') {
+        keep_me = keep_me | df$groupSlope == 'improvers'
+        target = 'groupSlope'
+    }
+    if (group1 == 'nonimp' || group2 == 'nonimp') {
+        keep_me = keep_me | df$groupSlope == 'nonimprovers'
+        target = 'groupSlope'
+    }
+    # remove NVs if we are doing imp vs nonImp
+    if (sum(keep_me) == nrow(df)) {
+        df = df[df$diag_group2 != 1, ]
+    } else {
+        df = df[keep_me, ]
+    }
     df[, target] = as.factor(df[, target])
-  }
 }
 
 # use negative seed to randomize the data
@@ -147,8 +179,8 @@ aml <- h2o.automl(x = x, y = target, training_frame = dtrain,
                 seed=myseed,
                 leaderboard_frame=dtest,
                 max_runtime_secs = NULL,
-                max_models = 5,
-                exclude_algos = c("DeepLearning", "GLM", "DRF", "StackedEnsemble"))
+                max_models = NULL,
+                exclude_algos = c("XGB", "GLM", "DRF", "StackedEnsemble"))
 
 print(aml@leaderboard)
 h2o.saveModel(aml@leader, path = export_fname)
@@ -179,7 +211,3 @@ print(preds, n=nrow(preds))
 
 # print all model metrics on test data
 print(h2o.make_metrics(preds[,3], dtest[, target]))
-
-# TODO
-# - implement VS targets
-# - keep only DeepNet results
