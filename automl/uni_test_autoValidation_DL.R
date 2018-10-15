@@ -183,7 +183,6 @@ aml <- h2o.automl(x = x, y = target, training_frame = dtrain,
                 exclude_algos = c("GBM", "GLM", "DRF", "StackedEnsemble"))
 
 print(aml@leaderboard)
-h2o.saveModel(aml@leader, path = export_fname)
 
 # dummy classifier
 if (grepl(pattern = 'group', target)) {
@@ -211,3 +210,6 @@ print(preds, n=nrow(preds))
 
 # print all model metrics on test data
 print(h2o.make_metrics(preds[,3], dtest[, target]))
+
+# last thing is saving model, in case there are any permissions or I/O errors
+h2o.saveModel(aml@leader, path = export_fname)
