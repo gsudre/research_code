@@ -11,6 +11,7 @@ It also creates a CSV file to be uploaded to Labmatrix to populate Scan fields.
 
 Gustavo Sudre, 10/2013
 
+** Updated to include glutamate scans, GS 10/2018
 '''
 
 import os
@@ -34,9 +35,9 @@ symlinkFolder = '%s/data_by_maskID/' % sys.argv[1]
 # type of modalities we scan
 # note that these names need to be found in the README file!
 # used to look for fmri for stop task, but not running it anymore!
-modInReadme = ['rage_', 'ZZZZZZZ', 'rest', 'edti', 'clinical', 'fat_sat']
+modInReadme = ['rage_', 'ZZZZZZZ', 'rest', 'edti', 'clinical', 'fat_sat', 'glu']
 # how they should be called in the Scan record (same order!)
-modInCSV = ['MPRAGE', 'stop task', 'rest', 'eDTI', 'clinical', 'T2']
+modInCSV = ['MPRAGE', 'stop task', 'rest', 'eDTI', 'clinical', 'T2', 'glutamate']
 
 
 # Function that checks whether we scanned a certain type of data (dtype) in a
