@@ -112,13 +112,19 @@ if (grepl('VS', target)) {
         keep_me = keep_me | df$groupSlope == 'nonimprovers'
         target = 'groupSlope'
     }
+    if (group1 == 'adhd' || group2 == 'adhd') {
+        df[df$diag_group2 == 3, 'diag_group2'] = 2
+        keep_me = keep_me | df$diag_group2 == 2
+        target = 'diag_group2'
+    }
     # remove NVs if we are doing imp vs nonImp
-    if (sum(keep_me) == nrow(df)) {
+    if (sum(keep_me) == nrow(df) && (grepl('imp', group1) || grepl('imp', group2))) {
         df = df[df$diag_group2 != 1, ]
     } else {
         df = df[keep_me, ]
     }
     df[, target] = as.factor(as.character(df[, target]))
+    print(table(df[, target]))
 }
 
 # use negative seed to randomize the data
