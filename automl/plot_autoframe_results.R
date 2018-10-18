@@ -13,7 +13,7 @@
 # remission is the negative. Improvers are always the negative as well, 
 
 
-res_file = '~/Documents/baseline_prediction/autoframeDL_summary_10152018.csv'
+res_file = '~/autoframeDL_summary.csv'
 
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL, t_str, leg) {
   library(grid)
@@ -72,7 +72,7 @@ levels(res$pheno)[grepl('ALL', levels(res$pheno))] <- "DTI; all"
 levels(res$pheno)[grepl('thick', levels(res$pheno))] <- "thickness"
 mycolors=c('red','orange','yellow', 'green', 'cyan', 'navy', 'purple')
 
-for (target in targets[1:2]) {
+for (target in targets) {
     print(sprintf('Drawing %s', target))
 
     p1<-ggplot(res[res$target == target,], aes(x=pheno, y=auc, fill=pheno)) +
@@ -89,9 +89,9 @@ for (target in targets[1:2]) {
     p1 = p1 + scale_fill_manual(breaks=phenos, labels=labels, values=mycolors)
     p1 = p1 + geom_hline(yintercept=.5, linetype="dashed", color = "black") 
     p2<-ggplot(res[res$target == target,], aes(x=pheno, y=f1, fill=pheno)) +
-    geom_boxplot() + ylim(0, 1) + labs(y = "F1-score (mean prec, sens)") + scale_fill_manual(breaks=phenos, labels=labels, values=mycolors)
+    geom_boxplot(notch=T) + ylim(0, 1) + labs(y = "F1-score (mean prec, sens)") + scale_fill_manual(breaks=phenos, labels=labels, values=mycolors)
     p3<-ggplot(res[res$target == target,], aes(x=pheno, y=acc, fill=pheno)) +
-    geom_boxplot() + ylim(0, 1) + labs(y = "Accuracy")+ scale_fill_manual(breaks=phenos, labels=labels, values=mycolors)
+    geom_boxplot(notch=T) + ylim(0, 1) + labs(y = "Accuracy")+ scale_fill_manual(breaks=phenos, labels=labels, values=mycolors)
 
     # let's add some horizontal lines for random accuracy
     cnt = 1
@@ -103,11 +103,11 @@ for (target in targets[1:2]) {
         cnt = cnt + 1
     }
     p4<-ggplot(res[res$target == target,], aes(x=pheno, y=sens, fill=pheno)) +
-    geom_boxplot() + ylim(0, 1) + labs(y = "Sensitivity (TP/(TP+FN))")+ scale_fill_manual(breaks=phenos, labels=labels, values=mycolors)
+    geom_boxplot(notch=T) + ylim(0, 1) + labs(y = "Sensitivity (TP/(TP+FN))")+ scale_fill_manual(breaks=phenos, labels=labels, values=mycolors)
     p5<-ggplot(res[res$target == target,], aes(x=pheno, y=spec, fill=pheno)) +
-    geom_boxplot() + ylim(0, 1) + labs(y = "Specificity (TN/(TN+FP))")+ scale_fill_manual(breaks=phenos, labels=labels, values=mycolors)
+    geom_boxplot(notch=T) + ylim(0, 1) + labs(y = "Specificity (TN/(TN+FP))")+ scale_fill_manual(breaks=phenos, labels=labels, values=mycolors)
     p6<-ggplot(res[res$target == target,], aes(x=pheno, y=prec, fill=pheno)) +
-    geom_boxplot() + ylim(0, 1) + labs(y = "Precision/PPV (TP/(TP+FP))")+ scale_fill_manual(breaks=phenos, labels=labels, values=mycolors)
+    geom_boxplot(notch=T) + ylim(0, 1) + labs(y = "Precision/PPV (TP/(TP+FP))")+ scale_fill_manual(breaks=phenos, labels=labels, values=mycolors)
     t = theme(axis.title.x=element_blank(),
             axis.text.x=element_blank(),
             axis.ticks.x=element_blank(),
@@ -119,14 +119,3 @@ for (target in targets[1:2]) {
     multiplot(p1 + t, p4 + t, p3 + t, p5 + t , p2 + t, p6 + t, cols=3, t_str=target, leg=leg)
     dev.off()
 }
-
-# who is the positive group?
-# make ROC
-# generate boxes for all other datasets?
-# shouldn't we be doing worse in nvVSrem type of comparisons? maybe not if we
-# can do nvVSadhd at baseline, baselically showing that the brain is not
-# remitted yet at the time of scan.
-# check that the brain regions are similiar for similar decoding tasks, but
-# different for differen ones (e.g. nvVSper should be similar to nvVSnonimp, but
-# different than perVSrem. Also, nvVSper and nvVSrem should be similar to
-# nvVSadhd, when we run the latter.
