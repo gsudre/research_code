@@ -77,12 +77,15 @@ if (grepl('ADHDNOS', target)) {
 }
 # pairwise comparisons
 if (grepl('VS', target)) {
+    df[, 'groupSlope'] = 'nonimprovers'
     if (grepl('groupOLS', target)) {
         tmp = strsplit(target, '_')[[1]]
         slope_name = paste(tmp[1:(length(tmp)-1)], collapse='_')
         slope_name = sub('group', '', slope_name)
-        df[, 'groupSlope'] = 'nonimprovers'
         df[df[, slope_name] < 0, 'groupSlope'] = 'improvers'
+        if (grepl('nv', target)) {
+            df[df$diag_group2 == 1, 'groupSlope'] = 'nv'
+        }
         df$groupSlope = as.factor(df$groupSlope)
         target = tmp[length(tmp)]  # get the VS part only
     }
@@ -115,16 +118,23 @@ if (grepl('VS', target)) {
     } else {
         df = df[keep_me, ]
     }
-    df[, target] = as.factor(df[, target])
+    df[, target] = as.factor(as.character(df[, target]))
 }
 
 # use negative seed to randomize the data
 if (myseed < 0) {
-  print('Randomizing target!!!')
+#   print('Randomizing target!!!')
+#   myseed = -1 * myseed
+#   set.seed(myseed)
+#   idx = sample(1:nrow(df), nrow(df), replace=F)
+#   df[, target] = df[idx, target]
+  print('Creating random data!!!')
   myseed = -1 * myseed
   set.seed(myseed)
-  idx = sample(1:nrow(df), nrow(df), replace=F)
-  df[, target] = df[idx, target]
+  rnd_data = matrix(runif(nrow(df)*length(x),
+                          min(df[,x], na.rm=T), max(df[,x], na.rm=T)),
+                    nrow(df), length(x))
+  df[, x] = rnd_data
 }
 
 # set seed again to replicate old results

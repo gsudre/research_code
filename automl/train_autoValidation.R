@@ -107,8 +107,7 @@ if (grepl('VS', target)) {
     } else {
         df = df[keep_me, ]
     }
-    df[, target] = as.factor(df[, target])
-    print(table(df[, target]))
+    df[, target] = as.factor(as.character(df[, target]))
 }
 
 # set seed again to replicate old results
