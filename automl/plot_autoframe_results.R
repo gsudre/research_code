@@ -13,7 +13,7 @@
 # remission is the negative. Improvers are always the negative as well, 
 
 
-res_file = '~/autoframeDL_summary.csv'
+res_file = '~/Documents/baseline_prediction/autoframeDL_summary_10192018.csv'
 
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL, t_str, leg) {
   library(grid)

@@ -190,6 +190,48 @@ if (grepl(pattern = 'group', target)) {
     dtest[, target] = outcome[test_idx]
 }
 
+# make sure the SNPs are seen as factors
+if (grepl(pattern = 'snp', data_fname)) {
+  print('Converting SNPs to categorical variables')
+  for (v in x) {
+    dtrain[, v] = as.factor(dtrain[, v])
+    dtest[, v] = as.factor(dtest[, v])
+  }
+}
+
+# make sure some of the socioeconomic variables are seen as factors
+if (grepl(pattern = 'social', data_fname)) {
+  print('Converting some socioeconomics to categorical variables')
+  for (v in c('v_CategCounty', 'v_CategHomeType')) {
+      if (v %in% x) {
+          dtrain[, v] = as.factor(dtrain[, v])
+          dtest[, v] = as.factor(dtest[, v])
+      }
+  }
+}
+
+# use all binary clinic variables, regardless of univariate results
+if (grepl(pattern = 'clinic', data_fname)) {
+  print('Converting binary clinical variables')
+  x = colnames(df)[grepl(pattern = '^v', colnames(df))]
+  xbin = colnames(df)[grepl(pattern = '^vCateg', colnames(df))]
+  for (v in xbin) {
+    dtrain[, v] = as.factor(dtrain[, v])
+    dtest[, v] = as.factor(dtest[, v])
+  }
+}
+
+# use all adhd200 variables, regardless of univariate results
+if (grepl(pattern = 'adhd', data_fname)) {
+  print('Converting categorical variables')
+  x = colnames(df)[grepl(pattern = '^v', colnames(df))]
+  xbin = colnames(df)[grepl(pattern = '^vCateg', colnames(df))]
+  for (v in xbin) {
+    dtrain[, v] = as.factor(dtrain[, v])
+    dtest[, v] = as.factor(dtest[, v])
+  }
+}
+
 print(sprintf('Running model on %d features', length(x)))
 aml <- h2o.automl(x = x, y = target, training_frame = dtrain,
                 seed=myseed,
