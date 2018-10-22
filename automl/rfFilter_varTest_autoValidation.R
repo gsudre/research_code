@@ -130,11 +130,6 @@ if (grepl('VS', target)) {
 
 # use negative seed to randomize the data
 if (myseed < 0) {
-#   print('Randomizing target!!!')
-#   myseed = -1 * myseed
-#   set.seed(myseed)
-#   idx = sample(1:nrow(df), nrow(df), replace=F)
-#   df[, target] = df[idx, target]
   print('Creating random data!!!')
   myseed = -1 * myseed
   set.seed(myseed)
