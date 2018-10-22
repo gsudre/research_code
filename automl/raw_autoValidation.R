@@ -1,4 +1,5 @@
-# runs classification tasks using AutoML from H2O, variable partition test size
+# runs classification tasks using AutoML from H2O, uses leaderboard from CV. Not
+# set-up for winsorization!
 
 args <- commandArgs(trailingOnly = TRUE)
 data_fname = args[1]
@@ -6,18 +7,7 @@ clin_fname = args[2]
 target = args[3]
 export_fname = args[4]
 myseed = as.numeric(args[5])
-train_size = as.numeric(args[6])
 
-
-winsorize = function(x, cut = 0.01){
-  cut_point_top <- quantile(x, 1 - cut, na.rm = T)
-  cut_point_bottom <- quantile(x, cut, na.rm = T)
-  i = which(x >= cut_point_top) 
-  x[i] = cut_point_top
-  j = which(x <= cut_point_bottom) 
-  x[j] = cut_point_bottom
-  return(x)
-}
 
 # starting h2o
 library(h2o)
@@ -130,11 +120,6 @@ if (grepl('VS', target)) {
 
 # use negative seed to randomize the data
 if (myseed < 0) {
-#   print('Randomizing target!!!')
-#   myseed = -1 * myseed
-#   set.seed(myseed)
-#   idx = sample(1:nrow(df), nrow(df), replace=F)
-#   df[, target] = df[idx, target]
   print('Creating random data!!!')
   myseed = -1 * myseed
   set.seed(myseed)
@@ -145,23 +130,15 @@ if (myseed < 0) {
 }
 
 # set seed again to replicate old results
-library(caret)
 set.seed(myseed)
-train_idx = sort(createDataPartition(df[, target], p = train_size, list = FALSE, times = 1))
-test_idx = sort(setdiff(1:nrow(df), train_idx)) # H2o only deals with sorted indexes
-data.test = df[test_idx, ]
-data.train = df[train_idx, ]
-print(sprintf('Using %d samples for training + validation, %d for testing.',
-              nrow(data.train),
-              nrow(data.test)))
+print(sprintf('Using all %d samples for training + validation (CV results for leaderboard).',
+              nrow(df)))
 
 print('Converting to H2O')
-dtrain = as.h2o(data.train[, c(x, target)])
-dtest = as.h2o(data.test[, c(x, target)])
+dtrain = as.h2o(df[, c(x, target)])
 if (grepl(pattern = 'group', target)) {
     outcome = as.factor(as.h2o(df[, target]))  # making sure we have correct levels
-    dtrain[, target] = outcome[train_idx]
-    dtest[, target] = outcome[test_idx]
+    dtrain[, target] = outcome
 }
 
 # make sure the SNPs are seen as factors
@@ -169,7 +146,6 @@ if (grepl(pattern = 'snp', data_fname)) {
   print('Converting SNPs to categorical variables')
   for (v in x) {
     dtrain[, v] = as.factor(dtrain[, v])
-    dtest[, v] = as.factor(dtest[, v])
   }
 }
 
@@ -179,7 +155,6 @@ if (grepl(pattern = 'social', data_fname)) {
   for (v in c('v_CategCounty', 'v_CategHomeType')) {
       if (v %in% x) {
           dtrain[, v] = as.factor(dtrain[, v])
-          dtest[, v] = as.factor(dtest[, v])
       }
   }
 }
@@ -191,7 +166,6 @@ if (grepl(pattern = 'clinic', data_fname)) {
   xbin = colnames(df)[grepl(pattern = '^vCateg', colnames(df))]
   for (v in xbin) {
     dtrain[, v] = as.factor(dtrain[, v])
-    dtest[, v] = as.factor(dtest[, v])
   }
 }
 
@@ -202,28 +176,14 @@ if (grepl(pattern = 'adhd', data_fname)) {
   xbin = colnames(df)[grepl(pattern = '^vCateg', colnames(df))]
   for (v in xbin) {
     dtrain[, v] = as.factor(dtrain[, v])
-    dtest[, v] = as.factor(dtest[, v])
   }
-}
-
-if (! grepl(pattern = 'group', target)) {
-    # winsorizing after correlations to avoid ties
-    dtrain[, target] = winsorize(dtrain[, target])
-    cut_point_top = max(dtrain[, target])
-    cut_point_bottom = min(dtrain[, target])
-    i = which(dtest[, target] >= cut_point_top) 
-    dtest[i, target] = cut_point_top
-    j = which(dtest[, target] <= cut_point_bottom) 
-    dtest[j, target] = cut_point_bottom
 }
 
 print(sprintf('Running model on %d features', length(x)))
 aml <- h2o.automl(x = x, y = target, training_frame = dtrain,
                 seed=myseed,
-                leaderboard_frame=dtest,
                 max_runtime_secs = NULL,
                 max_models = 5,#NULL,
-                nfolds=0, 
                 exclude_algos = c("StackedEnsemble"))
 
 print(aml@leaderboard)
