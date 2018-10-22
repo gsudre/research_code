@@ -203,17 +203,13 @@ print(data_fname)
 print(clin_fname)
 print(target)
 
-# print test set ids
-print('Test idx:')
-print(test_idx)
-
 # print predictions
-print('Test set predictions:')
-preds = h2o.predict(aml@leader, newdata=dtest[, x])
+print('CV predictions:')
+preds = h2o.getFrame(aml@leader@model[["cross_validation_holdout_predictions_frame_id"]][["name"]])
 print(preds, n=nrow(preds))
 
-# print all model metrics on test data
-print(h2o.make_metrics(preds[,3], dtest[, target]))
+# print all model metrics on CV data
+print(aml@leader)
 
 # last thing is saving model, in case there are any permissions or I/O errors
 h2o.saveModel(aml@leader, path = export_fname)
