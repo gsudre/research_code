@@ -267,7 +267,12 @@ preds = h2o.predict(aml@leader, newdata=dtest[, x])
 print(preds, n=nrow(preds))
 
 # print all model metrics on test data
-print(h2o.make_metrics(preds[,3], dtest[, target]))
+met = h2o.make_metrics(preds[,3], dtest[, target])
+print(met)
+
+print('Model metrics at highest F1!')
+max_thresh = sort(met@metrics$thresholds_and_metric_scores$f1, decreasing=T, index.return=T)$ix[1]
+met@metrics$thresholds_and_metric_scores[max_thresh,]
 
 # last thing is saving model, in case there are any permissions or I/O errors
 h2o.saveModel(aml@leader, path = export_fname)
