@@ -183,7 +183,7 @@ print(sprintf('Running model on %d features', length(x)))
 aml <- h2o.automl(x = x, y = target, training_frame = dtrain,
                 seed=myseed,
                 max_runtime_secs = NULL,
-                max_models = 4,
+                max_models = NULL,
                 exclude_algos = c("StackedEnsemble"))
 
 print(aml@leaderboard)
