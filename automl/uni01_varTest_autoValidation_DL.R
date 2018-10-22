@@ -239,6 +239,7 @@ aml <- h2o.automl(x = x, y = target, training_frame = dtrain,
                 leaderboard_frame=dtest,
                 max_runtime_secs = NULL,
                 max_models = NULL,
+                nfolds=0, 
                 exclude_algos = c("GBM", "GLM", "DRF", "StackedEnsemble"))
 
 print(aml@leaderboard)
