@@ -10,20 +10,20 @@ from keras.constraints import maxnorm
 def create_model(neurons=1):
 	# create model
 	model = Sequential()
-	model.add(Dense(neurons, input_dim=8, kernel_initializer='uniform', activation='linear', kernel_constraint=maxnorm(4)))
+	model.add(Dense(neurons, input_dim=12106, kernel_initializer='uniform', activation='tanh', kernel_constraint=maxnorm(4)))
 	model.add(Dropout(0.2))
-	model.add(Dense(1, kernel_initializer='uniform', activation='sigmoid'))
+	model.add(Dense(12106, kernel_initializer='uniform', activation='tanh'))
 	# Compile model
-	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+	model.compile(loss='mean_squared_error', optimizer='adadelta', metrics=['mae'])
 	return model
 # fix random seed for reproducibility
 seed = 7
 numpy.random.seed(seed)
 # load dataset
-dataset = numpy.loadtxt("/Users/sudregp/tmp/pima-indians-diabetes.data.csv", delimiter=",")
+dataset = numpy.loadtxt("/Users/sudregp/tmp/tmp.csv", delimiter=",", skiprows=1)
 # split into input (X) and output (Y) variables
-X = dataset[:,0:8]
-Y = dataset[:,8]
+X = dataset
+Y = dataset
 # create model
 model = KerasClassifier(build_fn=create_model, epochs=100, batch_size=10, verbose=0)
 # define the grid search parameters
