@@ -155,6 +155,30 @@ if (dimres == 'PCA') {
     colnames(a)[ncol(a)] = target
     x = colnames(a)[grepl(pattern = '^IC', colnames(a))]
     df = a
+} else if (dimres == 'PCA-elbow') {
+    # quick hack to use na.action on prcomp
+    fm_str = sprintf('~ %s', paste0(x, collapse='+ ', sep=' '))
+    pca = prcomp(as.formula(fm_str), df[, x], scale=T, na.action=na.exclude)
+    eigs <- pca$sdev^2
+    library(nFactors)
+    nS = nScree(x=eigs)
+    keep_me = 1:nS$noc
+    a = cbind(pca$x[, keep_me], df[, target])
+    colnames(a)[ncol(a)] = target
+    x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
+    df = a
+} else if (dimres == 'PCA-kaiser') {
+    # quick hack to use na.action on prcomp
+    fm_str = sprintf('~ %s', paste0(x, collapse='+ ', sep=' '))
+    pca = prcomp(as.formula(fm_str), df[, x], scale=T, na.action=na.exclude)
+    eigs <- pca$sdev^2
+    library(nFactors)
+    nS = nScree(x=eigs)
+    keep_me = 1:nS$nkaiser
+    a = cbind(pca$x[, keep_me], df[, target])
+    colnames(a)[ncol(a)] = target
+    x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
+    df = a
 }
 
 # set seed again to replicate old results
