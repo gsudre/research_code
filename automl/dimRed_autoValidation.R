@@ -145,11 +145,13 @@ if (dimres == 'PCA') {
     x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
 } else if (dimres == 'ICA') {
     library(fastICA)
+    set.seed(myseed)
     ica = fastICA(df[, x], nfeats, method='C')
     a = cbind(as.data.frame(ica$S), df[, target])
     cnames = c(sapply(1:ncol(a), function(d) sprintf('IC%03d', d)))
     colnames(a) = cnames
     colnames(a)[ncol(a)] = target
+    x = colnames(a)[grepl(pattern = '^IC', colnames(a))]
 }
 df = a
 
