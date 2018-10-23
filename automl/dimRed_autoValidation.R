@@ -7,6 +7,7 @@ clin_fname = args[2]
 target = args[3]
 export_fname = args[4]
 myseed = as.numeric(args[5])
+dimres = args[6]
 
 
 # starting h2o
@@ -129,16 +130,27 @@ if (myseed < 0) {
   df[, x] = rnd_data
 }
 
-print('Running PCA')
-# quick hack to use na.action on prcomp
-fm_str = sprintf('~ %s', paste0(x, collapse='+ ', sep=' '))
-pca = prcomp(as.formula(fm_str), df[, x], scale=T, na.action=na.exclude)
-eigs <- pca$sdev^2
-vexp = cumsum(eigs)/sum(eigs)
-keep_me = vexp <= .7
-a = cbind(pca$x[, keep_me], df[, target])
-colnames(a)[ncol(a)] = target
-x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
+print(sprintf('Running %s', dimres))
+nfeats = min(nrow(df)-1, floor(sqrt(length(x))))  # variables to keep
+if (dimres == 'PCA') {
+    # quick hack to use na.action on prcomp
+    fm_str = sprintf('~ %s', paste0(x, collapse='+ ', sep=' '))
+    pca = prcomp(as.formula(fm_str), df[, x], scale=T, na.action=na.exclude)
+    # eigs <- pca$sdev^2
+    # vexp = cumsum(eigs)/sum(eigs)
+    # keep_me = vexp <= .7
+    keep_me = 1:nfeats
+    a = cbind(pca$x[, keep_me], df[, target])
+    colnames(a)[ncol(a)] = target
+    x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
+} else if (dimres == 'ICA') {
+    library(fastICA)
+    ica = fastICA(df[, x], nfeats, method='C')
+    a = cbind(as.data.frame(ica$S), df[, target])
+    cnames = c(sapply(1:ncol(a), function(d) sprintf('IC%03d', d)))
+    colnames(a) = cnames
+    colnames(a)[ncol(a)] = target
+}
 df = a
 
 # set seed again to replicate old results
