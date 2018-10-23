@@ -210,7 +210,7 @@ if (grepl(pattern = 'adhd', data_fname)) {
 if (dimres == 'AutoEncoder') {
     print(sprintf('Running %s', dimres))
     model=h2o.deeplearning(x=x, training_frame=dtrain,
-                           hidden=c(floor(length(x)/2), nfeats, floor(length(x)/2)),
+                           hidden=c(3*nfeats, nfeats, 3*nfeats),
                            autoencoder=T, activation="Tanh", l1=1)
     features = h2o.deepfeatures(model, dtrain, layer=2)
     dtrain = h2o.cbind(features, dtrain[, target])
