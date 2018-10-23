@@ -156,25 +156,28 @@ if (dimres == 'PCA') {
     x = colnames(a)[grepl(pattern = '^IC', colnames(a))]
     df = a
 } else if (dimres == 'PCA-elbow') {
+    print(sprintf('Running %s', dimres))
     # quick hack to use na.action on prcomp
     fm_str = sprintf('~ %s', paste0(x, collapse='+ ', sep=' '))
     pca = prcomp(as.formula(fm_str), df[, x], scale=T, na.action=na.exclude)
     eigs <- pca$sdev^2
     library(nFactors)
     nS = nScree(x=eigs)
-    keep_me = 1:nS$noc
+    print(nS)
+    keep_me = 1:nS$Components$noc
     a = cbind(pca$x[, keep_me], df[, target])
     colnames(a)[ncol(a)] = target
     x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
     df = a
 } else if (dimres == 'PCA-kaiser') {
+    print(sprintf('Running %s', dimres))
     # quick hack to use na.action on prcomp
     fm_str = sprintf('~ %s', paste0(x, collapse='+ ', sep=' '))
     pca = prcomp(as.formula(fm_str), df[, x], scale=T, na.action=na.exclude)
     eigs <- pca$sdev^2
     library(nFactors)
     nS = nScree(x=eigs)
-    keep_me = 1:nS$nkaiser
+    keep_me = 1:nS$Components$nkaiser
     a = cbind(pca$x[, keep_me], df[, target])
     colnames(a)[ncol(a)] = target
     x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
