@@ -163,7 +163,6 @@ if (dimres == 'PCA') {
     eigs <- pca$sdev^2
     library(nFactors)
     nS = nScree(x=eigs)
-    print(nS)
     keep_me = 1:nS$Components$noc
     a = cbind(pca$x[, keep_me], df[, target])
     colnames(a)[ncol(a)] = target
