@@ -130,9 +130,9 @@ if (myseed < 0) {
   df[, x] = rnd_data
 }
 
-print(sprintf('Running %s', dimres))
 nfeats = min(nrow(df)-1, floor(sqrt(length(x))))  # variables to keep
 if (dimres == 'PCA') {
+    print(sprintf('Running %s', dimres))
     # quick hack to use na.action on prcomp
     fm_str = sprintf('~ %s', paste0(x, collapse='+ ', sep=' '))
     pca = prcomp(as.formula(fm_str), df[, x], scale=T, na.action=na.exclude)
@@ -143,7 +143,9 @@ if (dimres == 'PCA') {
     a = cbind(pca$x[, keep_me], df[, target])
     colnames(a)[ncol(a)] = target
     x = colnames(a)[grepl(pattern = '^PC', colnames(a))]
+    df = a
 } else if (dimres == 'ICA') {
+    print(sprintf('Running %s', dimres))
     library(fastICA)
     set.seed(myseed)
     ica = fastICA(df[, x], nfeats, method='C')
@@ -152,8 +154,8 @@ if (dimres == 'PCA') {
     colnames(a) = cnames
     colnames(a)[ncol(a)] = target
     x = colnames(a)[grepl(pattern = '^IC', colnames(a))]
+    df = a
 }
-df = a
 
 # set seed again to replicate old results
 set.seed(myseed)
@@ -203,6 +205,17 @@ if (grepl(pattern = 'adhd', data_fname)) {
   for (v in xbin) {
     dtrain[, v] = as.factor(dtrain[, v])
   }
+}
+
+if (dimres == 'AutoEncoder') {
+    print(sprintf('Running %s', dimres))
+    model=h2o.deeplearning(x=x, training_frame=dtrain,
+                           hidden=c(floor(length(x)/2), nfeats, floor(length(x)/2)),
+                           autoencoder=T, activation="Tanh", l1=1)
+    features = h2o.deepfeatures(model, dtrain, layer=2)
+    dtrain = h2o.cbind(features, dtrain[, target])
+    colnames(dtrain)[ncol(dtrain)] = target
+    x = colnames(features)
 }
 
 print(sprintf('Running model on %d features', length(x)))
