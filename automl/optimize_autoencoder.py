@@ -7,6 +7,7 @@ from keras.layers import Dense
 from keras.layers import Dropout, Input
 from keras.wrappers.scikit_learn import KerasRegressor
 from keras.constraints import maxnorm
+from keras import regularizers, Model
 # Function to create model, required for KerasClassifier
 def create_model(neurons=1):
 	# # create model
@@ -38,11 +39,11 @@ numpy.random.seed(seed)
 # load dataset
 dataset = numpy.loadtxt("/Users/sudregp/tmp/tmp.csv", delimiter=",", skiprows=1)
 scaler = MinMaxScaler()
-scaler.fit(X)
-X_scaled = scaler.transform(X)
+scaler.fit(dataset)
+X_scaled = scaler.transform(dataset)
 
 # create model
-model = KerasClassifier(build_fn=create_model, epochs=100, batch_size=10, verbose=0)
+model = KerasRegressor(build_fn=create_model, epochs=400, batch_size=16, verbose=0, shuffle=True, validation_split=.1)
 # define the grid search parameters
 neurons = [1, 5, 10, 15, 20, 25, 30]
 param_grid = dict(neurons=neurons)
