@@ -67,9 +67,9 @@ autoencoder = create_model(neurons=30)
 autoencoder.summary()
 
 batch_size = 5
-epochs = 20
+epochs = 50
 
-autoencoder_train = autoencoder.fit(X_scaled, Xscaled, batch_size=batch_size,
+autoencoder_train = autoencoder.fit(X_scaled, X_scaled, batch_size=batch_size,
                                     epochs=epochs, verbose=1,
                                     validation_split=.1)
 
