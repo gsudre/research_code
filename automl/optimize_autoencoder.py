@@ -15,7 +15,7 @@ def create_model(neurons=1):
 	model.add(Dropout(0.2))
 	model.add(Dense(12106, kernel_initializer='uniform', activation='tanh'))
 	# Compile model
-	model.compile(loss='mean_squared_error', optimizer='adadelta', metrics=['mae'])
+	model.compile(loss='mean_squared_error', optimizer='adadelta')
 	return model
 # fix random seed for reproducibility
 seed = 7
