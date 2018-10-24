@@ -37,7 +37,8 @@ def create_model(neurons=1):
 seed = 7
 numpy.random.seed(seed)
 # load dataset
-dataset = numpy.loadtxt("/Users/sudregp/tmp/tmp.csv", delimiter=",", skiprows=1)
+home = os.path.expanduser('~')
+dataset = numpy.loadtxt(home + "/tmp/tmp.csv", delimiter=",", skiprows=1)
 scaler = MinMaxScaler()
 scaler.fit(dataset)
 X_scaled = scaler.transform(dataset)

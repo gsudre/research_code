@@ -49,7 +49,7 @@ autoencoder_train = autoencoder.fit(data2, data2, batch_size=batch_size,
                                     validation_split=.1)
 
 # save the model so we don't lose all this work in case of accidents
-autoencoder_train.save(home + "/tmp/model_3dconv.h5py")
+autoencoder.save(home + "/tmp/model_3dconv.h5py")
 
 loss = autoencoder_train.history['loss']
 val_loss = autoencoder_train.history['val_loss']
