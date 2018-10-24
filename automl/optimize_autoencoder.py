@@ -9,6 +9,7 @@ from keras.wrappers.scikit_learn import KerasRegressor
 from keras.constraints import maxnorm
 from keras import regularizers, Model
 import os
+from matplotlib import pyplot as plt
 
 
 # Function to create model, required for KerasClassifier
@@ -63,11 +64,11 @@ X_scaled = scaler.transform(dataset)
 # for mean, stdev, param in zip(means, stds, params):
 #     print("%f (%f) with: %r" % (mean, stdev, param))
 
-autoencoder = create_model(neurons=30)
+autoencoder = create_model(neurons=50)
 autoencoder.summary()
 
 batch_size = 5
-epochs = 50
+epochs = 200
 
 autoencoder_train = autoencoder.fit(X_scaled, X_scaled, batch_size=batch_size,
                                     epochs=epochs, verbose=1,
