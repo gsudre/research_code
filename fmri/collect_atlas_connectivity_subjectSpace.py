@@ -42,11 +42,11 @@ for trim in trimmed:
         for sid, s in enumerate(subjs):
             # as long as the first roi is not empty, we should be fine here
             num_trs = 0
-            print(sid, s)
             subj_data = []
             for r in rois[a]:
                 fname = data_dir + '/%s/%d.1D' % (s, r)
                 roi_data = np.genfromtxt(fname)
+                roi_data = roi_data[roi_data != 0]
                 num_trs = max(num_trs, len(roi_data))
                 if trim:
                     max_trs = min(123, num_trs)
@@ -59,6 +59,7 @@ for trim in trimmed:
                     subj_data.append([np.nan] * max_trs)
                 else:
                     subj_data.append(roi_data[:max_trs])
+            print('subject %d, maskid %s, num_trs %d' % (sid + 1, s, num_trs))
             subj_data = np.arctanh(np.corrcoef(np.array(subj_data)))
             idx = np.triu_indices_from(subj_data, k=1)
             mats.append([int(s)] + list(subj_data[idx]))
