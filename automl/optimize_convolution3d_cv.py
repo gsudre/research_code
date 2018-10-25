@@ -56,7 +56,7 @@ def create_model(init_mode):
 seed = 7
 np.random.seed(seed)
 # create model
-model = KerasRegressor(build_fn=create_model, epochs=epochs, batch_size=batch_size, verbose=1)
+model = KerasRegressor(build_fn=create_model, epochs=epochs, batch_size=batch_size, verbose=1, validation_split=.1)
 # define the grid search parameters
 # params = ['softmax', 'softplus', 'softsign', 'relu', 'tanh', 'sigmoid',
 # 'hard_sigmoid', 'linear']
