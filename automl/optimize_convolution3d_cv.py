@@ -58,7 +58,7 @@ model = KerasRegressor(build_fn=create_model, epochs=epochs, batch_size=batch_si
 # define the grid search parameters
 params = ['softmax', 'softplus', 'softsign', 'relu', 'tanh', 'sigmoid', 'hard_sigmoid', 'linear']
 param_grid = dict(activation=params)
-grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=4)
+grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=1)
 grid_result = grid.fit(data2, data2)
 
 # summarize results
