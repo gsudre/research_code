@@ -26,6 +26,8 @@ input_img = Input(shape = (x, y, z, inChannel))
 seed = 7
 np.random.seed(seed)
 
+init_mode = 'lecun_uniform'
+
 #encoder
 x = Conv3D(32, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(input_img)
 x = MaxPooling3D(pool_size=(2, 2, 2))(x) 
