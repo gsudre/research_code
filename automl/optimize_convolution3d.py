@@ -17,10 +17,14 @@ data2 = data[:, :, :, :, np.newaxis]
 data2 = data2 / np.max(data2)
 
 batch_size = 5
-epochs = 20
+epochs = 40
 inChannel = 1
 x, y, z = data.shape[1:]
 input_img = Input(shape = (x, y, z, inChannel))
+
+# fix random seed for reproducibility
+seed = 7
+np.random.seed(seed)
 
 #encoder
 x = Conv3D(32, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(input_img)
@@ -42,7 +46,6 @@ x = UpSampling3D((2,2,2))(x)
 x = Conv3D(32, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(x)
 x = UpSampling3D((2,2,2))(x)
 decoded = Conv3D(1, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(x)
-
 
 autoencoder = Model(input_img, decoded)
 autoencoder.compile(loss='mse', optimizer = 'adam')
