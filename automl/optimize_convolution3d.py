@@ -23,7 +23,7 @@ x, y, z = data.shape[1:]
 input_img = Input(shape = (x, y, z, inChannel))
 
 # fix random seed for reproducibility
-seed = 72
+seed = 42
 np.random.seed(seed)
 
 init_mode = 'lecun_uniform'
@@ -63,5 +63,6 @@ autoencoder.save("/data/NCR_SBRB/baseline_prediction/autoencoder_AD_3dconv.h5py"
 
 encoder = Model(input_img, encoded)
 encoded_imgs = encoder.predict(data2)
-new_data = np.array(encoded_imgs)
+
+np.savez('/data/NCR_SBRB/baseline_prediction/lowDim_AD.npz', data=encoded_imgs)
 
