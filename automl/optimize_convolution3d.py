@@ -16,14 +16,14 @@ data = np.load(home + '/data/tmp/ad_223_3d.npz')['data']
 data2 = data[:, :, :, :, np.newaxis]
 data2 = data2 / np.max(data2)
 
-batch_size = 5
+batch_size = 1
 epochs = 40
 inChannel = 1
 x, y, z = data.shape[1:]
 input_img = Input(shape = (x, y, z, inChannel))
 
 # fix random seed for reproducibility
-seed = 7
+seed = 72
 np.random.seed(seed)
 
 init_mode = 'lecun_uniform'
@@ -59,7 +59,11 @@ autoencoder_train = autoencoder.fit(data2, data2, batch_size=batch_size,
                                     validation_split=.1)
 
 # save the model so we don't lose all this work in case of accidents
-autoencoder.save(home + "/tmp/model_3dconv.h5py")
+autoencoder.save("/data/NCR_SBRB/baseline_prediction/autoencoder_AD_3dconv.h5py")
+
+encoder = Model(input_img, encoded)
+encoded_imgs = encoder.predict(data2)
+new_data = np.array(encoded_imgs)
 
 # loss = autoencoder_train.history['loss']
 # val_loss = autoencoder_train.history['val_loss']
