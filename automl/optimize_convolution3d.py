@@ -23,29 +23,29 @@ x, y, z = data.shape[1:]
 input_img = Input(shape = (x, y, z, inChannel))
 
 #encoder
-x = Conv3D(32, (3, 3, 3), activation='relu', padding='same')(input_img)
+x = Conv3D(32, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(input_img)
 x = MaxPooling3D(pool_size=(2, 2, 2))(x) 
-x = Conv3D(16, (3, 3, 3), activation='relu', padding='same')(x)
+x = Conv3D(16, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(x)
 x = MaxPooling3D(pool_size=(2, 2, 2))(x) 
-x = Conv3D(8, (3, 3, 3), activation='relu', padding='same')(x)
+x = Conv3D(8, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(x)
 x = MaxPooling3D(pool_size=(2, 2, 2))(x) 
-x = Conv3D(4, (3, 3, 3), activation='relu', padding='same')(x)
+x = Conv3D(4, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(x)
 encoded = MaxPooling3D(pool_size=(7, 7, 3))(x)
 
 #decoder
-x = Conv3D(4, (3, 3, 3), activation='relu', padding='same')(encoded)
+x = Conv3D(4, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(encoded)
 x = UpSampling3D((7,7,3))(x)
-x = Conv3D(8, (3, 3, 3), activation='relu', padding='same')(x)
+x = Conv3D(8, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(x)
 x = UpSampling3D((2,2,2))(x)
-x = Conv3D(16, (3, 3, 3), activation='relu', padding='same')(x) 
+x = Conv3D(16, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(x) 
 x = UpSampling3D((2,2,2))(x)
-x = Conv3D(32, (3, 3, 3), activation='sigmoid', padding='same')(x)
+x = Conv3D(32, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(x)
 x = UpSampling3D((2,2,2))(x)
-decoded = Conv3D(1, (3, 3, 3), activation='sigmoid', padding='same')(x)
+decoded = Conv3D(1, (3, 3, 3), activation='relu', kernel_initializer=init_mode, padding='same')(x)
 
 
 autoencoder = Model(input_img, decoded)
-autoencoder.compile(loss='binary_crossentropy', optimizer = 'adadelta')
+autoencoder.compile(loss='mse', optimizer = 'adam')
 
 autoencoder.summary()
 
