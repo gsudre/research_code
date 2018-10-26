@@ -65,12 +65,3 @@ encoder = Model(input_img, encoded)
 encoded_imgs = encoder.predict(data2)
 new_data = np.array(encoded_imgs)
 
-# loss = autoencoder_train.history['loss']
-# val_loss = autoencoder_train.history['val_loss']
-# epochs = range(epochs)
-# plt.figure()
-# plt.plot(epochs, loss, 'bo', label='Training loss')
-# plt.plot(epochs, val_loss, 'b', label='Validation loss')
-# plt.title('Training and validation loss')
-# plt.legend()
-# plt.show()
