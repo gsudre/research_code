@@ -202,7 +202,7 @@ if (grepl(pattern='dti', data_fname)) {
                         min_cluster, out_fname, out_fname)
     system(cmd_line)
     # read mask back in and filter x properly
-    cmd_line = sprintf('3dmaskdump -mask %s -overwrite -o %s_mask.txt %s_mask+orig', mask_fname, out_fname, out_fname)
+    cmd_line = sprintf('3dmaskdump -mask %s %s_mask+orig > %s_mask.txt', mask_fname, out_fname, out_fname)
     system(cmd_line)
     clus = read.table(sprintf('%s_mask.txt', out_fname))
     cluster_idx = clus[, 4] > 0
