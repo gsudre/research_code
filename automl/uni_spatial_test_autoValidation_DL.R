@@ -198,7 +198,7 @@ if (grepl(pattern='dti', data_fname)) {
                         out_fname, mask_fname, out_fname)
     system(cmd_line)
     # spit out all clusters >= min_cluster
-    cmd_line = sprintf('3dclust -NN1 %d -orient LPI -savemask %s_mask %s+orig 2>/dev/null',
+    cmd_line = sprintf('3dclust -NN1 %d -orient LPI -overwrite -savemask %s_mask %s+orig 2>/dev/null',
                         min_cluster, out_fname, out_fname)
     system(cmd_line)
     # read mask back in and filter x properly
