@@ -180,6 +180,8 @@ if (! grepl(pattern = 'group', target)) {
                 })
 }
 keep_me = b <= .05
+print(sprintf('Variables before univariate filter: %d', length(x)))
+print(sprintf('Variables after univariate filter: %d', sum(keep_me)))
 
 # further filter variables to keep only the ones clustered together
 if (grepl(pattern='dti', data_fname)) {
@@ -200,12 +202,13 @@ if (grepl(pattern='dti', data_fname)) {
                         min_cluster, out_fname, out_fname)
     system(cmd_line)
     # read mask back in and filter x properly
-    cmd_line = sprintf('3dmaskdump -mask %s -o %s_mask.txt %s_mask+orig', mask_fname, out_fname, out_fname)
+    cmd_line = sprintf('3dmaskdump -mask %s -overwrite -o %s_mask.txt %s_mask+orig', mask_fname, out_fname, out_fname)
     system(cmd_line)
     clus = read.table(sprintf('%s_mask.txt', out_fname))
     cluster_idx = clus[, 4] > 0
     x = x[cluster_idx]
 }
+print(sprintf('Variables after spatial filter: %d', sum(cluster_idx)))
 
 print('Converting to H2O')
 dtrain = as.h2o(data.train[, c(x, target)])
