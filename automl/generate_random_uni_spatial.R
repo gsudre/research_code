@@ -1,10 +1,11 @@
 # generates text files with results from univariate tests on randomized labels,
 # to be later used to assess biggest cluster
 
-data_fname = '/data/NCR_SBRB/baseline_prediction/dti_ad_voxelwise_n223_09212018.RData.gz'
-clin_fname = '/data/NCR_SBRB/baseline_prediction/long_clin_0918.csv'
-target = 'nvVSper'
-myseed = 42
+args <- commandArgs(trailingOnly = TRUE)
+data_fname = args[1]
+clin_fname = args[2]
+target = args[3]
+myseed = as.numeric(args[4])
 
 print('Loading files')
 # merging phenotype and clinical data
