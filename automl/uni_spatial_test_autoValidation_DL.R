@@ -238,7 +238,8 @@ if (grepl(pattern='dti', data_fname)) {
                       skip=12, nrows=(nvox/2))[[1]]
     rh_cluster_idx = clus > 0
 
-    x = x_orig[c(lh_cluster_idx, rh_cluster_idx)]
+    cluster_idx = c(lh_cluster_idx, rh_cluster_idx)
+    x = x_orig[cluster_idx]
 }
 print(sprintf('Variables after spatial filter: %d', sum(cluster_idx)))
 
