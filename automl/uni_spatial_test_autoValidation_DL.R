@@ -131,18 +131,11 @@ if (grepl('VS', target)) {
 
 # use negative seed to randomize the data
 if (myseed < 0) {
-#   print('Randomizing target!!!')
-#   myseed = -1 * myseed
-#   set.seed(myseed)
-#   idx = sample(1:nrow(df), nrow(df), replace=F)
-#   df[, target] = df[idx, target]
-  print('Creating random data!!!')
-  myseed = -1 * myseed
-  set.seed(myseed)
-  rnd_data = matrix(runif(nrow(df)*length(x),
-                          min(df[,x], na.rm=T), max(df[,x], na.rm=T)),
-                    nrow(df), length(x))
-  df[, x] = rnd_data
+    print('Randomizing target!!!')
+    myseed = -1 * myseed
+    set.seed(myseed)
+    idx = sample(1:nrow(df), nrow(df), replace=F)
+    df[, target] = df[idx, target]
 }
 
 # set seed again to replicate old results
