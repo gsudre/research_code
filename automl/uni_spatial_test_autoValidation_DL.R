@@ -214,7 +214,7 @@ if (grepl(pattern='dti', data_fname)) {
     write.table(out[1:(nvox/2)], file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
     
     # spit out all clusters >= min_cluster
-    cmd_line = sprintf('SurfClust -i /data/NCR_SBRB/freesurfer5.3_subjects/fsaverage/SUMA/lh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_lh -out_roidset -out_fulllist -amm2 %d 2>/dev/null',
+    cmd_line = sprintf('SurfClust -i /data/NCR_SBRB/freesurfer5.3_subjects/fsaverage/SUMA/lh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_lh -out_roidset -out_fulllist -amm2 %d',
         out_fname, out_fname, min_cluster)
     system(cmd_line)
     # read mask back in and filter x properly
@@ -224,7 +224,7 @@ if (grepl(pattern='dti', data_fname)) {
 
     # now, repeat the exact same thing for right hemisphere
     write.table(out[(nvox/2+1):length(out)], file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
-    cmd_line = sprintf('SurfClust -i /data/NCR_SBRB/freesurfer5.3_subjects/fsaverage/SUMA/rh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_rh -out_roidset -out_fulllist -amm2 %d 2>/dev/null',
+    cmd_line = sprintf('SurfClust -i /data/NCR_SBRB/freesurfer5.3_subjects/fsaverage/SUMA/rh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_rh -out_roidset -out_fulllist -amm2 %d',
         out_fname, out_fname, min_cluster)
     system(cmd_line)
     clus = read.table(sprintf('%s_rh_ClstMsk_e1_a%d.0.niml.dset', out_fname, min_cluster),
