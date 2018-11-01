@@ -34,13 +34,14 @@ print('Loading files')
 # merging phenotype and clinical data
 clin = read.csv(clin_fname)
 load(data_fname)  #variable is data
+x_orig = colnames(data)[grepl(pattern = '^v', colnames(data))]
 # remove constant variables that screw up PCA and univariate tests
 print('Removing constant variables')
 feat_var = apply(data, 2, var, na.rm=TRUE)
-idx = feat_var != 0  # TRUE for features with 0 variance (constant)
+idx_var = feat_var != 0  # TRUE for features with 0 variance (constant)
 # categorical variables give NA variance, but we want to keep them
-idx[is.na(idx)] = TRUE
-data = data[, idx]
+idx_var[is.na(idx_var)] = TRUE
+data = data[, idx_var]
 nNAs = colSums(is.na(data))  # number of NAs in each variable
 # remove variables that are all NAs
 data = data[, nNAs < nrow(data)]
@@ -207,6 +208,37 @@ if (grepl(pattern='dti', data_fname)) {
     clus = read.table(sprintf('%s_mask.txt', out_fname))
     cluster_idx = clus[, 4] > 0
     x = x[cluster_idx]
+} else if (grepl(pattern='struct', data_fname)) {
+    # structural is a bit more challenging because left and right are separate
+    nvox = length(x_orig)
+    out_dir = '/data/NCR_SBRB/tmp/'
+    out = rep(0, nvox)
+    names(out) = x_orig
+    out[x[keep_me]] = 1
+    out_fname = sprintf('%s/%s_%d', out_dir, target, myseed)
+
+    # writing good voxels to be clustered. left hemisphere first
+    write.table(out[1:(nvox/2)], file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
+    
+    # spit out all clusters >= min_cluster
+    cmd_line = sprintf('SurfClust -i /data/NCR_SBRB/freesurfer5.3_subjects/fsaverage/SUMA/lh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_lh -out_roidset -out_fulllist -amm2 %d 2>/dev/null',
+        out_fname, out_fname, min_cluster)
+    system(cmd_line)
+    # read mask back in and filter x properly
+    clus = read.table(sprintf('%s_lh_ClstMsk_e1_a%d.0.niml.dset', out_fname, min_cluster),
+                      skip=12, nrows=(nvox/2))[[1]]
+    lh_cluster_idx = clus > 0
+
+    # now, repeat the exact same thing for right hemisphere
+    write.table(out[(nvox/2+1):length(out)], file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
+    cmd_line = sprintf('SurfClust -i /data/NCR_SBRB/freesurfer5.3_subjects/fsaverage/SUMA/rh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_rh -out_roidset -out_fulllist -amm2 %d 2>/dev/null',
+        out_fname, out_fname, min_cluster)
+    system(cmd_line)
+    clus = read.table(sprintf('%s_rh_ClstMsk_e1_a%d.0.niml.dset', out_fname, min_cluster),
+                      skip=12, nrows=(nvox/2))[[1]]
+    rh_cluster_idx = clus > 0
+
+    x = x_orig[c(lh_cluster_idx, rh_cluster_idx)]
 }
 print(sprintf('Variables after spatial filter: %d', sum(cluster_idx)))
 
