@@ -18,6 +18,11 @@ methods = c('pearson', 'spearman', 'kendall')
 for (me in methods) {
     for (p in parc) {
         print(sprintf('Working on %s, %s', p, me))
+        # get labels but ignoring junk in beginnig and end of file
+        roi_fname = sprintf('%s/%s+aseg_REN_all.niml.lt', input_dir, p)
+        flen = length(readLines(roi_fname))
+        roi_table = read.table(roi_fname, skip=4, nrows=(flen-7))
+
         # get list of subjects from directory
         maskids = list.files(path=sprintf('%s/%s/', input_dir, p), pattern='*')
         conn_raw = c()
@@ -56,8 +61,9 @@ for (me in methods) {
             corr_pval = vector(mode='numeric', length=ncol(combs))
             header = vector(mode='character', length=ncol(combs))
             for (k in 1:ncol(combs)) {
-                header[k] = sprintf('%s_TO_%s', rois[combs[1, k]],
-                                                rois[combs[2, k]])
+                roi_i = roi_table[roi_table[, 1] == rois[combs[1, k]], 2]
+                roi_j = roi_table[roi_table[, 1] == rois[combs[2, k]], 2]
+                header[k] = sprintf('%s_TO_%s', roi_i, roi_j)
                 # only calculate correlation if one of the variables is not all NAs
                 if (sum(is.na(scan_data[, combs[1, k]])) == nrow(scan_data) ||
                     sum(is.na(scan_data[, combs[2, k]])) == nrow(scan_data)) {
