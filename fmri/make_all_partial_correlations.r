@@ -17,7 +17,7 @@
 
 input_dir = '~/data/baseline_prediction/rsfmri/'
 output_dir = '~/data/baseline_prediction/rsfmri/'
-trimmed = T  # whether to trim subjects with good TR > 123
+trimmed = F  # whether to trim subjects with good TR > 123
 methods = c('pearson', 'spearman', 'kendall')
 p = 'aparc'
 
@@ -34,6 +34,7 @@ for (me in methods) {
     # get list of subjects from directory
     maskids = list.files(path=sprintf('%s/%s/', input_dir, p), pattern='*')
     conn_raw = c()
+    conn_pval = c()
     conn_p05 = c()
     conn_fdr = c()
     for (m in maskids) {
@@ -97,6 +98,7 @@ for (me in methods) {
             corr_pval = rep(1, length=ncol(combs))
         }
         conn_raw = rbind(conn_raw, corr_estimate)
+        conn_pval = rbind(conn_pval, corr_pval)
         tmp = rep(0, length(corr_estimate))
         tmp[corr_pval < .05] = 1
         conn_p05 = rbind(conn_p05, tmp)
@@ -107,11 +109,15 @@ for (me in methods) {
     }
     rownames(conn_raw) = maskids
     colnames(conn_raw) = header
+    rownames(conn_pval) = maskids
+    colnames(conn_pval) = header
     rownames(conn_p05) = maskids
     colnames(conn_p05) = header
     rownames(conn_fdr) = maskids
     colnames(conn_fdr) = header
     write.csv(conn_raw, file=sprintf('%s/partial_weighted_%s%s.csv', output_dir,
+                                     me, imtrimmed))
+    write.csv(conn_pval, file=sprintf('%s/partial_pval_%s%s.csv', output_dir,
                                      me, imtrimmed))
     write.csv(conn_p05, file=sprintf('%s/partial_binaryP05_%s%s.csv', output_dir,
                                      me, imtrimmed))
