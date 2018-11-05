@@ -17,13 +17,13 @@ copied_cnt = 0
 cnt = 0
 for maskid in fid:
     cnt += 1
-    maskid_dir = sys.argv[2] + '/data_by_maskID/%04d' % int(maskid)
+    maskid_dir = sys.argv[2] + '/data_by_maskID/%04d/' % int(maskid)
     # we could have more than one date directory inside the same mask ID when
     # there were two scan sessions (e.g. the first one was interrupted). Still
     # they'll share the same date!
 
     # let's bypass the OSX data_by_maskID bug
-    mylink = os.popen('readlink ' + maskid_dir).read()
+    mylink = os.popen('readlink' + maskid_dir).read()
     newlink = mylink.rstrip().replace('..', sys.argv[2])
     date_dirs = glob.glob(newlink + '/20*')
     date_dirs.sort()  # making it easier to figure out scan order
@@ -53,25 +53,25 @@ for maskid in fid:
         if num_mprages == 1:
             scan_num = 0
         else:
-            print('Found %d scans for %s.' % (num_mprages, maskid.rstrip()))
+            print 'Found %d scans for %s.' % (num_mprages, maskid.rstrip())
             if len(date_dirs) > 1:
-                print('\n\nWARNING!!! More than one date directory!\n\n')
-            print(mprage_dirs)
+                print '\n\nWARNING!!! More than one date directory!\n\n'
+            print mprage_dirs
             scan_num = 0
             while scan_num < 1:
                 try:
-                    scan_num = int(input('Which scan to use?: '))
+                    scan_num = int(raw_input('Which scan to use?: '))
                 except ValueError:
-                    print("Not a number")
+                    print "Not a number"
             scan_num -= 1
         mprage = mprage_dirs[scan_num]
-        print('Copying', maskid.rstrip(), 'to', copy_to % int(maskid.rstrip()))
+        print 'Copying', maskid.rstrip(), 'to', copy_to % int(maskid.rstrip())
         shutil.copytree(mprage, copy_to % int(maskid))
         copied_cnt += 1
     else:
-        print('Did not find MPRAGE for', maskid)
+        print 'Did not find MPRAGE for', maskid
 
 fid.close()
 
-print('=== SUMMARY ===')
-print('Copied %d mask ids, %d not found.' % (copied_cnt, cnt-copied_cnt))
+print '=== SUMMARY ==='
+print 'Copied %d mask ids, %d not found.' % (copied_cnt, cnt-copied_cnt)
