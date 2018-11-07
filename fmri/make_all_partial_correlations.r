@@ -21,10 +21,15 @@ trimmed = F  # whether to trim subjects with good TR > 123
 methods = c('pearson', 'spearman', 'kendall')
 p = 'aparc'
 
+# some non-grey mater ROIs we don't need
 rm_rois = c('CSF', 'Ventricle$', 'Pallidum$', 'Brain.Stem',
             'Accumbens.area$', 'VentralDC$', 'vessel$', 'Cerebral',
             'choroid', 'Lat.Vent$', 'White.Matter$', 'hypointensities',
             '^CC', 'nknown$', 'Chiasm$', 'Cerebellum.Cortex$')
+# some extra subcortical stuff just so we can have less ROIs compared to
+# uncensored TRs
+rm_rois = c(rm_rois, 'Thalamus-Proper$', 'Caudate$', 'Putamen$', 'Hippocampus$',
+            'Amygdala$')
 
 library(ppcor)
 
