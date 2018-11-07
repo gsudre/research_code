@@ -21,6 +21,10 @@ trimmed = F  # whether to trim subjects with good TR > 123
 methods = c('pearson', 'spearman', 'kendall')
 p = 'aparc'
 
+rm_rois = c('CSF', 'Ventricle$', 'Pallidum$', 'Brain.Stem',
+            'Accumbens.area$', 'VentralDC$', 'vessel$', 'Cerebral',
+            'choroid', 'Lat.Vent$', 'White.Matter$', 'hypointensities',
+            '^CC', 'nknown$', 'Chiasm$', 'Cerebellum.Cortex$')
 
 library(ppcor)
 
@@ -30,6 +34,12 @@ for (me in methods) {
     roi_fname = sprintf('%s/%s+aseg_REN_all.niml.lt', input_dir, p)
     flen = length(readLines(roi_fname))
     roi_table = read.table(roi_fname, skip=4, nrows=(flen-7))
+
+    rm_me = c()
+    for (r in rm_rois) {
+        rm_me = c(rm_me, which(grepl(r, roi_table[, 2])))
+    }
+    roi_table = roi_table[-rm_me, ]
 
     # get list of subjects from directory
     maskids = list.files(path=sprintf('%s/%s/', input_dir, p), pattern='*')
@@ -41,22 +51,24 @@ for (me in methods) {
         print(m)
         scan_dir = sprintf('%s/%s/%s/', input_dir, p, m)
         oneds = list.files(path=scan_dir, pattern='*.1D')
-        rois = sapply(oneds, function(x) gsub('.1D', '', x))
         ntrs = sapply(oneds, function(x) length(readLines(sprintf('%s/%s',
                                                                 scan_dir, x))))
-        scan_data = matrix(data=NA, nrow=max(ntrs), ncol=length(oneds))
-        colnames(scan_data) = rois
-        for (f in 1:length(oneds)) {
-            # read in data for nonempty ROIs
-            if (ntrs[f] > 0) {
-                scan_data[, rois[f]] = as.numeric(readLines(sprintf('%s/%s',
-                                                                    scan_dir,
-                                                                    oneds[f])))
+        # only grabing data for ROIs that we want to include
+        scan_data = matrix(data=NA, nrow=max(ntrs), ncol=nrow(roi_table))
+        colnames(scan_data) = roi_table[, 2]
+        for (roi in roi_table[, 2]) {
+            roi_num = roi_table[roi_table[, 2] == roi, 1]
+            # read in data for nonempty ROIs. Empty ROIs stay as NAs
+            fname_1d = sprintf('%d.1D', roi_num)
+            if (ntrs[fname_1d] > 0) {
+                scan_data[, roi] = as.numeric(readLines(sprintf('%s/%s',
+                                                                scan_dir,
+                                                                fname_1d)))
             }
         }
-        # remove any rows that are all zeros (censored TRs)
-        good_rois = sum(ntrs>0)
-        good_trs = rowSums(scan_data==0, na.rm=T) != good_rois
+        # remove any TRs that are all zeros (censored TRs)
+        nonempty_rois = sum(!is.na(scan_data[1, ]))
+        good_trs = rowSums(scan_data==0, na.rm=T) != nonempty_rois
         scan_data = scan_data[good_trs, ]
         # trim the data to the first good 123 TRs
         if (trimmed) {
@@ -65,28 +77,29 @@ for (me in methods) {
         } else {
             imtrimmed = ''
         }
-        combs = combn(1:length(rois), 2)
+
+        combs = combn(1:ncol(scan_data), 2)
         if (nrow(scan_data) > ncol(scan_data)) {
             corr_estimate = vector(mode='numeric', length=ncol(combs))
             corr_pval = vector(mode='numeric', length=ncol(combs))
             header = vector(mode='character', length=ncol(combs))
             for (k in 1:ncol(combs)) {
-                roi_i = roi_table[roi_table[, 1] == rois[combs[1, k]], 2]
-                roi_j = roi_table[roi_table[, 1] == rois[combs[2, k]], 2]
+                roi_i = colnames(scan_data)[combs[1, k]]
+                roi_j = colnames(scan_data)[combs[2, k]]
                 header[k] = sprintf('%s_TO_%s', roi_i, roi_j)
                 # only calculate correlation if one of the variables is not all NAs
-                if (sum(is.na(scan_data[, combs[1, k]])) == nrow(scan_data) ||
-                    sum(is.na(scan_data[, combs[2, k]])) == nrow(scan_data)) {
+                if (sum(is.na(scan_data[, roi_i])) == nrow(scan_data) ||
+                    sum(is.na(scan_data[, roi_j])) == nrow(scan_data)) {
                     corr_estimate[k] = NA
                     corr_pval[k] = NA
                 } else {
                     # the variables to condition the correlation cannot be X, Y, or
                     # NAs 
-                    nuisance = scan_data[, -c(combs[1, k], combs[2, k])]
+                    nuisance = scan_data[, setdiff(colnames(scan_data), c(roi_i, roi_j))]
                     good_rois = colSums(is.na(nuisance)) != nrow(nuisance)
                     nuisance = nuisance[, good_rois]
-                    res = pcor.test(scan_data[, combs[1, k]],
-                                    scan_data[, combs[2, k]],
+                    res = pcor.test(scan_data[, roi_i],
+                                    scan_data[, roi_j],
                                     nuisance, method=me)
                     corr_estimate[k] = res$estimate
                     corr_pval[k] = res$p.value
