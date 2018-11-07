@@ -106,7 +106,8 @@ for (me in methods) {
                 }
             }
         } else {
-            print('Not enough TRs to compute partial correlation')
+            print(sprintf('Not enough TRs to compute partial correlation. Have %d, need more than %d',
+                          nrow(scan_data), ncol(scan_data)))
             corr_estimate = rep(NA, length=ncol(combs))
             corr_pval = rep(1, length=ncol(combs))
         }
