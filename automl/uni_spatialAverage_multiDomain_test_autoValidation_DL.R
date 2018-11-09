@@ -238,9 +238,30 @@ for (f in 1:length(fnames[[1]])) {
         # combining targets
         if (all(all_data.train[, paste0(new_target, '.x')] ==
                 all_data.train[, paste0(new_target, '.y')])) {
+                # if the subjects are the same in both datasets, we're good
                 all_data.train[, new_target] = all_data.train[, paste0(new_target, '.x')]
                 all_data.test[, new_target] = all_data.test[, paste0(new_target, '.x')]
+        } else {
+            # if subjects are different, than they're NA in one of them. So,
+            # copy the nonNas from the other
+            outcome = all_data.train[, paste0(new_target, '.x')] # just for length
+            new_scans = which(is.na(all_data.train[, paste0(new_target, '.x')]))
+            outcome[new_scans] = all_data.train[new_scans, paste0(new_target, '.y')]
+            new_scans = which(is.na(all_data.train[, paste0(new_target, '.y')]))
+            outcome[new_scans] = all_data.train[new_scans, paste0(new_target, '.x')]
+            all_data.train[, new_target] = outcome
+            # and repeat the same for test
+            outcome = all_data.test[, paste0(new_target, '.x')] # just for length
+            new_scans = which(is.na(all_data.test[, paste0(new_target, '.x')]))
+            outcome[new_scans] = all_data.test[new_scans, paste0(new_target, '.y')]
+            new_scans = which(is.na(all_data.test[, paste0(new_target, '.y')]))
+            outcome[new_scans] = all_data.test[new_scans, paste0(new_target, '.x')]
+            all_data.test[, new_target] = outcome
         }
+        all_data.train[, paste0(new_target, '.x')] = NULL
+        all_data.train[, paste0(new_target, '.y')] = NULL
+        all_data.test[, paste0(new_target, '.x')] = NULL
+        all_data.test[, paste0(new_target, '.y')] = NULL
     } else {
         all_data.train = data.train[, c('MRN', new_target, x)]
         all_data.test = data.test[, c('MRN', new_target, x)]
