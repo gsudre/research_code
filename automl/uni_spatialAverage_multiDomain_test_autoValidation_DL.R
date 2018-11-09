@@ -240,8 +240,10 @@ for (f in 1:length(fnames[[1]])) {
         all_data.test = merge(all_data.test, data.test[, c('MRN', new_target, x)], by='MRN', all.x=T, all.y=T)
         all_x = c(all_x, x)
         # combining targets
-        if (all(all_data.train[, paste0(new_target, '.x')] ==
-                all_data.train[, paste0(new_target, '.y')])) {
+        cur_outcome = all_data.train[, paste0(new_target, '.x')]
+        next_outcome = all_data.train[, paste0(new_target, '.y')]
+        if ((sum(is.na(cur_outcome))==0) && (sum(is.na(next_outcome))==0) &&
+             all(cur_outcome == next_outcome)) {
                 # if the subjects are the same in both datasets, we're good
                 all_data.train[, new_target] = all_data.train[, paste0(new_target, '.x')]
                 all_data.test[, new_target] = all_data.test[, paste0(new_target, '.x')]
