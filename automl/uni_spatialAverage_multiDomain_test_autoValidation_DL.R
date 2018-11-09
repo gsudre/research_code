@@ -232,12 +232,18 @@ for (f in 1:length(fnames[[1]])) {
     }
     print(sprintf('Variables after spatial averaging: %d', length(x)))
     if (f > 1) {
-        all_data.train = merge(all_data.train, data.train[, c('MRN', x)], by='MRN', all.x=T, all.y=T)
-        all_data.test = merge(all_data.test, data.test[, c('MRN', x)], by='MRN', all.x=T, all.y=T)
+        all_data.train = merge(all_data.train, data.train[, c('MRN', new_target, x)], by='MRN', all.x=T, all.y=T)
+        all_data.test = merge(all_data.test, data.test[, c('MRN', new_target, x)], by='MRN', all.x=T, all.y=T)
         all_x = c(all_x, x)
+        # combining targets
+        if (all(all_data.train[, paste0(new_target, '.x')] ==
+                all_data.train[, paste0(new_target, '.y')])) {
+                all_data.train[, new_target] = all_data.train[, paste0(new_target, '.x')]
+                all_data.test[, new_target] = all_data.test[, paste0(new_target, '.x')]
+        }
     } else {
-        all_data.train = data.train[, c('MRN', x)]
-        all_data.test = data.test[, c('MRN', x)]
+        all_data.train = data.train[, c('MRN', new_target, x)]
+        all_data.test = data.test[, c('MRN', new_target, x)]
         all_x = x
     }
 }
