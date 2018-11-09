@@ -173,7 +173,7 @@ for (f in 1:length(fnames[[1]])) {
         out = rep(0, nvox)
         names(out) = x_orig
         out[x[keep_me]] = 1
-        out_fname = sprintf('%s/%s_%d', out_dir, new_target, myseed)
+        out_fname = sprintf('%s/lh_%s_ds%d_%d', out_dir, new_target, f, myseed)
 
         # writing good voxels to be clustered. left hemisphere first
         write.table(out[1:(nvox/2)], file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
@@ -183,7 +183,7 @@ for (f in 1:length(fnames[[1]])) {
             base_name, out_fname, out_fname, min_clusters[[1]][f])
         system(cmd_line)
         # read mask back in and filter x properly
-        clus = read.table(sprintf('%s_lh_ClstMsk_e1_a%d.0.niml.dset', out_fname, min_clusters[[1]][f]),
+        clus = read.table(sprintf('%s_lh_ClstMsk_e1_a%s.0.niml.dset', out_fname, min_clusters[[1]][f]),
                         skip=12, nrows=(nvox/2))[[1]]
         lh_cluster_idx = clus > 0
 
@@ -203,11 +203,13 @@ for (f in 1:length(fnames[[1]])) {
         }
 
         # now, repeat the exact same thing for right hemisphere
+        out_fname = sprintf('%s/rh_%s_ds%d_%d', out_dir, new_target, f, myseed)
+
         write.table(out[(nvox/2+1):length(out)], file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
         cmd_line = sprintf('SurfClust -i %s/freesurfer5.3_subjects/fsaverage/SUMA/rh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_rh -out_roidset -out_fulllist -amm2 %s',
             base_name, out_fname, out_fname, min_clusters[[1]][f])
         system(cmd_line)
-        clus = read.table(sprintf('%s_rh_ClstMsk_e1_a%d.0.niml.dset', out_fname, min_clusters[[1]][f]),
+        clus = read.table(sprintf('%s_rh_ClstMsk_e1_a%s.0.niml.dset', out_fname, min_clusters[[1]][f]),
                         skip=12, nrows=(nvox/2))[[1]]
         rh_cluster_idx = clus > 0
 
@@ -321,7 +323,7 @@ if (grepl(pattern = 'adhd', data_fname)) {
   }
 }
 
-print(sprintf('Running model on %d features', length(x)))
+print(sprintf('Running model on %d features', length(all_x)))
 aml <- h2o.automl(x = all_x, y = new_target, training_frame = dtrain,
                 seed=myseed,
                 leaderboard_frame=dtest,
