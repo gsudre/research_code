@@ -231,6 +231,8 @@ for (f in 1:length(fnames[[1]])) {
 
         # disregard all other variables and keep only the cluster averages
         x = new_x
+    } else {
+        x = x[keep_me]
     }
     print(sprintf('Variables after spatial averaging: %d', length(x)))
     if (f > 1) {
