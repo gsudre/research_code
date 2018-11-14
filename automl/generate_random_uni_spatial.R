@@ -7,6 +7,16 @@ clin_fname = args[2]
 target = args[3]
 myseed = as.numeric(args[4])
 
+winsorize = function(x, cut = 0.01){
+  cut_point_top <- quantile(x, 1 - cut, na.rm = T)
+  cut_point_bottom <- quantile(x, cut, na.rm = T)
+  i = which(x >= cut_point_top) 
+  x[i] = cut_point_top
+  j = which(x <= cut_point_bottom) 
+  x[j] = cut_point_bottom
+  return(x)
+}
+
 base_name = '~/data/'
 print('Loading files')
 # merging phenotype and clinical data
