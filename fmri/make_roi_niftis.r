@@ -30,7 +30,7 @@ roi_table = roi_table[-rm_me, ]
 all_scans = c()
 library(oro.nifti)
 # get list of subjects from directory
-maskids = list.files(path=sprintf('%s/%s/', input_dir, p), pattern='*')[1:5]
+maskids = list.files(path=sprintf('%s/%s/', input_dir, p), pattern='*')
 for (m in maskids) {
     print(m)
     scan_dir = sprintf('%s/%s/%s/', input_dir, p, m)
@@ -63,7 +63,7 @@ for (m in maskids) {
     }
 
     # scale it so that each time series has mean zero and SD 1
-    scan_data = t(scale(t(scan_data)))
+    scan_data = scale(scan_data)
 
     # setting up NIFTI file
     dims = c(ncol(scan_data), 1, 1, nrow(scan_data))
@@ -90,4 +90,4 @@ oro.nifti::writeNIfTI(nim, out_fname)
 
 # and spitting out the concatenated data
 out_fname = sprintf('%s/tcat_%s.csv', output_dir, p)
-write.csv(all_scans, file=out_fname, col.names=F, row.names=F)
+write.csv(all_scans, file=out_fname, row.names=F)
