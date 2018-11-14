@@ -1,5 +1,6 @@
 # Goal is to make Nifti files (one per subject) that contains just the ROI data,
 # so we can run it through ICA.
+# We also output the concatenated data over time for possible use in ICASSO.
 #
 # GS, 11/2018
 
@@ -26,9 +27,10 @@ for (r in rm_rois) {
 }
 roi_table = roi_table[-rm_me, ]
 
+all_scans = c()
 library(oro.nifti)
 # get list of subjects from directory
-maskids = list.files(path=sprintf('%s/%s/', input_dir, p), pattern='*')
+maskids = list.files(path=sprintf('%s/%s/', input_dir, p), pattern='*')[1:5]
 for (m in maskids) {
     print(m)
     scan_dir = sprintf('%s/%s/%s/', input_dir, p, m)
@@ -60,6 +62,9 @@ for (m in maskids) {
         imtrimmed = ''
     }
 
+    # scale it so that each time series has mean zero and SD 1
+    scan_data = t(scale(t(scan_data)))
+
     # setting up NIFTI file
     dims = c(ncol(scan_data), 1, 1, nrow(scan_data))
     arr = array(scan_data, dim=dims)
@@ -69,6 +74,8 @@ for (m in maskids) {
     datatype(nim) = 16
     out_fname = sprintf('%s/%s_%s%s', output_dir, m, p, imtrimmed)
     oro.nifti::writeNIfTI(nim, out_fname)
+
+    all_scans = rbind(all_scans, scan_data)
 }
 
 # finish by creating a mask
@@ -80,3 +87,7 @@ bitpix(nim) = 32
 datatype(nim) = 16
 out_fname = sprintf('%s/mask_%s', output_dir, p)
 oro.nifti::writeNIfTI(nim, out_fname)
+
+# and spitting out the concatenated data
+out_fname = sprintf('%s/tcat_%s.csv', output_dir, p)
+write.csv(all_scans, file=out_fname, col.names=F, row.names=F)
