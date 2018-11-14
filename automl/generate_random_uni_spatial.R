@@ -142,12 +142,6 @@ if (! grepl(pattern = 'group', target)) {
                 })
     # winsorizing after correlations to avoid ties
     data.train[, target] = winsorize(data.train[, target])
-    cut_point_top = max(data.train[, target])
-    cut_point_bottom = min(data.train[, target])
-    i = which(data.test[, target] >= cut_point_top) 
-    data.test[i, target] = cut_point_top
-    j = which(data.test[, target] <= cut_point_bottom) 
-    data.test[j, target] = cut_point_bottom
 } else {
     data.train[, target] = as.factor(data.train[, target])
     b = sapply(data.train[,x],
