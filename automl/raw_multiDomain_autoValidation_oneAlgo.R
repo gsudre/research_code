@@ -9,6 +9,13 @@ export_fname = args[4]
 myseed = as.numeric(args[5])
 algo = args[6]
 
+if (myseed < 0) {
+    randomize_data = T
+    myseed = -1 * myseed
+} else {
+    randomize_data = F
+}
+
 # starting h2o
 library(h2o)
 if (Sys.info()['sysname'] == 'Darwin') {
@@ -132,6 +139,18 @@ for (f in 1:length(fnames[[1]])) {
 all_x = colnames(all_data)[grepl(pattern = '^v', colnames(all_data))]
 
 print(sprintf('Final number of variables: %d', length(all_x)))
+
+# use negative seed to randomize the data
+if (randomize_data) {
+  print('Creating random data!!!')
+  set.seed(myseed)
+  rnd_data = matrix(runif(nrow(all_data) * length(all_x),
+                          min(all_data[, all_x], na.rm=T),
+                          max(all_data[, all_x], na.rm=T)),
+                    nrow(all_data), length(all_x))
+  all_data[, all_x] = rnd_data
+}
+
 print('Converting to H2O')
 dtrain = as.h2o(all_data[, c(all_x, new_target)])
 if (grepl(pattern = 'group', target)) {
@@ -160,7 +179,7 @@ if (grepl(pattern = 'social', data_fname)) {
 # use all binary clinic variables
 if (grepl(pattern = 'clinic', data_fname)) {
   print('Converting binary clinical variables')
-  xbin = colnames(dtrain)[grepl(pattern = '^vCateg', colnames(df))]
+  xbin = colnames(dtrain)[grepl(pattern = '^vCateg', colnames(dtrain))]
   for (v in xbin) {
     dtrain[, v] = as.factor(dtrain[, v])
   }
@@ -169,7 +188,7 @@ if (grepl(pattern = 'clinic', data_fname)) {
 # use all adhd200 variables
 if (grepl(pattern = 'adhd', data_fname)) {
   print('Converting categorical variables')
-  xbin = colnames(dtrain)[grepl(pattern = '^vCateg', colnames(df))]
+  xbin = colnames(dtrain)[grepl(pattern = '^vCateg', colnames(dtrain))]
   for (v in xbin) {
     dtrain[, v] = as.factor(dtrain[, v])
   }
