@@ -104,7 +104,7 @@ for (f in 1:length(fnames[[1]])) {
                 nrow(df)))
     
     if (f > 1) {
-        all_data = merge(all_data, data[, c('MRN', new_target, x)], by='MRN', all.x=T, all.y=T)
+        all_data = merge(all_data, df[, c('MRN', new_target, x)], by='MRN', all.x=T, all.y=T)
         all_x = c(all_x, x)
         # combining targets
         cur_outcome = all_data[, paste0(new_target, '.x')]
@@ -126,7 +126,7 @@ for (f in 1:length(fnames[[1]])) {
         all_data[, paste0(new_target, '.x')] = NULL
         all_data[, paste0(new_target, '.y')] = NULL
     } else {
-        all_data = data[, c('MRN', new_target, x)]
+        all_data = df[, c('MRN', new_target, x)]
         all_x = x
     }
 }
