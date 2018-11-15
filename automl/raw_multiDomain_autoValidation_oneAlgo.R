@@ -8,6 +8,7 @@ target = args[3]
 export_fname = args[4]
 myseed = as.numeric(args[5])
 algo = args[6]
+preproc = args[7]
 
 if (myseed < 0) {
     randomize_data = T
@@ -53,6 +54,13 @@ for (f in 1:length(fnames[[1]])) {
     df = merge(clin, data, by='MRN')
     print('Looking for data columns')
     x = colnames(df)[grepl(pattern = '^v', colnames(df))]
+
+    # zscore within subject! Needs to be done before any per variable normalization,
+    # and within dataset!
+    if (grepl(pattern='subjScale', preproc)) {
+        print('Normalizing within subjects')
+        df[, x] = t(scale(t(df[, x])))
+    }
 
     # pairwise comparisons
     if (grepl('VS', target)) {
@@ -149,6 +157,16 @@ if (randomize_data) {
                           max(all_data[, all_x], na.rm=T)),
                     nrow(all_data), length(all_x))
   all_data[, all_x] = rnd_data
+}
+
+# Doing any sort of pre-processing requested
+library(caret)
+# for each variable, center, scale, make it more normal, and remove small variance variables
+if (grepl(pattern='dataScale', preproc)) {
+    print('Preprocessing each variable')
+    pp_no_nzv <- preProcess(all_data[, all_x], 
+                    method = c("center", "scale", "YeoJohnson", "nzv"))
+    all_data[, all_x] = predict(pp_no_nzv, newdata=all_data[, all_x])
 }
 
 print('Converting to H2O')
