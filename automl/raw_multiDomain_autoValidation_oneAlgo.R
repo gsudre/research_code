@@ -7,6 +7,7 @@ clin_fname = args[2]
 target = args[3]
 export_fname = args[4]
 myseed = as.numeric(args[5])
+algo = args[6]
 
 # starting h2o
 library(h2o)
@@ -174,12 +175,14 @@ if (grepl(pattern = 'adhd', data_fname)) {
   }
 }
 
+all_algos = c("DeepLearning", "GBM", "GLM", "DRF", "StackedEnsemble")
+exclude_algos = setdiff(all_algos, algo)
 print(sprintf('Running model on %d features', length(all_x)))
 aml <- h2o.automl(x = all_x, y = new_target, training_frame = dtrain,
                 seed=myseed,
                 max_runtime_secs = NULL,
                 max_models = NULL,
-                exclude_algos = NULL)
+                exclude_algos = exclude_algos)
 
 print(aml@leaderboard)
 

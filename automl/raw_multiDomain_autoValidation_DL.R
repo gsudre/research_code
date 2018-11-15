@@ -179,7 +179,7 @@ aml <- h2o.automl(x = all_x, y = new_target, training_frame = dtrain,
                 seed=myseed,
                 max_runtime_secs = NULL,
                 max_models = NULL,
-                exclude_algos = NULL)
+                exclude_algos = c("GBM", "GLM", "DRF", "StackedEnsemble"))
 
 print(aml@leaderboard)
 
