@@ -26,7 +26,6 @@ print('Loading files')
 clin = read.csv(clin_fname)
 
 fnames = strsplit(data_fname, ',')
-min_clusters = strsplit(min_cluster, ',')
 for (f in 1:length(fnames[[1]])) {
     print(sprintf('Working with %s', fnames[[1]][f]))
     load(fnames[[1]][f])  #variable is data
