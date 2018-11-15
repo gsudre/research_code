@@ -7,7 +7,7 @@
 # are assumed to have the same length. 
 #
 # This script is similar to make_all_correlations.R in many ways, except that
-# when calculating paertial correlations we need to pay attention to certain
+# when calculating partial correlations we need to pay attention to certain
 # things that we didn't need to worry about before. For example:
 #  - we need more TRs than ROIs, which removes aparc.a2009s for most of subjects
 #  - we cannot handle missing rois
