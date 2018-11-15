@@ -135,8 +135,8 @@ print(sprintf('Final number of variables: %d', length(all_x)))
 print('Converting to H2O')
 dtrain = as.h2o(all_data[, c(all_x, new_target)])
 if (grepl(pattern = 'group', target)) {
-    outcome = as.factor(as.h2o(df[, new_target]))  # making sure we have correct levels
-    dtrain[, target] = outcome[train_idx]
+    outcome = as.factor(as.h2o(all_data[, new_target]))  # making sure we have correct levels
+    dtrain[, target] = outcome
 }
 
 # make sure the SNPs are seen as factors
