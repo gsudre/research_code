@@ -7,14 +7,14 @@
 
 input_dir = '~/data/baseline_prediction/rsfmri/'
 output_dir = '~/data/baseline_prediction/rsfmri/roi_niftis/'
-trimmed = F  # whether to trim subjects with good TR > 123
+trimmed = T  # whether to trim subjects with good TR > 123
 p = 'aparc'
 
 # some non-grey mater ROIs we don't need
 rm_rois = c('CSF', 'Ventricle$', 'Pallidum$', 'Brain.Stem',
             'Accumbens.area$', 'VentralDC$', 'vessel$', 'Cerebral',
             'choroid', 'Lat.Vent$', 'White.Matter$', 'hypointensities',
-            '^CC', 'nknown$', 'Chiasm$', 'Cerebellum.Cortex$')
+            '^CC', 'nknown$', 'Chiasm$', 'Cerebellum.Cortex$', 'undetermined')
 
 # get labels but ignoring junk in beginnig and end of file
 roi_fname = sprintf('%s/%s+aseg_REN_all.niml.lt', input_dir, p)
@@ -89,5 +89,5 @@ out_fname = sprintf('%s/mask_%s', output_dir, p)
 oro.nifti::writeNIfTI(nim, out_fname)
 
 # and spitting out the concatenated data
-out_fname = sprintf('%s/tcat_%s.csv', output_dir, p)
+out_fname = sprintf('%s/tcat_%s%s.csv', output_dir, p, imtrimmed)
 write.csv(all_scans, file=out_fname, row.names=F)
