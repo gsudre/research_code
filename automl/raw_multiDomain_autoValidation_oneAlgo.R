@@ -114,37 +114,64 @@ for (f in 1:length(fnames[[1]])) {
         print(table(df[, new_target]))
     }
 
+    if (grepl(pattern='PCA', preproc)) {
+        print('Running PCA')
+        # quick hack to use na.action on prcomp
+        fm_str = sprintf('~ %s', paste0(x, collapse='+ ', sep=' '))
+        pca = prcomp(as.formula(fm_str), df[, x], scale=T, na.action=na.exclude)
+        eigs <- pca$sdev^2
+        if (grepl(pattern='elbow', preproc)) {
+            library(nFactors)
+            nS = nScree(x=eigs)
+            keep_me = 1:nS$Components$noc
+        } else if (grepl(pattern='kaiser', preproc)) {
+            library(nFactors)
+            nS = nScree(x=eigs)
+            keep_me = 1:nS$Components$nkaiser
+        } else {
+            keep_me = 1:nrow(df)
+        }
+        df = cbind(df[, 'MRN'], pca$x[, keep_me], df[, new_target])
+        colnames(df)[ncol(df)] = new_target
+        colnames(df)[1] = 'MRN'
+        x = colnames(df)[grepl(pattern = '^PC', colnames(df))]
+    }
+
     # set seed again to replicate old results
     set.seed(myseed)
     print(sprintf('Using all %d samples for training + validation (CV results for leaderboard).',
                 nrow(df)))
     
     if (f > 1) {
-        all_data = merge(all_data, df[, c('MRN', new_target, x)], by='MRN', all.x=T, all.y=T)
+        s1 = sprintf('.%d', f-1)
+        s2 = sprintf('.%d', f)
+        all_data = merge(all_data, df[, c('MRN', new_target, x)], by='MRN',
+                         all.x=T, all.y=T, suffixes = c(s1, s2))
         # combining targets
-        cur_outcome = all_data[, paste0(new_target, '.x')]
-        next_outcome = all_data[, paste0(new_target, '.y')]
+        cur_outcome = all_data[, paste0(new_target, s1)]
+        next_outcome = all_data[, paste0(new_target, s2)]
         if ((sum(is.na(cur_outcome))==0) && (sum(is.na(next_outcome))==0) &&
              all(cur_outcome == next_outcome)) {
                 # if the subjects are the same in both datasets, we're good
-                all_data[, new_target] = all_data[, paste0(new_target, '.x')]
+                all_data[, new_target] = all_data[, paste0(new_target, s1)]
         } else {
             # if subjects are different, than they're NA in one of them. So,
             # copy the nonNas from the other
-            outcome = all_data[, paste0(new_target, '.x')] # just for length
-            new_scans = which(is.na(all_data[, paste0(new_target, '.x')]))
-            outcome[new_scans] = all_data[new_scans, paste0(new_target, '.y')]
-            new_scans = which(is.na(all_data[, paste0(new_target, '.y')]))
-            outcome[new_scans] = all_data[new_scans, paste0(new_target, '.x')]
+            outcome = all_data[, paste0(new_target, s1)] # just for length
+            new_scans = which(is.na(all_data[, paste0(new_target, s1)]))
+            outcome[new_scans] = all_data[new_scans, paste0(new_target, s2)]
+            new_scans = which(is.na(all_data[, paste0(new_target, s2)]))
+            outcome[new_scans] = all_data[new_scans, paste0(new_target, s1)]
             all_data[, new_target] = outcome
         }
-        all_data[, paste0(new_target, '.x')] = NULL
-        all_data[, paste0(new_target, '.y')] = NULL
+        all_data[, paste0(new_target, s1)] = NULL
+        all_data[, paste0(new_target, s2)] = NULL
     } else {
         all_data = df[, c('MRN', new_target, x)]
     }
 }
-all_x = colnames(all_data)[grepl(pattern = '^v', colnames(all_data))]
+all_x = c(colnames(all_data)[grepl(pattern = '^v', colnames(all_data))],
+          colnames(all_data)[grepl(pattern = '^PC', colnames(all_data))])
 
 print(sprintf('Final number of variables: %d', length(all_x)))
 
