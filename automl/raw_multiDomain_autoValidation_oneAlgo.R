@@ -212,9 +212,9 @@ if (grepl(pattern='dataScale', preproc)) {
 
 print('Converting to H2O')
 dtrain = as.h2o(all_data[, c(all_x, new_target)])
-if (grepl(pattern = 'group', target)) {
+if (grepl(pattern = 'group', new_target)) {
     outcome = as.factor(as.h2o(all_data[, new_target]))  # making sure we have correct levels
-    dtrain[, target] = outcome
+    dtrain[, new_target] = outcome
 }
 
 # make sure the SNPs are seen as factors
