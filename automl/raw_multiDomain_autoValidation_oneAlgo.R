@@ -177,13 +177,27 @@ print(sprintf('Final number of variables: %d', length(all_x)))
 
 # use negative seed to randomize the data
 if (randomize_data) {
-  print('Creating random data!!!')
-  set.seed(myseed)
-  rnd_data = matrix(runif(nrow(all_data) * length(all_x),
-                          min(all_data[, all_x], na.rm=T),
-                          max(all_data[, all_x], na.rm=T)),
-                    nrow(all_data), length(all_x))
-  all_data[, all_x] = rnd_data
+    print('Creating random data!!!')
+    set.seed(myseed)
+    # need to split it between numerical variables and factors
+    categ_idx = (grepl(pattern = '^v_rs', all_x) |
+                 grepl(pattern = '^v_Categ', all_x) |
+                 grepl(pattern = '^vCateg', all_x))
+    num_idx = !categ_idx
+    if (sum(num_idx) > 0) {
+        rnd_data = matrix(runif(nrow(all_data) * sum(num_idx),
+                                min(all_data[, all_x[num_idx]], na.rm=T),
+                                max(all_data[, all_x[num_idx]], na.rm=T)),
+                          nrow(all_data), sum(num_idx))
+        all_data[, all_x[num_idx]] = rnd_data
+    }
+    if (sum(categ_idx) > 0) {
+        for (myvar in all_x[categ_idx]) {
+            rnd_data = runif(nrow(all_data), 0,
+                                   length(unique(all_data[, myvar])))
+            all_data[, myvar] = rnd_data
+        }
+    }
 }
 
 # Doing any sort of pre-processing requested
@@ -206,7 +220,8 @@ if (grepl(pattern = 'group', target)) {
 # make sure the SNPs are seen as factors
 if (grepl(pattern = 'snp', data_fname)) {
   print('Converting SNPs to categorical variables')
-  for (v in all_x) {
+  xbin = colnames(dtrain)[grepl(pattern = '^v_rs', colnames(dtrain))]
+  for (v in xbin) {
     dtrain[, v] = as.factor(dtrain[, v])
   }
 }
