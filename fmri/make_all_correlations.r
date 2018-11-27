@@ -12,7 +12,7 @@
 input_dir = '~/data/baseline_prediction/rsfmri/'
 output_dir = '~/data/baseline_prediction/rsfmri/'
 parc = c('aparc', 'aparc.a2009s')
-trimmed = T  # whether to trim subjects with good TR > 123
+trimmed = F  # whether to trim subjects with good TR > 123
 methods = c('pearson', 'spearman', 'kendall')
 regress_mvmt = T
 
@@ -63,6 +63,7 @@ for (me in methods) {
                 mvmt = as.numeric(readLines(sprintf('%s/%s_enorm.1D', input_dir,
                                                                       m)))
                 mvmt = mvmt[good_trs]
+                mvmt = mvmt[1:nrow(scan_data)]  # to match possible trimming
                 for (r in 1:ncol(scan_data)) {
                     # only worry about it if ROI data is not NA
                     if (sum(is.na(scan_data[, r])) < nrow(scan_data)) {
