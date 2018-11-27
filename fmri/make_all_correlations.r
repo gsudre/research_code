@@ -12,8 +12,9 @@
 input_dir = '~/data/baseline_prediction/rsfmri/'
 output_dir = '~/data/baseline_prediction/rsfmri/'
 parc = c('aparc', 'aparc.a2009s')
-trimmed = F  # whether to trim subjects with good TR > 123
+trimmed = T  # whether to trim subjects with good TR > 123
 methods = c('pearson', 'spearman', 'kendall')
+regress_mvmt = T
 
 for (me in methods) {
     for (p in parc) {
@@ -57,6 +58,21 @@ for (me in methods) {
             } else {
                 imtrimmed = ''
             }
+            if (regress_mvmt) {
+                imregressed = '_mvmtRegressed'
+                mvmt = as.numeric(readLines(sprintf('%s/%s_enorm.1D', input_dir,
+                                                                      m)))
+                mvmt = mvmt[good_trs]
+                for (r in 1:ncol(scan_data)) {
+                    # only worry about it if ROI data is not NA
+                    if (sum(is.na(scan_data[, r])) < nrow(scan_data)) {
+                        scan_data[, r] = lm(scan_data[, r] ~ mvmt,
+                                            na.action=na.exclude)$residuals
+                    }
+                }
+            } else {
+                imregressed = ''
+            }
             combs = combn(1:length(rois), 2)
             corr_estimate = vector(mode='numeric', length=ncol(combs))
             corr_pval = vector(mode='numeric', length=ncol(combs))
@@ -96,13 +112,13 @@ for (me in methods) {
         colnames(conn_p05) = header
         rownames(conn_fdr) = maskids
         colnames(conn_fdr) = header
-        write.csv(conn_raw, file=sprintf('%s/weighted_%s_%s%s.csv', output_dir,
-                                         p, me, imtrimmed))
-        write.csv(conn_pval, file=sprintf('%s/pvals_%s_%s%s.csv', output_dir,
-                                         p, me, imtrimmed))
-        write.csv(conn_p05, file=sprintf('%s/binaryP05_%s_%s%s.csv', output_dir,
-                                         p, me, imtrimmed))
-        write.csv(conn_fdr, file=sprintf('%s/binaryFDR05_%s_%s%s.csv', output_dir,
-                                         p, me, imtrimmed))
+        write.csv(conn_raw, file=sprintf('%s/weighted_%s_%s%s%s.csv', output_dir,
+                                         p, me, imtrimmed, imregressed))
+        write.csv(conn_pval, file=sprintf('%s/pvals_%s_%s%s%s.csv', output_dir,
+                                         p, me, imtrimmed, imregressed))
+        write.csv(conn_p05, file=sprintf('%s/binaryP05_%s_%s%s%s.csv', output_dir,
+                                         p, me, imtrimmed, imregressed))
+        write.csv(conn_fdr, file=sprintf('%s/binaryFDR05_%s_%s%s%s.csv', output_dir,
+                                         p, me, imtrimmed, imregressed))
     }
 }
