@@ -156,10 +156,16 @@ print(sprintf('Variables after univariate filter: %d', sum(keep_me)))
 
 # further filter variables to keep only the ones clustered together
 if (grepl(pattern='dti', data_fname)) {
-    ijk_fname = sprintf('%s/baseline_prediction/dti_223_ijk.txt', base_name)
+    if (grepl(pattern='223', data_fname)) {
+        ijk_fname = sprintf('%s/baseline_prediction/dti_223_ijk.txt', base_name)
+        mask_fname = sprintf('%s/baseline_prediction/mean_223_fa_skeleton_mask.nii.gz',
+                            base_name)
+    } else {
+        ijk_fname = sprintf('%s/baseline_prediction/dti_272_ijk.txt', base_name)
+        mask_fname = sprintf('%s/baseline_prediction/mean_272_fa_skeleton_mask.nii.gz',
+                            base_name)
+    }
     out_dir = sprintf('%s/tmp/', base_name)
-    mask_fname = sprintf('%s/baseline_prediction/mean_223_fa_skeleton_mask.nii.gz',
-                        base_name)
     out = read.table(ijk_fname)
     out[, 4] = 0
     out[keep_me, 4] = 1
