@@ -194,6 +194,7 @@ for (v in x) {
 junk = strsplit(data_fname, '/')[[1]]
 pheno = strsplit(junk[length(junk)], '\\.')[[1]][1]
 out_dir = sprintf('%s/tmp/%s/', base_name, pheno)
+out_fname = sprintf('%s/%s_%s_%s%d', out_dir, input_target, preproc, suffix, myseed)
 
 system(sprintf('mkdir %s', out_dir))
 save(ps, ts, bs, file=sprintf('%s.RData', out_fname))
@@ -203,7 +204,6 @@ out = rep(0, nvox)
 names(out) = x_orig
 keep_me = ps < .05
 out[x[keep_me]] = 1
-out_fname = sprintf('%s/%s_%s_%s%d', out_dir, input_target, preproc, suffix, myseed)
 
 # writing good voxels to be clustered. left hemisphere first
 write.table(out[1:(nvox/2)], file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
