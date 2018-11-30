@@ -210,12 +210,12 @@ write.table(out[1:(nvox/2)], file=sprintf('%s.txt', out_fname), row.names=F, col
 
 # spit out all clusters >= min_cluster
 min_cluster = 1
-cmd_line = sprintf('SurfClust -i %s/freesurfer5.3_subjects/fsaverage/SUMA/lh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_lh -out_roidset -out_fulllist -amm2 %d',
+cmd_line = sprintf('SurfClust -i %s/freesurfer5.3_subjects/fsaverage4/SUMA/lh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_lh -out_roidset -out_fulllist -amm2 %d',
     base_name, out_fname, out_fname, min_cluster)
 system(cmd_line)
 
 # now, repeat the exact same thing for right hemisphere
 write.table(out[(nvox/2+1):length(out)], file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
-cmd_line = sprintf('SurfClust -i %s/freesurfer5.3_subjects/fsaverage/SUMA/rh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_rh -out_roidset -out_fulllist -amm2 %d',
+cmd_line = sprintf('SurfClust -i %s/freesurfer5.3_subjects/fsaverage4/SUMA/rh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_rh -out_roidset -out_fulllist -amm2 %d',
     base_name, out_fname, out_fname, min_cluster)
 system(cmd_line)
