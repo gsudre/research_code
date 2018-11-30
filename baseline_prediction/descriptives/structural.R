@@ -1,18 +1,18 @@
 # generates text files with results from univariate tests on randomized labels,
 # to be later used to assess biggest cluster
 
-args <- commandArgs(trailingOnly = TRUE)
-data_fname = args[1]
-clin_fname = args[2]
-target = args[3]
-myseed = as.numeric(args[4])
-preproc = args[5]
+# args <- commandArgs(trailingOnly = TRUE)
+# data_fname = args[1]
+# clin_fname = args[2]
+# target = args[3]
+# myseed = as.numeric(args[4])
+# preproc = args[5]
 
-# data_fname = '~/data/baseline_prediction/dti_ad_voxelwise_n272_09212018.RData.gz'
-# clin_fname = '~/data/baseline_prediction/long_clin_11302018.csv'
-# target = 'SX_inatt_baseline'
-# myseed = -1234
-# preproc = 'subjScale'
+data_fname = '~/data/baseline_prediction/struct_area_11142018_260timeDiff12mo.RData.gz'
+clin_fname = '~/data/baseline_prediction/long_clin_11302018.csv'
+target = 'SX_inatt_baseline'
+myseed = 1234
+preproc = 'None'
 
 winsorize = function(x, cut = 0.01){
   cut_point_top <- quantile(x, 1 - cut, na.rm = T)
@@ -51,9 +51,8 @@ print('Merging files')
 df = merge(clin, data, by='MRN')
 print('Looking for data columns')
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
-dti = read.csv(sprintf('%s/baseline_prediction/dti_long_09272018.csv', base_name))
-df = merge(df, dti, by='mask.id')
-df$mvmt = rowMeans(scale(df$norm.trans), scale(df$norm.rot))
+qc = read.csv(sprintf('%s/baseline_prediction/master_qc.csv', base_name))
+df = merge(df, qc, by.x='mask.id', by.y='Mask.ID')
 
 # checking for subgroup analysis. Options are nonew_OLS_*_slope, nonew_diag_group2,
 # ADHDonly_OLS_*_slope, ADHDonly_diag_group2, nonew_ADHDonly_*, ADHDNOS_OLS_*_slope,
@@ -165,13 +164,16 @@ set.seed(myseed)
 library(nlme)
 for (v in x) {
     # print(v)
-    mydata = df[, c(target, 'Sex', 'mvmt', 'age_at_scan', 'nuclearFamID')]
+    mydata = df[, c(target, 'Sex', 'ext_avg_freesurfer5.3',
+                    'int_avg_freesurfer5.3', 'mprage_QC',
+                    'age_at_scan', 'nuclearFamID')]
     if (grepl(pattern='log', preproc)) {
+        # make sure we have no negative values or zeros
         mydata$y = log(2*abs(min(df[,v])) + df[,v])
     } else {
         mydata$y = df[,v]
     }
-    fm = as.formula(sprintf("y ~ %s + Sex + mvmt + I(mvmt^2) + age_at_scan + I(age_at_scan^2)", target))
+    fm = as.formula(sprintf("y ~ %s + Sex + ext_avg_freesurfer5.3 + int_avg_freesurfer5.3 + mprage_QC + age_at_scan + I(age_at_scan^2)", target))
     fit = try(lme(fm, random=~1|nuclearFamID, data=mydata, na.action=na.omit))
     if (length(fit) > 1) {
         ps = c(ps, summary(fit)$tTable[2,5])
@@ -184,33 +186,33 @@ for (v in x) {
     }
 }
 
-# write 1-p images and do clustering
-if (grepl(pattern='223', data_fname)) {
-    ijk_fname = sprintf('%s/baseline_prediction/dti_223_ijk.txt', base_name)
-    mask_fname = sprintf('%s/baseline_prediction/mean_223_fa_skeleton_mask.nii.gz',
-                        base_name)
-} else {
-    ijk_fname = sprintf('%s/baseline_prediction/dti_272_ijk.txt', base_name)
-    mask_fname = sprintf('%s/baseline_prediction/mean_272_fa_skeleton_mask.nii.gz',
-                        base_name)
-}
-out = read.table(ijk_fname)
-out[, 4] = 0
-keep_me = ps < .05
-out[keep_me, 4] = 1
+# # write 1-p images and do clustering
+# if (grepl(pattern='223', data_fname)) {
+#     ijk_fname = sprintf('%s/baseline_prediction/dti_223_ijk.txt', base_name)
+#     mask_fname = sprintf('%s/baseline_prediction/mean_223_fa_skeleton_mask.nii.gz',
+#                         base_name)
+# } else {
+#     ijk_fname = sprintf('%s/baseline_prediction/dti_272_ijk.txt', base_name)
+#     mask_fname = sprintf('%s/baseline_prediction/mean_272_fa_skeleton_mask.nii.gz',
+#                         base_name)
+# }
+# out = read.table(ijk_fname)
+# out[, 4] = 0
+# keep_me = ps < .05
+# out[keep_me, 4] = 1
 
-junk = strsplit(data_fname, '/')[[1]]
-pheno = strsplit(junk[length(junk)], '\\.')[[1]][1]
-out_dir = sprintf('%s/tmp/%s/', base_name, pheno)
-system(sprintf('mkdir %s', out_dir))
-out_fname = sprintf('%s/%s_%s_%s%d', out_dir, input_target, preproc, suffix, myseed)
-save(ps, ts, bs, file=sprintf('%s.RData', out_fname))
-# writing good voxels to be clustered
-write.table(out, file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
-cmd_line = sprintf('cat %s.txt | 3dUndump -master %s -ijk -datum float -prefix %s -overwrite -;',
-                    out_fname, mask_fname, out_fname)
-system(cmd_line)
-# spit out all clusters
-cmd_line = sprintf('3dclust -NN1 1 -orient LPI %s+orig 2>/dev/null > %s_clusters.txt',
-                    out_fname, out_fname, out_fname)
-system(cmd_line)
+# junk = strsplit(data_fname, '/')[[1]]
+# pheno = strsplit(junk[length(junk)], '\\.')[[1]][1]
+# out_dir = sprintf('%s/tmp/%s/', base_name, pheno)
+# system(sprintf('mkdir %s', out_dir))
+# out_fname = sprintf('%s/%s_%s_%s%d', out_dir, input_target, preproc, suffix, myseed)
+# save(ps, ts, bs, file=sprintf('%s.RData', out_fname))
+# # writing good voxels to be clustered
+# write.table(out, file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
+# cmd_line = sprintf('cat %s.txt | 3dUndump -master %s -ijk -datum float -prefix %s -overwrite -;',
+#                     out_fname, mask_fname, out_fname)
+# system(cmd_line)
+# # spit out all clusters
+# cmd_line = sprintf('3dclust -NN1 1 -orient LPI %s+orig 2>/dev/null > %s_clusters.txt',
+#                     out_fname, out_fname, out_fname)
+# system(cmd_line)
