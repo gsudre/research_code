@@ -218,6 +218,6 @@ cmd_line = sprintf('cat %s.txt | 3dUndump -master %s -ijk -datum float -prefix %
                     out_fname, mask_fname, out_fname)
 system(cmd_line)
 # spit out all clusters
-cmd_line = sprintf('3dclust -NN1 1 -orient LPI %s+orig 2>/dev/null > %s_clusters.txt',
+cmd_line = sprintf('3dclust -NN1 1 -orient LPI %s+tlrc 2>/dev/null > %s_clusters.txt',
                     out_fname, out_fname, out_fname)
 system(cmd_line)
