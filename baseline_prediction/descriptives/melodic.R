@@ -1,18 +1,18 @@
 # generates text files with results from univariate tests on randomized labels,
 # to be later used to assess biggest cluster
 
-# args <- commandArgs(trailingOnly = TRUE)
-# data_fname = args[1]
-# clin_fname = args[2]
-# target = args[3]
-# myseed = as.numeric(args[4])
-# preproc = args[5]
+args <- commandArgs(trailingOnly = TRUE)
+data_fname = args[1]
+clin_fname = args[2]
+target = args[3]
+myseed = as.numeric(args[4])
+preproc = args[5]
 
-data_fname = '~/data/baseline_prediction/melodic_inter_IC11_09212018.RData.gz'
-clin_fname = '~/data/baseline_prediction/long_clin_11302018.csv'
-target = 'SX_inatt_baseline'
-myseed = 1234
-preproc = 'None'
+# data_fname = '~/data/baseline_prediction/melodic_inter_IC11_09212018.RData.gz'
+# clin_fname = '~/data/baseline_prediction/long_clin_11302018.csv'
+# target = 'SX_inatt_baseline'
+# myseed = 1234
+# preproc = 'None'
 
 winsorize = function(x, cut = 0.01){
   cut_point_top <- quantile(x, 1 - cut, na.rm = T)
@@ -167,7 +167,7 @@ bs = vector()
 set.seed(myseed)
 library(nlme)
 for (v in x) {
-    print(v)
+    # print(v)
     mydata = df[, c(target, 'Sex...Subjects', 'enormGoodTRs_fmri01', 'age_at_scan', 'nuclearFamID')]
     if (grepl(pattern='log', preproc)) {
         mydata$y = log(2*abs(min(df[,v])) + df[,v])
