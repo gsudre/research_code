@@ -1,11 +1,20 @@
-# Convert raw DICOMs to HEAD and BRIK, structural and functional, after they have
-# already been copied to the cluster using copy_rest_files.sh
+# Convert raw DICOMs to HEAD and BRIK, structural and functional, after they
+# have already been copied to the cluster using copy_rest_files.sh. Better to be
+# run in the cluster!
+# 
+# Usage: bash convert_sorted_rest_files MASKID /data/NCR_SBRB/tmp/dcm_mprage
+# /data/NCR_SBRB/tmp/dcm_rsfmri/ /scratch/sudregp/rsfmri/
+
 m=$1
 mprage_dir=$2
 rsfmri_dir=$3
 out_dir=$4
 
 echo Converting $m;
+
+if [ ! -d ${out_dir} ]; then 
+    mkdir ${out_dir};
+fi
 
 rm -rf $out_dir/${m};
 mkdir $out_dir/${m};
