@@ -2,11 +2,9 @@
 # modified from AFNI Example 11 (below) to do everything in subject space
 subj=$1
 
-# subj_dir=/mnt/shaw/data_by_maskID/$subj/afni
-# freesurfer_dir=/mnt/shaw/freesurfer5.3_subjects/$subj
 subj_dir=/scratch/sudregp/rsfmri/$subj
-freesurfer_dir=~/data/MEG_structural/freesurfer/$subj
-SUMA_dir=~/data/MEG_structural/freesurfer/$subj/SUMA
+freesurfer_dir=/data/NCR_SBRB/freesurfer5.3_subjects/$subj
+SUMA_dir=/data/NCR_SBRB/freesurfer5.3_subjects/$subj/SUMA
 
 # This one is based on AFNI's current example 11 (10/28/2016), copied below
 
