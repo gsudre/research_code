@@ -9,7 +9,7 @@ net_dir=$3
 
 hpc=e2620047-6d04-11e5-ba46-22000b92c6ec
 caterpie=74b32b98-a3aa-11e7-adbf-22000a92523b
-myfile=~/tmp/transfers_suma.dat
+myfile=~/tmp/rsfmri_dcm_transfers.dat
 
 ssh -qt helix.nih.gov "if [ ! -d ${out_dir}/dcm_mprage ]; then mkdir ${out_dir}/dcm_mprage/; fi";
 ssh -qt helix.nih.gov "if [ ! -d ${out_dir}/dcm_rsfmri ]; then mkdir ${out_dir}/dcm_rsfmri/; fi";
@@ -28,7 +28,7 @@ for m in `cat $maskid_file`; do
         awk '{for(i=1;i<=NF;i++) {if ($i ~ /Series/) print $i}}' ~/tmp/rest | sed "s/Series://g" > ~/tmp/rest_clean
         while read line; do
             mr_dir=`echo $line | sed "s/,//g"`;
-            echo "--recursive ${net_dir}/MR_data_by_maskid/${m}/${mr_dir}/ ${out_dir}/dcm_rsfmri/${m}/${mr_dir}/" >> $myfile;
+            echo "--recursive ${m}/${d}/${mr_dir}/ ${out_dir}/dcm_rsfmri/${m}/${mr_dir}/" >> $myfile;
             let cnt=$cnt+1;
         done < ~/tmp/rest_clean;
     done < ~/tmp/date_dirs;
