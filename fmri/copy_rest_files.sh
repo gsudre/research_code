@@ -25,7 +25,7 @@ while read d; do
     awk '{for(i=1;i<=NF;i++) {if ($i ~ /Series/) print $i}}' ~/tmp/rest | sed "s/Series://g" > ~/tmp/rest_clean
     cd $net_dir/MR_data_by_maskid/${m}/${d}/
     # for each rest line
-    echo Copying `cat ~/tmp/rest_clean | wc -l` scans.
+    echo -e "\tFound" `cat ~/tmp/rest_clean | wc -l` scans.
     while read line; do
         mr_dir=`echo $line | sed "s/,//g"`;
         gtar cf - ${mr_dir} | ssh -q helix.nih.gov "tar xf - -C ${out_dir}/dcm_rsfmri/${m}/";
