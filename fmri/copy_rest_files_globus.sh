@@ -16,7 +16,7 @@ ssh -qt helix.nih.gov "if [ ! -d ${out_dir}/dcm_rsfmri ]; then mkdir ${out_dir}/
 
 rm -rf $myfile
 for m in `cat $maskid_file`; do 
-    echo "--recursive ${net_dir}/best_mprages/${m}/ ${out_dir}/dcm_mprage/${m}/" >> $myfile;
+    echo "--recursive best_mprages/${m}/ ${out_dir}/dcm_mprage/${m}/" >> $myfile;
 
     # find name of date folders
     ls -1 $net_dir/MR_data_by_maskid/${m}/ | grep -e ^20 > ~/tmp/date_dirs;
@@ -28,7 +28,7 @@ for m in `cat $maskid_file`; do
         awk '{for(i=1;i<=NF;i++) {if ($i ~ /Series/) print $i}}' ~/tmp/rest | sed "s/Series://g" > ~/tmp/rest_clean
         while read line; do
             mr_dir=`echo $line | sed "s/,//g"`;
-            echo "--recursive ${m}/${d}/${mr_dir}/ ${out_dir}/dcm_rsfmri/${m}/${mr_dir}/" >> $myfile;
+            echo "--recursive MR_data_by_maskid/${m}/${d}/${mr_dir}/ ${out_dir}/dcm_rsfmri/${m}/${mr_dir}/" >> $myfile;
             let cnt=$cnt+1;
         done < ~/tmp/rest_clean;
     done < ~/tmp/date_dirs;
