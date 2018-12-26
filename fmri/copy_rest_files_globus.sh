@@ -3,7 +3,7 @@
 # be much faster than using tar.
 # Usage: bash copy_rest_files_globus.sh maskids.txt /data/NCR_SBRB/tmp/ /Volumes/Shaw/
 
-echo -e "Make sure Globus connect is running!!! For example:\n\t /usr/local/neuro/globusconnectpersonal-2.3.3/globusconnectpersonal -start -restrict-paths rw/mnt/shaw/MR_data_by_maskid,rw/mnt/shaw/best_mprages"
+echo -e "Make sure Globus connect is running!!! For example:\n\t /usr/local/neuro/globusconnectpersonal-2.3.3/globusconnectpersonal -start -restrict-paths rw/mnt/shaw/MR_data_by_maskid,rw/mnt/shaw/best_mprages,rw/mnt/shaw/freesurfer5.3_subjects"
 read -p "Press any key to continue (Ctrl + C to quit)"
 
 maskid_file=$1
