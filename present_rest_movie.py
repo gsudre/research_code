@@ -5,7 +5,8 @@
 
 from psychopy import visual, core, event
 
-win = visual.Window(fullscr=True, mouseVisible=False)
+win = visual.Window(fullscr=True, noGUI=True)
+win.mouseVisible = False
 
 msg = visual.TextStim(win, text=u"Waiting for scanner...")
 msg.draw()
