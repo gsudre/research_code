@@ -14,13 +14,21 @@ win.flip()
 
 event.waitKeys(keyList=["escape", 't'], clearEvents=True)
 
+msg = visual.TextStim(win, text=u"Movie about to start...")
+msg.draw()
+win.flip()
+# waiting for scanner to settle
+core.wait(2.5 * 3) # TR length in seconds * num settling TRs
+
 routineTimer = core.CountdownTimer() 
 
 mov = visual.MovieStim3(win, filename='/Users/sudregp/Downloads/test.mp4',
                         noAudio=True, flipVert=False,
                         units='norm', pos=(0, 0), size=(2, 2))
 
-# change this to set the duration of the experiment
+print('Movie duration: %f secs' % mov.duration)
+
+# change this to set the duration of the remainder of the experiment
 routineTimer.add(10)#mov.duration)
 
 mov.play()
