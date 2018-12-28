@@ -10,6 +10,8 @@
 
   mkdir ${net_dir}/resting_alignment/
   cd ${net_dir}/${s}/${s}.rest.subjectSpace.results;
+  rm -rf align.*;
+  
   uber_align_test.py -no_gui -save_script align.test  \
      -uvar anat ${s}_SurfVol_ns+orig                      \
      -uvar epi  vr_base_min_outlier+orig                     \
