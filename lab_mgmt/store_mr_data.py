@@ -12,6 +12,7 @@ It also creates a CSV file to be uploaded to Labmatrix to populate Scan fields.
 Gustavo Sudre, 10/2013
 
 ** Updated to include glutamate scans, GS 10/2018
+** Updated to reflect the new shared drive folder structure, GS 01/2019
 '''
 
 import os
@@ -28,9 +29,7 @@ csvOutput = '/Users/sudregp/tmp/scans.csv'
 # where to find .tar.gz with downloaded MR data
 tmpFolder = '/Users/sudregp/Downloads/'
 # target folder to upack the data
-mrFolder = '%s/MR_data/' % sys.argv[1]
-# where to place symbolic links
-symlinkFolder = '%s/data_by_maskID/' % sys.argv[1]
+mrFolder = '%s/MR_data_by_maskid/' % sys.argv[1]
 
 # type of modalities we scan
 # note that these names need to be found in the README file!
@@ -58,7 +57,7 @@ def check_for_data(dtype, folder):
 
 
 # find out what's the next mask id to use
-maskid_dirs = glob.glob(symlinkFolder + '????')
+maskid_dirs = glob.glob(mrFolder + '????')
 curMaskId = [int(m.split('/')[-1]) for m in maskid_dirs]
 curMaskId = max(curMaskId) + 1
 
@@ -94,8 +93,7 @@ for fidx, file in enumerate(dicoms):
 
     curMaskId = file2maskid[fidx]
 
-    subjFolder = mrFolder + '/' + subjectName + '-' + mrn + '/'
-    targetFolder = subjFolder + '/' + str(curMaskId)
+    targetFolder = mrFolder + '/' + str(curMaskId)
 
     # if we already have the MRN in our tree, that's our target directory
     dir = os.path.dirname(targetFolder)
