@@ -7,9 +7,9 @@
 library(gdata)
 
 dir_name = '/Volumes/Shaw/Clinical_Interviews/'
-caadid_fname = sprintf('%s/CAADID data 9-5-18.xlsx', dir_name)
-nv_fname = sprintf('%s/nv_interviews_20180910.xlsx', dir_name)
-dica_fname = sprintf('%s/DICA 09-10-2018.xlsx', dir_name)
+caadid_fname = sprintf('%s/CAADID data 12-10-18.xlsx', dir_name)
+nv_fname = sprintf('%s/nv_interviews_20181219.xlsx', dir_name)
+dica_fname = sprintf('%s/DICA 12-10-2018.xlsx', dir_name)
 caadidS_fname = sprintf('%s/Simplex/CAADID data simplex.xlsx', dir_name)
 nvS_fname = sprintf('%s/Simplex/nv_interviews_simplex.xlsx', dir_name)
 dicaS_fname = sprintf('%s/Simplex/DICA simplex.xlsx', dir_name)
