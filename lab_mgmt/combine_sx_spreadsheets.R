@@ -164,4 +164,4 @@ print(sprintf('%d out of %d with wrong or missing DOA.', length(idx), nrow(sx)))
 idx = which(sx$SX_inatt=='' | sx$SX_hi=='')
 print(sprintf('%d out of %d with blank SX.', length(idx), nrow(sx)))
 
-write.csv(sx, file='~/data/baseline_prediction/clinical_09112018.csv', row.names=F)
+write.csv(sx, file='~/tmp/clinical_01032019.csv', row.names=F)
