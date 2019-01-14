@@ -64,12 +64,6 @@ df[df$DX == 'NV', 'OLS_HI_categ'] = 'NV'
 df$OLS_HI_categ = as.factor(df$OLS_HI_categ)
 df$OLS_HI_categ = relevel(df$OLS_HI_categ, ref='NV')
 
-for (t in c('age_at_scan', 'I(age_at_scan^2)', 'ext_avg_freesurfer5.3', 'int_avg_freesurfer5.3', 'mprage_QC', 'as.numeric(Sex...Subjects)')) {
-  fm_str = sprintf('%s ~ OLS_HI_categ', t)
-  print(fm_str)
-  print(summary(aov(lm(as.formula(fm_str), data=df))))
-}
-
 # shuffling labels around if needed
 if (myseed > 0) {
     idx = 1:nrow(df)
@@ -106,7 +100,7 @@ for (v in x) {
 junk = strsplit(data_fname, '/')[[1]]
 pheno = strsplit(junk[length(junk)], '\\.')[[1]][1]
 out_dir = sprintf('%s/tmp/%s/', base_name, pheno)
-out_fname = sprintf('%s/%s_%s_%s%d', out_dir, input_target, preproc, suffix, myseed)
+out_fname = sprintf('%s/%s_%s_%s%d', out_dir, target, preproc, suffix, myseed)
 
 system(sprintf('mkdir %s', out_dir))
 save(ps, ts, bs, file=sprintf('%s.RData', out_fname))
