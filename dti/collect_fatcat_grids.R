@@ -7,11 +7,13 @@
 #      csplit --quiet --prefix=${s}. ${s}.pr00_000.grid /^#/ {*};
 #      mv ${s}.?? parsed/;
 # done
+# 
+# Or use gcsplit in OSX.
 #
 # GS 07/2018
 
-subj_dir = '~/data/fatcat/parsed/'
-subjs = as.numeric(read.table(sprintf('%s/paul_parsed.txt', subj_dir))[,1])
+subj_dir = '~/data/fatcat/'
+subjs = as.numeric(read.table(sprintf('%s/has_fatcat.txt', subj_dir))[,1])
 expected_rois = 87
 
 library(plyr)  # for rbind.fill
@@ -42,15 +44,19 @@ for (s in subjs) {
         # concatenate vectorized matrices for the same mask id in the same row
         subj_data = c(subj_data, b)    
     }
+    # add number of ROIs to dataset
+    subj_data = c(subj_data, length(titles))
+    names(subj_data)[length(subj_data)] = 'nROIs'
     # stack each mask id vector onto each other as rows
     names(subj_data)[1] = 'mask.id'
-  if (length(titles) == expected_rois) {
-    data = rbind(data, subj_data)
-} else {
-	# this is much slower than regular bind, so we only do it when needed
-    print(sprintf('Different number of ROIs (%d): filling missing with NA', length(titles)))
-	data = rbind.fill(as.data.frame(data), as.data.frame(t(subj_data)))
-}
+
+    if (length(titles) == expected_rois) {
+        data = rbind(data, subj_data)
+    } else {
+        # this is much slower than regular bind, so we only do it when needed
+        print(sprintf('Different number of ROIs (%d): filling missing with NA', length(titles)))
+        data = rbind.fill(as.data.frame(data), as.data.frame(t(subj_data)))
+    }
 }
 # rename it so that each row is a mask id
 save(data, file=sprintf('%s/output.RData', subj_dir))
