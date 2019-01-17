@@ -2,6 +2,9 @@
 # Start by running a query that spits out ALL biosamples entries. Including the
 # default columns is fine. Then, save as a CSV in Excel and run the script.
 #
+# Usage: Rscript ~/research_code/lab_mgmt/flag_labmatrix_biosamples_errors.R \
+# /Users/sudregp/Downloads/Results.csv > ~/tmp/biosamples_report_01172019.txt
+#
 # GS, 01/2019
 
 args <- commandArgs(trailingOnly = TRUE)
@@ -44,15 +47,15 @@ data[idx, c('NSB', 'Source', 'Date.Out', 'Type', 'Destination', 'Notes')]
 cat(sprintf('Total: %d\n', sum(idx)))
 cat('========================\n\n')
 
-cat('\nItems with Date Out but no destination, or vice-versa. We need both!\n')
-idx1 = data$Destination == ''
-idx2 = data$Date.Out != ''
-idx3 = data$Destination != ''
-idx4 = data$Date.Out == ''
-idx = (idx1 & idx2) | (idx3 & idx4)
-data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Notes')]
-cat(sprintf('Total: %d\n', sum(idx)))
-cat('========================\n\n')
+# cat('\nItems with Date Out but no destination, or vice-versa. We need both!\n')
+# idx1 = data$Destination == ''
+# idx2 = data$Date.Out != ''
+# idx3 = data$Destination != ''
+# idx4 = data$Date.Out == ''
+# idx = (idx1 & idx2) | (idx3 & idx4)
+# data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Notes')]
+# cat(sprintf('Total: %d\n', sum(idx)))
+# cat('========================\n\n')
 
 cat('\nItems in inventory but no location information. Are they really here?\n')
 idx1 = data$Status == 'In Inventory'
