@@ -3,7 +3,7 @@ s=$1;
 cd /data/NCR_SBRB/pnc/dti
 mkdir ${s}
 cd ${s}
-tar -zxvf ../../${s}_1.tar.gz
+tar -zxf ../../${s}_1.tar.gz
 module load afni
 Dimon -infile_prefix "${s}/T1_3DAXIAL/Dicoms/*.dcm" \
     -gert_to3d_prefix t1.nii.gz -gert_create_dataset;
