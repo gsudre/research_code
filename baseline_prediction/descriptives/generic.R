@@ -8,9 +8,9 @@ target = args[3]
 myseed = as.numeric(args[4])
 preproc = args[5]
 
-# data_fname = '~/data/baseline_prediction/social_09262018.RData.gz'
+# data_fname = '~/data/baseline_prediction/clinics_binary_sx_baseline_10022018.RData.gz'
 # clin_fname = '~/data/baseline_prediction/long_clin_11302018.csv'
-# target = 'SX_inatt_baseline'
+# target = 'ADHDNOS_nonew_OLS_inatt_slope'
 # myseed = 1234
 # preproc = 'None'
 
@@ -167,9 +167,7 @@ if (grepl(pattern = 'snp', data_fname)) {
 if (grepl(pattern = 'social', data_fname)) {
   print('Converting some socioeconomics to categorical variables')
   for (v in c('v_CategCounty', 'v_CategHomeType')) {
-      if (v %in% all_x) {
-          df[, v] = as.factor(df[, v])
-      }
+      df[, v] = as.factor(df[, v])
   }
 }
 
@@ -200,7 +198,7 @@ library(nlme)
 library(lme4)
 good_vars = c()  # remove variables with singular computations from FDR and Meff
 for (v in 1:length(x)) {
-    print(x[v])
+    # print(x[v])
     mydata = df[, c(target, 'nuclearFamID')]
     if (grepl(pattern='log', preproc)) {
         mydata$y = log(2*abs(min(df[, x[v]])) + df[, x[v]])
@@ -236,8 +234,8 @@ for (v in 1:length(x)) {
     }
 }
 
-# write 1-p images and do clustering
 print(sprintf('Keeping %d good variables out of %d', length(good_vars), length(ps)))
+x = x[good_vars]
 ps = ps[good_vars]
 keep_me = ps < .05
 junk = strsplit(data_fname, '/')[[1]]
