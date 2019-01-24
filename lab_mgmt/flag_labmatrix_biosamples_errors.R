@@ -11,51 +11,43 @@ args <- commandArgs(trailingOnly = TRUE)
 query_fname = args[1]
 
 data = read.csv(query_fname)
-options(width=1000)  # don'tt split rows when printing to screen
+options(width=1000)  # don't split rows when printing to screen
+
+print_table = function(df) {
+    s = sort(df[, 'NSB'], index.return=T)
+    print(df[s$ix, ], row.names=F)
+    cat(sprintf('Total: %d\n', nrow(df)))
+    cat('========================\n\n')
+}
 
 cat('\nItems in inventory but have Date Out or Destination not blank. Are they really here?\n')
 idx1 = data$Status == 'In Inventory'
 idx2 = data$Date.Out != ''
 idx3 = data$Destination != ''
 idx = idx1 & (idx2 | idx3)
-data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Location', 'Box', 'Position')]
-cat(sprintf('Total: %d\n', sum(idx)))
-cat('========================\n\n')
+print_table(data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Location',
+                        'Box', 'Position')])
 
 cat('\nItems not in inventory but have no Date Out or Destination. Where are they? When were they sent?\n')
 idx1 = data$Status != 'In Inventory'
 idx2 = data$Date.Out == ''
 idx3 = data$Destination == ''
 idx = idx1 & (idx2 | idx3)
-data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Notes')]
-cat(sprintf('Total: %d\n', sum(idx)))
-cat('========================\n\n')
+print_table(data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Notes')])
 
 cat('\nSubject samples without a Date In. When were these samples collected?\n')
 idx1 = data$Date.In == ''
 idx2 = data$Source == 'Subject'
 idx = idx1 & idx2
-data[idx, c('NSB', 'Source', 'Date.Out', 'Type', 'Destination', 'Notes')]
-cat(sprintf('Total: %d\n', sum(idx)))
-cat('========================\n\n')
+print_table(data[idx, c('NSB', 'Source', 'Date.Out', 'Type', 'Destination', 
+                        'Notes')])
 
 cat('\nOther items without a Date In. We should know when we received stuff!\n')
 idx1 = data$Date.In == ''
 idx2 = data$Source != 'Subject'
 idx = idx1 & idx2
-data[idx, c('NSB', 'Source', 'Date.Out', 'Type', 'Destination', 'Notes')]
-cat(sprintf('Total: %d\n', sum(idx)))
-cat('========================\n\n')
-
-# cat('\nItems with Date Out but no destination, or vice-versa. We need both!\n')
-# idx1 = data$Destination == ''
-# idx2 = data$Date.Out != ''
-# idx3 = data$Destination != ''
-# idx4 = data$Date.Out == ''
-# idx = (idx1 & idx2) | (idx3 & idx4)
-# data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Notes')]
-# cat(sprintf('Total: %d\n', sum(idx)))
-# cat('========================\n\n')
+print_table(data[idx, c('NSB', 'Source', 'Date.Out', 'Type', 'Destination',
+                        'Notes')])
 
 cat('\nItems in inventory but no location information. Are they really here?\n')
 idx1 = data$Status == 'In Inventory'
@@ -64,9 +56,8 @@ idx3 = grepl(data$Type, pattern='Saliva')
 idx4 = data$Box == ''
 idx5 = data$Position == ''
 idx = idx1 & (idx2 | (!idx3 & (idx4 | idx5)))
-data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Location', 'Box', 'Position')]
-cat(sprintf('Total: %d\n', sum(idx)))
-cat('========================\n\n')
+print_table(data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Location',
+                        'Box', 'Position')])
 
 # this will be needed by many queries...
 nsbs = unique(data$NSB)
@@ -74,8 +65,11 @@ nsbs = unique(data$NSB)
 cat('\nNSBs changing tissue types. Which one is it?\n')
 cnt = 0
 bad = c()
+# only the non-data entries
+idx2 = grepl(data$Type, pattern='data')
 for (i in nsbs) {
-    idx = data$NSB == i
+    idx1 = data$NSB == i
+    idx = idx1 & !idx2
     if (sum(grepl(data[idx,]$Type, pattern='Saliva')) > 0) {
         if (sum(grepl(data[idx,]$Type, pattern='Blood')) > 0) {
             bad = rbind(bad, data[idx, ])
@@ -89,18 +83,14 @@ for (i in nsbs) {
     }
 
 }
-bad[, c('NSB', 'Type')]
-cat(sprintf('Total: %d\n', cnt))
-cat('========================\n\n')
+print_table(bad[, c('NSB', 'Type')])
 
 cat('\nExtracted DNA without volume or concentration. We need both for analysis!\n')
 idx1 = grepl(data$Type, pattern='DNA')
 idx2 = is.na(data$Volume)
 idx3 = is.na(data$Concentration)
 idx = idx1 & (idx2 | idx3)
-data[idx, c('NSB', 'Source', 'Type', 'Location', 'Box', 'Position')]
-cat(sprintf('Total: %d\n', sum(idx)))
-cat('========================\n\n')
+print_table(data[idx, c('NSB', 'Source', 'Type', 'Location', 'Box', 'Position')])
 
 cat('\nNSBs without a source == Subject entry. How do we know when it was collected?\n')
 cnt = 0
@@ -113,9 +103,7 @@ for (i in nsbs) {
         cnt = cnt + 1
     }
 }
-bad[, c('NSB', 'Source', 'Type')]
-cat(sprintf('Total: %d\n', cnt))
-cat('========================\n\n')
+print_table(bad[, c('NSB', 'Source', 'Type')])
 
 cat('\nItems with a Date Out not later than Date In. How is that even possible?\n')
 idx1 = data$Date.In != ''
@@ -124,9 +112,8 @@ dated = data[idx1 & idx2, ]
 date_in = as.Date(dated$Date.In, format='%m/%d/%Y')
 date_out = as.Date(dated$Date.Out, format='%m/%d/%Y')
 idx = date_out <= date_in
-dated[idx, c('NSB', 'Date.In', 'Date.Out', 'Source', 'Destination', 'Type')]
-cat(sprintf('Total: %d\n', sum(idx)))
-cat('========================\n\n')
+print_table(dated[idx, c('NSB', 'Date.In', 'Date.Out', 'Source', 'Destination',
+                         'Type')])
 
 cat('\nNSBs with different MRNs. One NSB should map to one and only one MRN!\n')
 cnt = 0
@@ -139,9 +126,7 @@ for (i in nsbs) {
         cnt = cnt + 1
     }
 }
-bad[, c('NSB', 'subject.id', 'Status', 'Notes')]
-cat(sprintf('Total: %d\n', cnt))
-cat('========================\n\n')
+print_table(bad[, c('NSB', 'subject.id', 'Status', 'Notes')])
 
 # TODO
 # NSBs without complete history
