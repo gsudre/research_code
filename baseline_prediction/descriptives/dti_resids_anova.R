@@ -8,12 +8,6 @@ target = args[3]
 myseed = as.numeric(args[4])
 preproc = args[5]
 
-# data_fname = '~/data/baseline_prediction/struct_area_11142018_260timeDiff12mo.RData.gz'
-# clin_fname = '~/data/baseline_prediction/long_clin_11302018.csv'
-# target = 'SX_inatt_baseline'
-# myseed = 1234
-# preproc = 'None'
-
 if (Sys.info()['sysname'] == 'Darwin') {
   max_mem = '16G'
   base_name = '~/data/'
@@ -41,12 +35,9 @@ print('Merging files')
 df = merge(clin, data, by='MRN')
 print('Looking for data columns')
 x = colnames(df)[grepl(pattern = '^v', colnames(df))]
-qc = read.csv(sprintf('%s/baseline_prediction/master_qc.csv', base_name))
-df = merge(df, qc, by.x='mask.id', by.y='Mask.ID')
-library(gdata)
-mprage = read.xls(sprintf('%s/baseline_prediction/long_scans_08072018.xlsx', base_name),
-                  sheet='mprage')
-df = merge(df, mprage, by.x='mask.id', by.y='Mask.ID...Scan')
+dti = read.csv(sprintf('%s/baseline_prediction/dti_long_09272018.csv', base_name))
+df = merge(df, dti, by='mask.id')
+df$mvmt = rowMeans(scale(df$norm.trans), scale(df$norm.rot))
 
 # creating the categories based on OLS SX
 df$OLS_inatt_categ = NULL
@@ -90,11 +81,9 @@ library(nlme)
 library(MASS)
 print(length(x))
 for (v in x) {
-    mydata = df[, c(target, 'Sex...Subjects', 'ext_avg_freesurfer5.3',
-                    'int_avg_freesurfer5.3', 'mprage_QC',
-                    'age_at_scan', 'nuclearFamID')]
-    mydata$y = df[,v]
-    fm = as.formula("y ~ Sex...Subjects + ext_avg_freesurfer5.3 + int_avg_freesurfer5.3 + mprage_QC + age_at_scan + I(age_at_scan^2)")
+    mydata = df[, c(target, 'Sex', 'mvmt', 'age_at_scan', 'nuclearFamID')]
+    mydata$y = df[, v]
+    fm = as.formula("y ~ Sex + mvmt + I(mvmt^2) + age_at_scan + I(age_at_scan^2)")
     fit = try(lme(fm, random=~1|nuclearFamID, data=mydata, na.action=na.omit, method='ML'))
     if (length(fit) > 1) {
         step = try(stepAIC(fit, direction = "both", trace = F))
@@ -111,32 +100,33 @@ for (v in x) {
     }
 }
 
-# write 1-p images and do clustering... attention to LH and RH!
+# write 1-p images and do clustering
+if (grepl(pattern='223', data_fname)) {
+    ijk_fname = sprintf('%s/baseline_prediction/dti_223_ijk.txt', base_name)
+    mask_fname = sprintf('%s/baseline_prediction/mean_223_fa_skeleton_mask.nii.gz',
+                        base_name)
+} else {
+    ijk_fname = sprintf('%s/baseline_prediction/dti_272_ijk.txt', base_name)
+    mask_fname = sprintf('%s/baseline_prediction/mean_272_fa_skeleton_mask.nii.gz',
+                        base_name)
+}
+out = read.table(ijk_fname)
+out[, 4] = 0
+keep_me = ps < .05
+out[keep_me, 4] = 1
+
 junk = strsplit(data_fname, '/')[[1]]
 pheno = strsplit(junk[length(junk)], '\\.')[[1]][1]
 out_dir = sprintf('%s/tmp/%s/', base_name, pheno)
-out_fname = sprintf('%s/resids_anova_%s_%s_%s%d', out_dir, target, preproc, suffix, myseed)
-
 system(sprintf('mkdir %s', out_dir))
+out_fname = sprintf('%s/%s_%s_%s%d', out_dir, target, preproc, suffix, myseed)
 save(ps, ts, bs, file=sprintf('%s.RData', out_fname))
-
-nvox = length(x_orig)  # before removing constant voxels!
-out = rep(0, nvox)
-names(out) = x_orig
-keep_me = ps < .05
-out[x[keep_me]] = 1
-
-# writing good voxels to be clustered. left hemisphere first
-write.table(out[1:(nvox/2)], file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
-
-# spit out all clusters >= min_cluster
-min_cluster = 1
-cmd_line = sprintf('SurfClust -i %s/freesurfer5.3_subjects/fsaverage4/SUMA/lh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_lh -out_roidset -out_fulllist -amm2 %d',
-    base_name, out_fname, out_fname, min_cluster)
+# writing good voxels to be clustered
+write.table(out, file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
+cmd_line = sprintf('cat %s.txt | 3dUndump -master %s -ijk -datum float -prefix %s -overwrite -;',
+                    out_fname, mask_fname, out_fname)
 system(cmd_line)
-
-# now, repeat the exact same thing for right hemisphere
-write.table(out[(nvox/2+1):length(out)], file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
-cmd_line = sprintf('SurfClust -i %s/freesurfer5.3_subjects/fsaverage4/SUMA/rh.pial.asc -input %s.txt 0 -rmm -1.000000 -thresh_col 0 -athresh .95 -sort_area -no_cent -prefix %s_rh -out_roidset -out_fulllist -amm2 %d',
-    base_name, out_fname, out_fname, min_cluster)
+# spit out all clusters
+cmd_line = sprintf('3dclust -NN1 1 -orient LPI %s+orig 2>/dev/null > %s_clusters.txt',
+                    out_fname, out_fname, out_fname)
 system(cmd_line)
