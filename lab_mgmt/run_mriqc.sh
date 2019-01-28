@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # Wrapper to run MRIQC locally
+# only argument is the subject ID, with sub-!
 
 # set up directory structure
 mkdir /lscratch/${SLURM_JOBID}/BIDS
@@ -8,7 +9,7 @@ mkdir /lscratch/${SLURM_JOBID}/mriqc_output
 mkdir /lscratch/${SLURM_JOBID}/mriqc_work
 
 # copy the files we'll need
-cp -r /scratch/sudregp/BIDS/*json /scratch/sudregp/BIDS/$1 /lscratch/${SLURM_JOBID}/BIDS/
+cp -r /scratch/sudregp/BIDS/*json /scratch/sudregp/BIDS/sub-${1} /lscratch/${SLURM_JOBID}/BIDS/
 cp -r /data/sudregp/singularity /lscratch/${SLURM_JOBID}/
 
 module load singularity
