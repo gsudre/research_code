@@ -26,6 +26,7 @@ echo "0 -1 0 0.102" > acqparams.txt
 #     --acqp=acqparams.txt --bvecs=dwi_cvec.dat --bvals=dwi_bval.dat \
 #     --fwhm=0 --flm=quadratic --out=eddy_unwarped_images --cnr_maps --repol --mporder=6
 
+cp ../my_slspec.txt ./
 eddy_cuda --imain=dwi --acqp=acqparams.txt --index=index.txt \
     --mask=b0_brain_mask --bvals=dwi_bval.dat --bvecs=dwi_cvec.dat \
     --out=eddy_s2v_unwarped_images --niter=8 --fwhm=10,6,4,2,0,0,0,0 \
