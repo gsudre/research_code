@@ -119,7 +119,7 @@ junk = strsplit(data_fname, '/')[[1]]
 pheno = strsplit(junk[length(junk)], '\\.')[[1]][1]
 out_dir = sprintf('%s/tmp/%s/', base_name, pheno)
 system(sprintf('mkdir %s', out_dir))
-out_fname = sprintf('%s/%s_%s_%s%d', out_dir, target, preproc, suffix, myseed)
+out_fname = sprintf('%s/resids_anova_%s_%s_%s%d', out_dir, target, preproc, suffix, myseed)
 save(ps, ts, bs, file=sprintf('%s.RData', out_fname))
 # writing good voxels to be clustered
 write.table(out, file=sprintf('%s.txt', out_fname), row.names=F, col.names=F)
