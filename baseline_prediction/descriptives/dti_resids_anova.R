@@ -81,9 +81,9 @@ library(nlme)
 library(MASS)
 print(length(x))
 for (v in x) {
-    mydata = df[, c(target, 'Sex', 'mvmt', 'age_at_scan', 'nuclearFamID')]
+    mydata = df[, c(target, 'Sex', 'norm.rot', 'norm.trans', 'age_at_scan', 'nuclearFamID')]
     mydata$y = df[, v]
-    fm = as.formula("y ~ Sex + mvmt + I(mvmt^2) + age_at_scan + I(age_at_scan^2)")
+    fm = as.formula("y ~ Sex + norm.rot + I(norm.rot^2) + norm.trans + I(norm.trans^2) + age_at_scan + I(age_at_scan^2)")
     fit = try(lme(fm, random=~1|nuclearFamID, data=mydata, na.action=na.omit, method='ML'))
     if (length(fit) > 1) {
         step = try(stepAIC(fit, direction = "both", trace = F))
