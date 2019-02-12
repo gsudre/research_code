@@ -35,3 +35,68 @@ eddy_cuda --imain=dwi --acqp=acqparams.txt --index=index.txt \
 
 dtifit --data=eddy_s2v_unwarped_images --mask=b0_brain_mask \
     --bvals=dwi_bval.dat --bvecs=dwi_cvec.dat --sse --out=dti
+
+# make QC images for brain mask
+@chauffeur_afni                             \
+    -ulay  dwi.nii.gz[0]                         \
+    -olay  b0_brain_mask.nii.gz                        \
+    -opacity 4                              \
+    -prefix   QC/brain_mask              \
+    -montx 6 -monty 6                       \
+    -set_xhairs OFF                         \
+    -label_mode 1 -label_size 3             \
+    -do_clean
+
+# let's take the FA map to the standard space recommended for FSL
+# https://fsl.fmrib.ox.ac.uk/fslcourse/lectures/practicals/fdt1/index.html
+# first step is just some eroading of all images
+
+# eroding FA image
+tbss_1_preproc dti_FA.nii.gz
+
+# make directionality encoded QC pictures, checking that eroded FA looks fine
+cd FA
+fat_proc_decmap -in_fa dti_FA_FA.nii.gz -in_v1 ../dti_V1.nii.gz \
+    -mask ../b0_brain_mask.nii.gz -prefix ../DEC -qc_prefix ../QC/DEC
+
+# transform and apply the transformation to FMRIB58, similar to tbss_2, but we
+# actually apply it here
+cd FA
+fsl_reg dti_FA_FA.nii.gz $FSLDIR/data/standard/FMRIB58_FA_1mm FA_in_FMRIB58_FA_1mm -FA
+
+# apply FA transform to other interesting maps... code copied from tbss_non_fa
+for f in L1 L2 L3 MD MO; do
+    echo Warping $f;
+    applywarp -i ../dti_${f} -o ${f}_FMRIB58_FA_1mm \
+        -r $FSLDIR/data/standard/FMRIB58_FA_1mm -w FA_in_FMRIB58_FA_1mm_warp
+done
+
+# make transformation QC figure: warped subject B0 is the overlay!
+@chauffeur_afni                             \
+    -ulay  $FSLDIR/data/standard/FMRIB58_FA_1mm.nii.gz                     \
+    -olay  FA_in_FMRIB58_FA_1mm.nii.gz                         \
+    -ulay_range 0% 150%                     \
+    -func_range_perc 50                     \
+    -pbar_posonly                           \
+    -cbar "red_monochrome"                  \
+    -opacity 8                              \
+    -prefix   ../QC/FA_transform              \
+    -montx 3 -monty 3                       \
+    -set_xhairs OFF                         \
+    -label_mode 1 -label_size 3             \
+    -do_clean
+
+# TODO:
+# make QC images for standard errors, and CNR
+# we can derive the skeleton later, either based on FMRIB58 or group
+
+# note that we need to look at
+# https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/TBSS/UserGuide#Using_non-FA_Images_in_TBSS
+# to run the non-FA files!
+
+# for our pipeline, it's worth it to go to DTI-TK space as well, so this way we
+# have tensors in the DTI-TK space and also in the FMRIB58 space. However,
+# unlike what we did in the past, we don't go to the aging template first; we
+# have two separate pipelines, each going from subject space to FMRIB58 or aging
+# template. We can do the 13 DTITK tracts in one pipeline, and voxelwise/FSL
+# tracts in the other.
