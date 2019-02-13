@@ -86,8 +86,23 @@ done
     -label_mode 1 -label_size 3             \
     -do_clean
 
-# TODO:
-# make QC images for standard errors, and CNR
+# make QC images for standard errors. Here we set our color scale to have 95th
+# percentile of all errors. Meaning, more red = bigger error.
+@chauffeur_afni                             \
+    -ulay  dwi.nii.gz                       \
+    -olay  dti_sse.nii.gz                          \
+    -opacity 5                              \
+    -pbar_posonly   \
+    -cbar Spectrum:red_to_blue              \
+    -set_subbricks 0 0 0     \
+    -prefix   QC/sse              \
+    -montx 6 -monty 6                       \
+    -set_xhairs OFF                         \
+    -label_mode 1 -label_size 3             \
+    -thr_olay 0 \
+    -func_range_perc_nz 95 \
+    -do_clean
+
 # we can derive the skeleton later, either based on FMRIB58 or group
 
 # note that we need to look at
