@@ -14,6 +14,7 @@ fat_proc_convert_dcm_dwis \
     -prefix dwi
 rm -rf ${s}
 
+# FSL takes bvecs in the 3 x volumes format
 fslroi dwi b0 0 1
 bet b0 b0_brain -m -f 0.2
 idx=''; for i in {1..71}; do 
@@ -28,13 +29,14 @@ echo "0 -1 0 0.102" > acqparams.txt
 
 cp ../my_slspec.txt ./
 eddy_cuda --imain=dwi --acqp=acqparams.txt --index=index.txt \
-    --mask=b0_brain_mask --bvals=dwi_bval.dat --bvecs=dwi_cvec.dat \
+    --mask=b0_brain_mask --bvals=dwi_bval.dat --bvecs=dwi_rvec.dat \
     --out=eddy_s2v_unwarped_images --niter=8 --fwhm=10,6,4,2,0,0,0,0 \
     --repol --ol_type=both --mporder=8 --s2v_niter=8 \
     --slspec=my_slspec.txt --cnr_maps
 
 dtifit --data=eddy_s2v_unwarped_images --mask=b0_brain_mask \
-    --bvals=dwi_bval.dat --bvecs=dwi_cvec.dat --sse --out=dti
+    --bvals=dwi_bval.dat --bvecs=eddy_s2v_unwarped_images.eddy_rotated_bvecs \
+    --sse --out=dti
 
 # make QC images for brain mask
 @chauffeur_afni                             \
