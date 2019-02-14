@@ -16,9 +16,9 @@ else
     # quick hack that if there are two cdi files we should use the last one
     gradient_file=`/bin/ls -1 | /bin/grep cdi | tail -1`;
     echo Using $gradient_file for gradients!
-    /bin/ls -1 | /bin/grep -v cdi > mr_dirs.txt;
+    /bin/ls -1 | /bin/grep -v cdi | grep -v txt > mr_dirs.txt;
     echo Found these MR folders:
-    cat mr_dirs
+    cat mr_dirs.txt
     # remove first line
     tail -n +2 $gradient_file | split -l 20 -a 1 -d - grads;
 
