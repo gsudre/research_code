@@ -19,10 +19,15 @@ else
     /bin/ls -1 | /bin/grep -v cdi | grep -v txt > mr_dirs.txt;
     echo Found these MR folders:
     cat mr_dirs.txt
-    # remove first line
-    # tail -n +2 $gradient_file | split -l 20 -a 1 -d - grads;
-    # the new sequence takes 30 volumes at a time...
-    tail -n +2 $gradient_file | split -l 30 -a 1 -d - grads;
+    # remove first line and split into different sequences
+    PWD=`pwd`;
+    maskid=`basename $PWD`;
+    if [ $maskid -gt 2053 ]; then
+        # the new sequence takes 30 volumes at a time...
+        tail -n +2 $gradient_file | split -l 30 -a 1 -d - grads;
+    else
+        tail -n +2 $gradient_file | split -l 20 -a 1 -d - grads;
+    fi
 
     # The idea behind doing it per session comes from an email from Irfan, who said
     # that TORTOISE v2 used directory structure, but ImportDICOM (and dcm2nixx) use
