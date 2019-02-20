@@ -45,9 +45,11 @@ let nslices=$nslices-1;  # make it zero based
 seq 1 2 $nslices > my_slspec.txt;
 seq 0 2 $nslices >> my_slspec.txt;
 
+# note that bypassing the shell check as we're doing here is not kosher, so eddy
+# advises double checking the data
 eddy_cuda --imain=dwi_comb --acqp=acqparams.txt --index=index.txt \
     --mask=b0_brain_mask --bvals=dwi_comb_bval.dat --bvecs=dwi_comb_rvec.dat \
     --out=eddy_s2v_unwarped_images --niter=8 --fwhm=10,6,4,2,0,0,0,0 \
     --repol --ol_type=both --mporder=8 --s2v_niter=8 \
-    --slspec=my_slspec.txt --cnr_maps
+    --slspec=my_slspec.txt --cnr_maps --data_is_shelled
 
