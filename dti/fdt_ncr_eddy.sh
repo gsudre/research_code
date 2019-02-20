@@ -5,9 +5,7 @@ module load CUDA/7.5
 module load fsl
 module load afni
 
-s=$1;
-
-cd /scratch/sudregp/dcm_dti/${s}
+cd $1;
 
 # FSL takes bvecs in the 3 x volumes format
 fslroi dwi b0 0 1
