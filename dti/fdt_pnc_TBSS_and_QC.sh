@@ -11,20 +11,21 @@ module load afni
 # eroding FA image
 tbss_1_preproc dti_FA.nii.gz
 
+ln -s origdata/dti_FA.nii.gz ./
+ln -s FA/dti_FA_FA.nii.gz dti_FA_eroded.nii.gz
+
 # make directionality encoded QC pictures, checking that eroded FA looks fine.
 # Note that the dtifit results, and the std alignment were run by autoPtx!
-fat_proc_decmap -in_fa FA/dti_FA_FA.nii.gz -in_v1 dti_V1.nii.gz \
-    -mask nodif_brain_mask.nii.gz -prefix DEC -qc_prefix QC/DEC
+fat_proc_decmap -in_fa dti_FA_eroded.nii.gz -in_v1 dti_V1.nii.gz \
+    -mask nodif_brain_mask.nii.gz -prefix DEC
 
 # apply the transform calculated by autoPtx to a few maps. code copied from 
 # tbss_non_fa
-for f in FA L1 L2 L3 MD MO; do
+for f in FA L1 L2 L3 MD MO FA_eroded; do
     echo Warping $f;
-    applywarp -i dti_${f} -o ${f}_FMRIB58_FA_1mm \
+    applywarp -i dti_${f} -o ${f}_in_FMRIB58_FA_1mm \
         -r $FSLDIR/data/standard/FMRIB58_FA_1mm -w nat2std_warp
 done
-applywarp -i FA/dti_FA_FA -o FA_eroded_FMRIB58_FA_1mm \
-    -r $FSLDIR/data/standard/FMRIB58_FA_1mm -w nat2std_warp
 
 # make transformation QC figure: warped subject B0 is the overlay!
 @chauffeur_afni                             \
@@ -44,7 +45,7 @@ applywarp -i FA/dti_FA_FA -o FA_eroded_FMRIB58_FA_1mm \
 # make QC images for standard errors. Here we set our color scale to have 95th
 # percentile of all errors. Meaning, more red = bigger error.
 @chauffeur_afni                             \
-    -ulay  dwi.nii.gz                       \
+    -ulay  data.nii.gz                       \
     -olay  dti_sse.nii.gz                          \
     -opacity 5                              \
     -pbar_posonly   \
@@ -64,9 +65,3 @@ applywarp -i FA/dti_FA_FA -o FA_eroded_FMRIB58_FA_1mm \
 # https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/TBSS/UserGuide#Using_non-FA_Images_in_TBSS
 # to run the non-FA files!
 
-# for our pipeline, it's worth it to go to DTI-TK space as well, so this way we
-# have tensors in the DTI-TK space and also in the FMRIB58 space. However,
-# unlike what we did in the past, we don't go to the aging template first; we
-# have two separate pipelines, each going from subject space to FMRIB58 or aging
-# template. We can do the 13 DTITK tracts in one pipeline, and voxelwise/FSL
-# tracts in the other.
