@@ -8,12 +8,12 @@ module load afni
 cd $1;
 
 # FSL takes bvecs in the 3 x volumes format
-fslroi dwi b0 0 1
+fslroi dwi_comb b0 0 1
 bet b0 b0_brain -m -f 0.2
 
 # make QC images for brain mask
 @chauffeur_afni                             \
-    -ulay  dwi.nii.gz[0]                         \
+    -ulay  dwi_comb.nii.gz[0]                         \
     -olay  b0_brain_mask.nii.gz                        \
     -opacity 4                              \
     -prefix   QC/brain_mask              \
