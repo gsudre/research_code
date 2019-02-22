@@ -52,5 +52,5 @@ else
         bvec=$bvec' 's${cnt}_proc/s${cnt}.bvecs
         let cnt=${cnt}+1;
     done
-    fat_proc_convert_dcm_dwis $nii $bval $bvec -prefix dwi_comb -flip_x
+    fat_proc_convert_dcm_dwis $nii $bval $bvec -prefix dwi_comb -flip_x -no_qc_view
 fi
