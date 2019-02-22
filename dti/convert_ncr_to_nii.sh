@@ -23,10 +23,15 @@ else
     PWD=`pwd`;
     maskid=`basename $PWD`;
     if [ $maskid -gt 2053 ]; then
-        # the new sequence takes 30 volumes at a time...
-        tail -n +2 $gradient_file | split -l 30 -a 1 -d - grads;
+        # the new sequence has only 2 mr folders, but still 60 volumes for kids and 80 for adults!
+	if [ -e cdiflist08 ]; then	
+        	tail -n +2 $gradient_file | split -l 30 -a 1 -d - grads;
+	else
+        	tail -n +2 $gradient_file | split -l 40 -a 1 -d - grads;
+	fi
     else
-        tail -n +2 $gradient_file | split -l 20 -a 1 -d - grads;
+	# the old sequence still has 20 volumes per mr folder
+        	tail -n +2 $gradient_file | split -l 20 -a 1 -d - grads;
     fi
 
     # The idea behind doing it per session comes from an email from Irfan, who said
