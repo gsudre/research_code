@@ -1,6 +1,5 @@
-s=$1;
-
-cd /data/NCR_SBRB/pnc/dti_fdt/preproc/${s}
+# input should be the preproc directory for an individual scan (from autoPtx)!
+cd $1
 
 module load fsl
 module load afni
