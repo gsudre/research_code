@@ -11,6 +11,7 @@ cd $1;
 fslroi dwi_comb b0 0 1
 bet b0 b0_brain -m -f 0.2
 
+mkdir QC
 # make QC images for brain mask
 @chauffeur_afni                             \
     -ulay  dwi_comb.nii.gz[0]                         \
