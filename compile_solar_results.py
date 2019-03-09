@@ -7,8 +7,8 @@ import glob
 home = os.path.expanduser('~')
 
 
-dir_name = home + '/data/solar_paper_review/'
-analysis = 'fmri_melodicNoMaskZ_3pcs'
+dir_name = home + '/data/heritability_change/'
+analysis = 'dti_tracts_OLS_148'
 out_fname = dir_name + 'polygen_results_%s.csv' % analysis
 
 folders = glob.glob(dir_name + analysis + '/*')
@@ -55,7 +55,7 @@ for trait in traits:
             result.append(p)
         if line.find('Residual Kurtosis') >= 0:
             if line.find('too high') > 0:
-                print 'Residual kurtosis too high for', result[0]
+                print('Residual kurtosis too high for', result[0])
                 kurt = 1
             else:
                 kurt = 0
@@ -67,7 +67,10 @@ for trait in traits:
             result.append(kurt)
         if line.find('H2r Std. Error:') >= 0:
             se = line.split(':')[-1]
-            result.append(se)
+            # just some extra cleanup
+            se.replace('\"','')
+            se = "".join(se.split())
+            result.append(se.rstrip())
     fid.close()
     results.append(result)
 

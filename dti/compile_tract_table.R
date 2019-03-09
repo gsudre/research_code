@@ -2,11 +2,11 @@
 tract_names = c('left_cst', 'left_ifo', 'left_ilf', 'left_slf', 'left_unc', 'right_cst', 'right_ifo', 'right_ilf', 'right_slf', 'right_unc', 'cc')
 var_names = c('FA', 'AD', 'RD')#, 'MO')
 
-subj_file = '~/data/baseline_prediction/subjs_diffeo_272.txt'
-data_dir = '~/data/baseline_prediction/'
-in_fname = 'mean_sampling_272.gzip'
+subj_file = '~/data/heritability_change/tensors694.txt'
+data_dir = '~/data/heritability_change/'
+in_fname = 'mean_sampling_694.gzip'
 # out_fname = 'dti_max_phenotype_cleanedWithinTract3sd.csv'
-out_fname = 'dti_mean_phenotype_272.csv'
+out_fname = 'dti_mean_phenotype_694.csv'
 
 load(sprintf('%s/%s',data_dir,in_fname))
 subjs = read.table(subj_file)

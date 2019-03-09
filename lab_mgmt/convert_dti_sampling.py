@@ -6,8 +6,8 @@ from rpy2.robjects.numpy2ri import numpy2ri
 
 
 dir_name = '/Volumes/Shaw/dti_robust_tsa/analysis_may2017/'
-subj_file = '/Users/sudregp/data/baseline_prediction/subjs_diffeo_272.txt'
-r_output_file = 'mean_sampling_272'
+subj_file = '/Users/sudregp/data/heritability_change/tensors694.txt'
+r_output_file = 'mean_sampling_694'
 tract_names = ['left_cst', 'left_ifo', 'left_ilf', 'left_slf', 'left_unc',
                'right_cst', 'right_ifo', 'right_ilf', 'right_slf', 'right_unc',
                'cc']
