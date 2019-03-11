@@ -1,14 +1,15 @@
 # Grabs the results from SOLAR univariate and bivariate analysis and formats it
 # into a nice table.
 import os
+import sys
 from math import *
 import csv
 import glob
 home = os.path.expanduser('~')
 
+analysis = sys.argv[1]
 
 dir_name = home + '/data/heritability_change/'
-analysis = 'dti_tracts_OLS_148'
 out_fname = dir_name + 'polygen_results_%s.csv' % analysis
 
 folders = glob.glob(dir_name + analysis + '/*')
