@@ -7,13 +7,13 @@
 library(gdata)
 
 dir_name = '/Volumes/Shaw/Clinical_Interviews/'
-caadid_fname = sprintf('%s/CAADID data 12-10-18.xlsx', dir_name)
-nv_fname = sprintf('%s/nv_interviews_20181219.xlsx', dir_name)
-dica_fname = sprintf('%s/DICA 12-10-2018.xlsx', dir_name)
+caadid_fname = sprintf('%s/CAADID data 1-10-19.xlsx', dir_name)
+nv_fname = sprintf('%s/nv_interviews_20190312.xlsx', dir_name)
+dica_fname = sprintf('%s/DICA 02-21-2019.xlsx', dir_name)
 caadidS_fname = sprintf('%s/Simplex/CAADID data simplex.xlsx', dir_name)
 nvS_fname = sprintf('%s/Simplex/nv_interviews_simplex.xlsx', dir_name)
 dicaS_fname = sprintf('%s/Simplex/DICA simplex.xlsx', dir_name)
-family_fname = '/Volumes/Shaw/Family Study List/Family Study List 6-8-18.xlsx'
+family_fname = '/Volumes/Shaw/Family Study List/Family Study List 1-10-19.xlsx'
 papers_fname = sprintf('%s/sx_from_papers.xlsx', dir_name)
 
 # cleaning up CAADID
