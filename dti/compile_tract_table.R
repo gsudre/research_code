@@ -2,11 +2,11 @@
 tract_names = c('left_cst', 'left_ifo', 'left_ilf', 'left_slf', 'left_unc', 'right_cst', 'right_ifo', 'right_ilf', 'right_slf', 'right_unc', 'cc')
 var_names = c('FA', 'AD', 'RD')#, 'MO')
 
-subj_file = '~/data/heritability_change/tensors863.txt'
+subj_file = '~/data/heritability_change/ids1020.txt'
 data_dir = '~/data/heritability_change/'
-in_fname = 'mean_sampling_863.gzip'
-# out_fname = 'dti_max_phenotype_cleanedWithinTract3sd.csv'
-out_fname = 'dti_mean_phenotype_863.csv'
+in_fname = 'mean_sampling_1020.gzip'
+out_fname = 'dti_mean_phenotype_1020_cleanedWithinTract3sd.csv'
+# out_fname = 'dti_mean_phenotype_1020.csv'
 
 load(sprintf('%s/%s',data_dir,in_fname))
 subjs = read.table(subj_file)
@@ -36,7 +36,7 @@ for (tract in tract_names) {
         rm_me = c(rm_me, bad_subjs)
 
         # remove within-tract outliers
-        #tract_data[bad_subjs] = NA
+        tract_data[bad_subjs] = NA
 
         res = cbind(res,tract_data)
     }
