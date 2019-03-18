@@ -6,11 +6,12 @@ import glob
 import numpy as np
 import pylab as pl
 import pandas as pd
+import sys
 
 
 home = os.path.expanduser('~')
-dir_name = home + '/data/solar_paper_v2/'
-analysis = 'dti_fmri_correlation'
+dir_name = home + '/data/heritability_change/'
+analysis = sys.argv[1]
 
 folders = glob.glob(dir_name + analysis + '/*')
 
