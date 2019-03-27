@@ -36,3 +36,10 @@ eddy_cuda --imain=dwi --acqp=acqparams.txt --index=index.txt \
     --out=eddy_s2v_unwarped_images --niter=8 --fwhm=10,6,4,2,0,0,0,0 \
     --repol --ol_type=both --mporder=8 --s2v_niter=8 \
     --slspec=my_slspec.txt --cnr_maps
+
+# copying over some files to their correct names for bedpostX
+cp eddy_s2v_unwarped_images.nii.gz data.nii.gz;
+cp dwi_bval.dat bvals;
+cp bvecs old_bvecs;
+cp eddy_s2v_unwarped_images.eddy_rotated_bvecs bvecs;
+cp b0_brain_mask.nii.gz nodif_brain_mask.nii.gz;
