@@ -1,18 +1,21 @@
 s=$1;
 
-cd /data/NCR_SBRB/pnc/dti_fdt
-mkdir ${s}
-cd ${s}
-tar -zxf ../../${s}_1.tar.gz
 module load CUDA/7.5
 module load fsl
 module load afni
 
-# just to produce the .nii files
-fat_proc_convert_dcm_dwis \
-    -indir  "${s}/DTI_35dir/* ${s}/DTI_36dir/*" \
-    -prefix dwi -no_qc_view
-rm -rf ${s}
+cd /data/NCR_SBRB/pnc/dti_fdt
+# mkdir ${s}
+cd ${s}
+# tar -zxf ../../${s}_1.tar.gz
+# # just to produce the .nii files
+# fat_proc_convert_dcm_dwis \
+#     -indir  "${s}/DTI_35dir/* ${s}/DTI_36dir/*" \
+#     -prefix dwi -no_qc_view
+# rm -rf ${s}
+
+fslreorient2std dwi dwi_reorient
+immv dwi_reorient dwi
 
 # FSL takes bvecs in the 3 x volumes format
 fslroi dwi b0 0 1
