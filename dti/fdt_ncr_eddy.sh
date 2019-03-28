@@ -62,3 +62,5 @@ cp eddy_s2v_unwarped_images.nii.gz data.nii.gz;
 cp dwi_bval.dat bvals;
 cp eddy_s2v_unwarped_images.eddy_rotated_bvecs bvecs;
 cp b0_brain_mask.nii.gz nodif_brain_mask.nii.gz;
+chgrp NCR_SBRB data.nii.gz bvals bvecs nodif_brain_mask.nii.gz;
+chmod 770 data.nii.gz bvals bvecs nodif_brain_mask.nii.gz;
