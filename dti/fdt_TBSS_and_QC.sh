@@ -10,8 +10,8 @@ module load afni
 # eroding FA image
 tbss_1_preproc dti_FA.nii.gz
 
-ln -s origdata/dti_FA.nii.gz ./
-ln -s FA/dti_FA_FA.nii.gz dti_FA_eroded.nii.gz
+cp origdata/dti_FA.nii.gz ./
+cp FA/dti_FA_FA.nii.gz dti_FA_eroded.nii.gz
 
 # make directionality encoded QC pictures, checking that eroded FA looks fine.
 # Note that the dtifit results, and the std alignment were run by autoPtx!
