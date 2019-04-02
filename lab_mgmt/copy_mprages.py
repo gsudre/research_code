@@ -17,15 +17,12 @@ copied_cnt = 0
 cnt = 0
 for maskid in fid:
     cnt += 1
-    maskid_dir = sys.argv[2] + '/data_by_maskID/%04d' % int(maskid)
+    maskid_dir = sys.argv[2] + '/MR_data_by_maskid/%04d' % int(maskid)
     # we could have more than one date directory inside the same mask ID when
     # there were two scan sessions (e.g. the first one was interrupted). Still
     # they'll share the same date!
 
-    # let's bypass the OSX data_by_maskID bug
-    mylink = os.popen('readlink ' + maskid_dir).read()
-    newlink = mylink.rstrip().replace('..', sys.argv[2])
-    date_dirs = glob.glob(newlink + '/20*')
+    date_dirs = glob.glob(maskid_dir + '/20*')
     date_dirs.sort()  # making it easier to figure out scan order
 
     mprage_dirs = []

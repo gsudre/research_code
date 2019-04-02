@@ -1,18 +1,21 @@
 s=$1;
 
-cd /data/NCR_SBRB/pnc/dti_fdt
-mkdir ${s}
-cd ${s}
-tar -zxf ../../${s}_1.tar.gz
 module load CUDA/7.5
 module load fsl
 module load afni
 
-# just to produce the .nii files
-fat_proc_convert_dcm_dwis \
-    -indir  "${s}/DTI_35dir/* ${s}/DTI_36dir/*" \
-    -prefix dwi -no_qc_view
-rm -rf ${s}
+cd /data/NCR_SBRB/pnc/dti_fdt
+# mkdir ${s}
+cd ${s}
+# tar -zxf ../../${s}_1.tar.gz
+# # just to produce the .nii files
+# fat_proc_convert_dcm_dwis \
+#     -indir  "${s}/DTI_35dir/* ${s}/DTI_36dir/*" \
+#     -prefix dwi -no_qc_view
+# rm -rf ${s}
+
+fslreorient2std dwi dwi_reorient
+immv dwi_reorient dwi
 
 # FSL takes bvecs in the 3 x volumes format
 fslroi dwi b0 0 1
@@ -33,3 +36,10 @@ eddy_cuda --imain=dwi --acqp=acqparams.txt --index=index.txt \
     --out=eddy_s2v_unwarped_images --niter=8 --fwhm=10,6,4,2,0,0,0,0 \
     --repol --ol_type=both --mporder=8 --s2v_niter=8 \
     --slspec=my_slspec.txt --cnr_maps
+
+# copying over some files to their correct names for bedpostX
+cp eddy_s2v_unwarped_images.nii.gz data.nii.gz;
+cp dwi_bval.dat bvals;
+cp bvecs old_bvecs;
+cp eddy_s2v_unwarped_images.eddy_rotated_bvecs bvecs;
+cp b0_brain_mask.nii.gz nodif_brain_mask.nii.gz;
