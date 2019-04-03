@@ -2,8 +2,6 @@
 # usage of fsl_sub.
 # Usage: bash ~/research_code/dti/run_trackSubjectStruct maskid
 
-module load fsl
-
 scan=$1
 
 dataDir=/data/NCR_SBRB/dti_fdt
@@ -19,12 +17,15 @@ cp -r $dataDir/preproc/${scan}* preproc/;
 while read structstring; do
     struct=`echo $structstring | awk '{print $1}'`
     nseed=`echo $structstring | awk '{print $2}'`
-    echo $struct;
-    $track $scan $struct $nseed 2>&1 > ${scan}.log;
+#    echo $struct;
+    $track $scan $struct $nseed 2>&1 > /dev/null &
 done < $structures
+
+# wait until all jobs are done
+wait
 
 # copy all results back
 if [ ! -d $dataDir/tracts ]; then
     mkdir $dataDir/tracts;
 fi
-cp -r tracts/${scan} ${scan}.log $dataDir/tracts/;
+cp -r tracts/${scan} $dataDir/tracts/;
