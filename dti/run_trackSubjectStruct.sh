@@ -18,7 +18,7 @@ while read structstring; do
     struct=`echo $structstring | awk '{print $1}'`
     nseed=`echo $structstring | awk '{print $2}'`
     echo $struct;
-    $track $scan $struct $nseed 2>&1;
+    $track $scan $struct $nseed 2>&1 > /dev/null;
 done < $structures
 
 # copy all results back
