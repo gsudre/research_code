@@ -23,6 +23,7 @@ results = [header]
 for fname in files:
     res_file = fname.split('/')[-1]
     trait = res_file.replace('_polygenic.out', '')
+    print('Parsing %s' % trait)
 
     result = [trait]
     # grab the univariate heritability estimates
