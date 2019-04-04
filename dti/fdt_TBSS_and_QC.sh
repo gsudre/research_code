@@ -1,8 +1,8 @@
 # input should be the preproc directory for an individual scan (from autoPtx)!
 cd $1
 
-module load fsl
-module load afni
+# module load fsl
+# module load afni
 
 # let's do some preparation for TBSS and generate some QC on that, and also the
 # outputs from autoPtx
