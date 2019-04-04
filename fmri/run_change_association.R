@@ -13,6 +13,7 @@ if (doZ) {
 if (doClean) {
     data_fname = paste0(data_fname, 'Clean')
 }
+print(data_fname)
 data = read.csv(sprintf('%s.csv', data_fname))
 data$sex = as.factor(data$sex)
 data = merge(data, famids, by.x='ID', by.y='Medical.Record...MRN', all.x=T)
