@@ -1,5 +1,5 @@
-doClean=TRUE
-doZ = TRUE
+doClean = F
+doZ = F
 
 library(nlme)
 a = read.csv('~/data/heritability_change/resting_demo.csv')

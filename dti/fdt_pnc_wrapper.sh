@@ -5,14 +5,14 @@ module load fsl
 module load afni
 
 cd /data/NCR_SBRB/pnc/dti_fdt
-# mkdir ${s}
+mkdir ${s}
 cd ${s}
-# tar -zxf ../../${s}_1.tar.gz
-# # just to produce the .nii files
-# fat_proc_convert_dcm_dwis \
-#     -indir  "${s}/DTI_35dir/* ${s}/DTI_36dir/*" \
-#     -prefix dwi -no_qc_view
-# rm -rf ${s}
+tar -zxf ../../${s}_1.tar.gz
+# just to produce the .nii files
+fat_proc_convert_dcm_dwis \
+    -indir  "${s}/DTI_35dir/* ${s}/DTI_36dir/*" \
+    -prefix dwi -no_qc_view
+rm -rf ${s}
 
 fslreorient2std dwi dwi_reorient
 immv dwi_reorient dwi
