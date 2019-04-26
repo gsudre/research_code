@@ -1,9 +1,10 @@
 # Collects the polygenic risk scores from PROFILE files, created by PRSice
-suffix = 'noFlip_genop05MAFbtp01rsbtp9_eur'
+suffix = 'persistence_genop05MAFbtp01rsbtp9'
 res_dir = sprintf('~/data/prs/geno3/imputation_1KG/%s/', suffix)
 
 # read in result files
 files = dir(path = res_dir, pattern = 'profile$')
+print(files)
 prs = c()
 for (f in files) {
   a = read.table(sprintf('%s/%s', res_dir, f), header=1)

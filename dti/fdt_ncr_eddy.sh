@@ -1,7 +1,7 @@
 # After conversion from DCM to nii using convert_ncr_to_nii.sh, use this script
 # to create brain mask, QC, and run eddy
 
-module load CUDA/7.5
+module load CUDA/8.0
 module load fsl
 module load afni
 
@@ -55,7 +55,7 @@ seq 0 2 $nslices >> my_slspec.txt;
 
 # note that bypassing the shell check as we're doing here is not kosher, so eddy
 # advises double checking the data
-eddy_cuda --imain=dwi_comb --acqp=acqparams.txt --index=index.txt \
+eddy_cuda8.0 --imain=dwi_comb --acqp=acqparams.txt --index=index.txt \
     --mask=b0_brain_mask --bvals=dwi_comb_bval.dat --bvecs=bvecs \
     --out=eddy_s2v_unwarped_images --niter=8 --fwhm=10,6,4,2,0,0,0,0 \
     --repol --ol_type=both --mporder=8 --s2v_niter=8 \

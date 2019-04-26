@@ -4,7 +4,7 @@
 
 scan=$1
 
-dataDir=/data/NCR_SBRB/dti_fdt
+dataDir=/data/NCR_SBRB/pnc/dti_fdt
 execPath=/data/NCR_SBRB/software/autoPtx
 structures=$execPath/structureList
 track=$execPath/trackSubjectStruct
