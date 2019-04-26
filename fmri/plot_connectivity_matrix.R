@@ -26,8 +26,14 @@ for (r in 1:nrow(df)) {
     cc.p[res[[1]][1], res[[1]][2]] = df[r, pval_col]
     cc.p[res[[1]][2], res[[1]][1]] = df[r, pval_col]
 }
+# LEft and RightVentralDC, Brainstem
+rm_set = c(-82, -73, -1)
+cc.v = cc.v[rm_set, ]
+cc.p = cc.p[rm_set, ]
+cc.v = cc.v[, rm_set]
+cc.p = cc.p[, rm_set]
 
 # examples in
 # http://www.sthda.com/english/wiki/visualize-correlation-matrix-using-correlogram
-corrplot(cc.v, type="upper", order="hclust", method='color',
-         p.mat = cc.p, sig.level = 0.05, insig = "blank")
+corrplot(cc.v, type="upper", method='color',
+         p.mat = cc.p, sig.level = .05/43.15, insig = "blank", is.corr=F, tl.cex=.5)
