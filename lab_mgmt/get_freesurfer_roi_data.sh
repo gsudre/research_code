@@ -22,13 +22,15 @@ fi
 nscans=`cat $sfile | wc -l`
 echo "Found $nscans scan(s) requested for processing."
 
-/usr/local/bin/python2 /Applications/freesurfer/bin/aparcstats2table --subjectsfile=$sfile --hemi lh --meas thickness --tablefile lh_thickness.txt --skip
-/usr/local/bin/python2 /Applications/freesurfer/bin/aparcstats2table --subjectsfile=$sfile --hemi rh --meas thickness --tablefile rh_thickness.txt --skip
-/usr/local/bin/python2 /Applications/freesurfer/bin/aparcstats2table --subjectsfile=$sfile --hemi rh --meas area --tablefile rh_area.txt --skip
-/usr/local/bin/python2 /Applications/freesurfer/bin/aparcstats2table --subjectsfile=$sfile --hemi rh --meas volume --tablefile rh_volume.txt --skip
-/usr/local/bin/python2 /Applications/freesurfer/bin/aparcstats2table --subjectsfile=$sfile --hemi lh --meas volume --tablefile lh_volume.txt --skip
-/usr/local/bin/python2 /Applications/freesurfer/bin/aparcstats2table --subjectsfile=$sfile --hemi lh --meas area --tablefile lh_area.txt --skip
-/usr/local/bin/python2 /Applications/freesurfer/bin/asegstats2table --subjectsfile=$sfile --tablefile subcortical.txt --skip
+python2_bin=`which python2`;
+
+$python2_bin $FREESURFER_HOME/bin/aparcstats2table --subjectsfile=$sfile --hemi lh --meas thickness --tablefile lh_thickness.txt --skip
+$python2_bin $FREESURFER_HOME/bin/aparcstats2table --subjectsfile=$sfile --hemi rh --meas thickness --tablefile rh_thickness.txt --skip
+$python2_bin $FREESURFER_HOME/bin/aparcstats2table --subjectsfile=$sfile --hemi rh --meas area --tablefile rh_area.txt --skip
+$python2_bin $FREESURFER_HOME/bin/aparcstats2table --subjectsfile=$sfile --hemi rh --meas volume --tablefile rh_volume.txt --skip
+$python2_bin $FREESURFER_HOME/bin/aparcstats2table --subjectsfile=$sfile --hemi lh --meas volume --tablefile lh_volume.txt --skip
+$python2_bin $FREESURFER_HOME/bin/aparcstats2table --subjectsfile=$sfile --hemi lh --meas area --tablefile lh_area.txt --skip
+$python2_bin $FREESURFER_HOME/bin/asegstats2table --subjectsfile=$sfile --tablefile subcortical.txt --skip
 
 # If they have the same number of lines, then just combine them using paste:
 narea_lh=`cat lh_area.txt | wc -l`
