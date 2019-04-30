@@ -24,7 +24,7 @@ else
     maskid=`basename $PWD`;
     if [ $maskid -gt 2053 ]; then
         # the new sequence has only 2 mr folders, but still 60 volumes for kids and 80 for adults!
-	if [ -e cdiflist08 ]; then	
+	if [ -e cdiflist08 ] || [ -e cdiflist08.txt ]; then	
         	tail -n +2 $gradient_file | split -l 30 -a 1 -d - grads;
 	else
         	tail -n +2 $gradient_file | split -l 40 -a 1 -d - grads;
