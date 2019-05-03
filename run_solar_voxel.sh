@@ -8,7 +8,7 @@ mkdir ${tmp_dir}/${phen_file}
 mkdir /lscratch/${SLURM_JOBID}/${phen_file}
 mkdir /lscratch/${SLURM_JOBID}/${phen_file}/${vox}
 cp ${solar_dir}/pedigree.csv ${solar_dir}/procs.tcl /lscratch/${SLURM_JOBID}/${phen_file}/${vox}/
-sed "s/NA//g" ${solar_dir}/${phen_file}.csv > /lscratch/${SLURM_JOBID}/${phen_file}/${vox}/${phen_file}.csv;
+sed "s/NA//g" ${solar_dir}/perms/${phen_file}.csv > /lscratch/${SLURM_JOBID}/${phen_file}/${vox}/${phen_file}.csv;
 cd /lscratch/${SLURM_JOBID}/${phen_file}/${vox}/
 solar run_phen_var $phen_file v${vox}
 mv /lscratch/${SLURM_JOBID}/${phen_file}/${vox}/i_v${vox}/polygenic.out ${tmp_dir}/${phen_file}/v${vox}_polygenic.out
