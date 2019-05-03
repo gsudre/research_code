@@ -11,16 +11,16 @@ if len(sys.argv) > 1:
 else:
     analysis = 'phen_mean_dti_extended'
 
-dir_name = home + '/data/tmp/'
+dir_name = home + '/data/heritability_change/'
 out_fname = dir_name + 'polygen_results_%s.nii' % analysis
-mask_root = home + '/data/dti_voxelwise/wm_mask'
+mask_root = home + '/data/heritability_change/fa_skeleton_mask'
 
 # keep track of what voxels crapped out
 run_again = []
 
 folder = dir_name + analysis
 voxel_folders = glob.glob(folder + '/v*_polygenic.out')
-nvoxels = 57482  # len(voxel_folders)
+nvoxels = 14681
 
 # the results are: h2r, h_pval, h2r_se, c2, c2_pval, high_kurtosis
 res = np.empty([nvoxels, 6])
