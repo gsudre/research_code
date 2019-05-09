@@ -59,6 +59,12 @@ idx = idx1 & (idx2 | (!idx3 & (idx4 | idx5)))
 print_table(data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Location',
                         'Box', 'Position')])
 
+cat('\nItems marked as "Pulled Out for Shipping". Are they really waiting to be shipped somewhere?\n')
+idx1 = data$Status == 'Pulled Out for Shipping'
+idx = idx1
+print_table(data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Location',
+                        'Box', 'Position')])
+
 # this will be needed by many queries...
 nsbs = unique(data$NSB)
 
