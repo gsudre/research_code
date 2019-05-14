@@ -38,10 +38,16 @@ for (parc in c('power')) {
             for (j in 1:nnets) {
                 # note that we're doing this only for Rs, but we could as easily do it for Zs!
                 conn = rs[nets[nets$net_num == i, 1], nets[nets$net_num == j, 1]]
+                
+                # change this if using some other connectivity metric
+                # conn = abs(conn)
+                # conn[conn < 0] = NA 
+                conn[conn < 0] = 0 
+                
                 if (i == j) {
-                    net_data[i, j] = mean(conn[upper.tri(conn, diag=F)])
+                    net_data[i, j] = mean(conn[upper.tri(conn, diag=F)], na.rm=T)
                 } else {
-                    net_data[i, j] = mean(rowMeans(conn))
+                    net_data[i, j] = mean(rowMeans(conn, na.rm=T), na.rm=T)
                 }
             }
         }
@@ -61,6 +67,6 @@ for (parc in c('power')) {
         data = rbind(data, subj_data)
     }
     # rename it so that each row is a mask id
-    write.csv(data, file=sprintf('%s/pearson_3min_n462_%s.csv', subj_dir, parc),
+    write.csv(data, file=sprintf('%s/pearsonNegIsZero_3min_n462_%s.csv', subj_dir, parc),
               row.names=F)
 }
