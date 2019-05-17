@@ -11,7 +11,7 @@ if len(sys.argv) > 1:
 else:
     analysis = 'phen_mean_dti_extended'
 
-dir_name = home + '/data/heritability_change/'
+dir_name = home + '/data/heritability_change/perms/'
 out_fname = dir_name + 'polygen_results_%s.nii' % analysis
 mask_root = home + '/data/heritability_change/fa_skeleton_mask'
 
