@@ -13,15 +13,14 @@ else:
 
 dir_name = home + '/data/tmp/'
 out_fname = dir_name + 'polygen_results_%s.nii' % analysis
-mask_root = home + '/data/fmri_example11_all/555/brain_mask_555'
-# mask_root = home + '/data/full_grid_fmri/brain_mask_full'
+mask_root = home + '/data/heritability_change/fancy_mask_ijk'
 
 # keep track of what voxels crapped out
 run_again = []
 
 folder = dir_name + analysis
 voxel_folders = glob.glob(folder + '/v*_polygenic.out')
-nvoxels = 14574 # 116483  # len(voxel_folders)
+nvoxels = 154058 # 116483  # len(voxel_folders)
 
 # the results are: h2r, h_pval, h2r_se, c2, c2_pval, high_kurtosis
 res = np.empty([nvoxels, 6])
