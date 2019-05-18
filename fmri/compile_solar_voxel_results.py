@@ -13,7 +13,7 @@ else:
 
 dir_name = home + '/data/tmp/'
 out_fname = dir_name + 'polygen_results_%s.nii' % analysis
-mask_root = home + '/data/heritability_change/fancy_mask_ijk'
+mask_root = home + '/data/heritability_change/group_epi_mask_fancy'
 
 # keep track of what voxels crapped out
 run_again = []
@@ -28,7 +28,7 @@ res[:] = np.nan
 for v in range(nvoxels):
     if (v % 100) == 0:
         print v, '/', nvoxels
-    fname = dir_name + analysis + '/v%05d_polygenic.out' % (v + 1)
+    fname = dir_name + analysis + '/v%06d_polygenic.out' % (v + 1)
     if not os.path.exists(fname):
         print 'ERROR: Could not find results for voxel %d' % (v + 1)
         run_again.append(v + 1)
