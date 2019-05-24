@@ -20,6 +20,6 @@ for v in `seq $v1 $v2`; do
     cd ..;
     rm -rf ${vox};
 done;
-cp ../v*_polygenic.out ${tmp_dir}/${phen_file}/;
+cp v*_polygenic.out ${tmp_dir}/${phen_file}/;
 cd /lscratch/${SLURM_JOBID};
 rm -rf /lscratch/${SLURM_JOBID}/${phen_file};
