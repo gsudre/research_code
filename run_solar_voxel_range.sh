@@ -16,6 +16,9 @@ for v in `seq $v1 $v2`; do
     cp ../pedigree.csv ../procs.tcl ../${phen_file}.csv ./;
     solar run_phen_var $phen_file v${vox};
     mv i_v${vox}/polygenic.out ../v${vox}_polygenic.out;
+    # prevents local directory from growing unnecessarily
+    cd ..;
+    rm -rf ${vox};
 done;
 cp ../v*_polygenic.out ${tmp_dir}/${phen_file}/;
 cd /lscratch/${SLURM_JOBID};
