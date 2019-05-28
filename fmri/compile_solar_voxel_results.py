@@ -7,11 +7,12 @@ import glob
 home = os.path.expanduser('~')
 
 if len(sys.argv) > 1:
-    analysis = sys.argv[1]
+    dir_name = sys.argv[1]
+    analysis = sys.argv[2]
 else:
+    dir_name = home + '/data/tmp/'
     analysis = 'phen_3min_net06'
 
-dir_name = home + '/data/tmp/'
 out_fname = dir_name + 'polygen_results_%s.nii' % analysis
 mask_root = home + '/data/heritability_change/group_epi_mask_fancy'
 
