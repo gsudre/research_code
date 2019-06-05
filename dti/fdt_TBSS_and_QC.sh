@@ -26,20 +26,25 @@ for f in FA L1 L2 L3 MD MO FA_eroded; do
         -r $FSLDIR/data/standard/FMRIB58_FA_1mm -w nat2std_warp
 done
 
-# make transformation QC figure: warped subject B0 is the overlay!
-@chauffeur_afni                             \
-    -ulay  $FSLDIR/data/standard/FMRIB58_FA_1mm.nii.gz                     \
-    -olay  FA_in_FMRIB58_FA_1mm.nii.gz                         \
-    -ulay_range 0% 150%                     \
-    -func_range_perc 50                     \
-    -pbar_posonly                           \
-    -cbar "red_monochrome"                  \
-    -opacity 8                              \
-    -prefix   QC/FA_transform              \
-    -montx 3 -monty 3                       \
-    -set_xhairs OFF                         \
-    -label_mode 1 -label_size 3             \
-    -do_clean
+# # make transformation QC figure: warped subject B0 is the overlay!
+# @chauffeur_afni                             \
+#     -ulay  $FSLDIR/data/standard/FMRIB58_FA_1mm.nii.gz                     \
+#     -olay  FA_in_FMRIB58_FA_1mm.nii.gz                         \
+#     -ulay_range 0% 150%                     \
+#     -func_range_perc 50                     \
+#     -pbar_posonly                           \
+#     -cbar "red_monochrome"                  \
+#     -opacity 8                              \
+#     -prefix   QC/FA_transform              \
+#     -montx 3 -monty 3                       \
+#     -set_xhairs OFF                         \
+#     -label_mode 1 -label_size 3             \
+#     -do_clean
+
+# new version with FSL template as the edges
+@snapshot_volreg FA_in_FMRIB58_FA_1mm.nii.gz \
+    $FSLDIR/data/standard/FMRIB58_FA_1mm.nii.gz \
+    QC/FA_transform;
 
 # make QC images for standard errors. Here we set our color scale to have 95th
 # percentile of all errors. Meaning, more red = bigger error.
