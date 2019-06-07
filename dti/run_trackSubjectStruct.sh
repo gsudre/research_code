@@ -18,7 +18,7 @@ while read structstring; do
     struct=`echo $structstring | awk '{print $1}'`
     nseed=`echo $structstring | awk '{print $2}'`
 #    echo $struct;
-    $track $scan $struct $nseed 2>&1 > /dev/null &
+    $track $scan $struct $nseed 2>&1 & #> /dev/null &
 done < $structures
 
 # wait until all jobs are done
@@ -28,4 +28,4 @@ wait
 if [ ! -d $dataDir/tracts ]; then
     mkdir $dataDir/tracts;
 fi
-cp -r tracts/${scan} $dataDir/tracts/;
+cp -fr tracts/${scan} $dataDir/tracts/;
