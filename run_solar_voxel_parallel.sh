@@ -1,7 +1,6 @@
 # uses GNU parallel to run a range of voxels in the same node
 phen_file=$1
-v1=$2
-v2=$3
+var_list=$2
 tmp_dir=/data/sudregp/tmp/
 
 solar_dir=/data/sudregp/heritability_change/
@@ -28,11 +27,12 @@ voxel_work() {
 }
 export -f voxel_work
 
-seq $v1 $v2 | parallel --max-args=1 voxel_work {} $phen_file;
+cat $var_list | parallel -j $SLURM_CPUS_PER_TASK --max-args=1 voxel_work {} $phen_file;
 
 cd /lscratch/${SLURM_JOBID}/${phen_file}
-tar -czf ${phen_file}_${v1}to${v2}.tgz v*_polygenic.out
-cp ${phen_file}_${v1}to${v2}.tgz ${tmp_dir}/${phen_file}/
+fname=`basename $var_list`;
+tar -czf ${phen_file}_${fname}.tgz v*_polygenic.out
+cp ${phen_file}_${fname}.tgz ${tmp_dir}/${phen_file}/
 
 cd /lscratch/${SLURM_JOBID};
 rm -rf /lscratch/${SLURM_JOBID}/${phen_file};

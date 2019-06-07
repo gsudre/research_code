@@ -87,10 +87,9 @@ if len(run_again) == 0:
     cmd_line = 'rm %s %s/%s_res*1D %s/%s_tmp*' % (res_str, dir_name, analysis, dir_name, analysis)
     os.system(cmd_line)
 else:
-    fout_name = home + '/solar_logs/rerun_%s.swarm' % analysis
+    fout_name = home + '/solar_logs/%s.voxel_list' % analysis
     print 'Creating re-run file %s' % fout_name
     fid = open(fout_name, 'w')
     for v in run_again:
-        fid.write('bash ~/research_code/run_solar_voxel.sh %s %d' % (analysis,
-                  v) + '\n')
+        fid.write('%d' % v + '\n')
     fid.close()
