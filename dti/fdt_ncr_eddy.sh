@@ -7,7 +7,9 @@ module load afni
 
 cd $1;
 
-if [ -e dwi_cropped.nii.gz ]; then
+if [ -e dwi_clean.nii.gz ]; then
+    file_root='dwi_clean';
+elif [ -e dwi_cropped.nii.gz ]; then
     file_root='dwi_cropped';
 else
     file_root='dwi_comb'
