@@ -12,10 +12,10 @@ if [ -e dwi_clean.nii.gz ]; then
 elif [ -e dwi_cropped.nii.gz ]; then
     file_root='dwi_cropped';
 else
-    file_root='dwi_comb'
+    file_root='dwi_comb';
 fi
 
-fslreorient2std $file_root dwi_reorient
+fslreorient2std $file_root dwi_reorient;
 
 # our data needs an additional flip, compared to PNC
 # we only flip to bvecs end file, so none of the _rvec files are flipped
@@ -23,14 +23,14 @@ fslreorient2std $file_root dwi_reorient
     -out_row_vec bvecs -flip_x;
 
 # FSL takes bvecs in the 3 x volumes format
-fslroi dwi_reorient b0 0 1
-bet b0 b0_brain -m -f 0.2
+fslroi dwi_reorient b0 0 1;
+bet b0 b0_brain -m -f 0.2;
 
 nvol=`fslinfo dwi_reorient | grep -e "^dim4" | awk '{ print $2 }'`;
 idx=''; for i in `seq 1 $nvol`; do 
     a=$a' '1;
 done;
-echo $a > index.txt
+echo $a > index.txt;
 
 # according to the edyd webpage it doesn't matter what we have for acquisition
 # parameters.
@@ -38,7 +38,7 @@ echo $a > index.txt
 # So, let's stick with the same stuff we used for PNC. But actually, the JSON
 # coming from our data is quite similar to the PNC one, so I'm not too worried
 # about this.
-echo "0 -1 0 0.102" > acqparams.txt
+echo "0 -1 0 0.102" > acqparams.txt;
 
 # eddy_openmp --imain=dwi --mask=b0_brain_mask --index=index.txt \
 #     --acqp=acqparams.txt --bvecs=dwi_cvec.dat --bvals=dwi_bval.dat \
@@ -55,11 +55,11 @@ eddy_cuda --imain=dwi_reorient --acqp=acqparams.txt --index=index.txt \
     --mask=b0_brain_mask --bvals=${file_root}_bval.dat --bvecs=bvecs \
     --out=eddy_s2v_unwarped_images --niter=8 --fwhm=10,6,4,2,0,0,0,0 \
     --repol --ol_type=both --mporder=8 --s2v_niter=8 \
-    --slspec=my_slspec.txt --cnr_maps --data_is_shelled
+    --slspec=my_slspec.txt --cnr_maps --data_is_shelled;
 
 # copying over some files to their correct names for bedpostX
 cp eddy_s2v_unwarped_images.nii.gz data.nii.gz;
-cp bvecs old_bvecs
+cp bvecs old_bvecs;
 cp ${file_root}_bval.dat bvals;
 cp eddy_s2v_unwarped_images.eddy_rotated_bvecs bvecs;
 cp b0_brain_mask.nii.gz nodif_brain_mask.nii.gz;
