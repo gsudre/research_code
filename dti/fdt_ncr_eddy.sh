@@ -18,14 +18,9 @@ fi
 fslreorient2std $file_root dwi_reorient
 
 # our data needs an additional flip, compared to PNC
-# note that we only need to flip if the data is original or cropped. When we
-# "clean" the data, we already flip the bvecs to avoid issues later
-if [ $file_root == 'dwi_clean' ]; then
-    bvecs = ${file_root}_rvec.dat;
-else
-    1dDW_Grad_o_Mat++ -in_row_vec ${file_root}_rvec.dat \
-        -out_row_vec bvecs -flip_x;
-fi
+# we only flip to bvecs end file, so none of the _rvec files are flipped
+1dDW_Grad_o_Mat++ -in_row_vec ${file_root}_rvec.dat \
+    -out_row_vec bvecs -flip_x;
 
 # FSL takes bvecs in the 3 x volumes format
 fslroi dwi_reorient b0 0 1
