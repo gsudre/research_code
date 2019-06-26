@@ -1,47 +1,89 @@
-library(nlme)
-load('~/research_code/mni_functions.RData')
-out_dir='~/data/results/dti_longitudinal/perms/'
-data_dir = '~/data/dti_longitudinal/'
-property = 'FA'
-prefix = 'matchedByHand'
-nii_template = sprintf('%s/mean_FA_skeleton_mask.nii.gz',data_dir)
-gf_name = sprintf('%s/merged_gf_clinical_neuropsych_clean_matchedByHand.txt', data_dir)
-data_name = sprintf('%s/%s_%s_skeletonised.txt', data_dir, prefix, property)
-out_name = sprintf('%s/TMPdxAndAge_%s_%s_perm', out_dir, prefix, property)
-nperms = 3
-set.seed( as.integer((as.double(Sys.time())*1000+Sys.getpid()) %% 2^31) )
+pipelines = c('', '_p5', '_p25', '-GSR', '-GSR_p5', '-GSR_p25')
+at_least_mins = c(0, 3, 4)  # needs to have at least these minutes of data
 
-gf = read.table(gf_name, sep='\t', header=1)
-colnames(gf)[3]='age'
-colnames(gf)[2]='mrn'
-colnames(gf)[5]='dx'
+a = read.csv('~/data/heritability_change/resting_demo_06212019.csv')
+cat(sprintf('Starting from %d scans\n', nrow(a)))
+# remove adults and subjects with a single scan. This way we make sure everything for this study was processed
+a = a[a$age_at_scan < 18, ]
+cat(sprintf('Down to %d to keep < 18 only\n', nrow(a)))
+a = a[a$processed_AROMA == 'TRUE', ]
+cat(sprintf('Down to %d to keep only scan that have been processed\n', nrow(a)))
+idx = which(table(a$Medical.Record...MRN)>1)
+long_subjs = names(table(a$Medical.Record...MRN))[idx]
+keep_me = c()
+for (m in 1:nrow(a)) {
+    if (a[m, ]$Medical.Record...MRN %in% long_subjs) {
+        keep_me = c(keep_me, m)
+    }
+}
+a = a[keep_me,]
+cat(sprintf('Down to %d to keep only subjects with more than 1 scan\n', nrow(a)))
+for (p in pipelines) {
+    pipe_dir = sprintf('/Volumes/Labs/AROMA_ICA/xcpengine_output_AROMA%s/', p)
+    outliers = c()
+    # reading quality metric for all scans
+    for (m in a$Mask.ID) {
+        fname = sprintf('%s/sub-%04d/sub-%04d_quality.csv', pipe_dir, m, m)
+        qual = read.csv(fname)
+        outliers = c(outliers, qual$nVolCensored)
+    }
+    a$outliers = outliers
 
-brain_data = read.table(data_name)
-out = brain_data[,1:4]
+    # only keep scans with at least some amount of time
+    for (min_time in at_least_mins) {
+        uncensored_time = (125 - a$outliers) * 2.5 / 60
+        aGood = a[uncensored_time > min_time, ]
+        cat(sprintf('\tDown to %d scans with good %d minutes\n', nrow(aGood),
+                                                                 min_time))
 
-data = as.matrix(brain_data[,4:dim(brain_data)[2]])
-# now we need a quick hack to make sure the mni function runs. It always fits the
-# first vertex to get the dimensions, but it that break,s the whole function
-# breaks. So, let's copy a good voxel to the first position, and then remove it
-good_voxel = which(rowSums(data)>0)[1]
-data = rbind(data[good_voxel,],data)
+        # keeping only the two best scans for each subject, at least 6 months apart
+        keep_me = c()
+        for (s in unique(aGood$Medical.Record...MRN)) {
+            subj_scans = aGood[aGood$Medical.Record...MRN==s, ]
+            dates = as.Date(as.character(subj_scans$"record.date.collected...Scan"),
+                                        format="%m/%d/%Y")
+            if (length(dates) >= 2) {
+                best_scans = sort(subj_scans$outliers, index.return=T)
+                # make sure there is at least 6 months between scans
+                next_scan = 2
+                while ((abs(dates[best_scans$ix[next_scan]] - dates[best_scans$ix[1]]) < 180) &&
+                        (next_scan < length(dates))) {
+                    next_scan = next_scan + 1
+                }
+                if (abs(dates[best_scans$ix[next_scan]] - dates[best_scans$ix[1]]) > 180) {
+                    idx1 = best_scans$ix[1]
+                    keep_me = c(keep_me, which(aGood$Mask.ID == subj_scans[idx1, 'Mask.ID']))
+                    idx2 = best_scans$ix[next_scan]
+                    keep_me = c(keep_me, which(aGood$Mask.ID == subj_scans[idx2, 'Mask.ID']))
+                }
+            }
+        }
+        a2Good = aGood[keep_me, ]
+        cat(sprintf('\tDown to %d scans only keeping two best ones 6-mo apart\n',
+                    nrow(a2Good)))
 
-for (p in 1:nperms) {
-    print(sprintf('perm %d',p))
-    perm_labels <- sample.int(dim(data)[2], replace = FALSE)
-    rand_data = data[,perm_labels]
-    vs = mni.vertex.mixed.model(gf, 'y~dx*age', '~1|mrn', rand_data[1:10,])
-    interestingTerm = 4
-    
-    # save the statistics to run through TFCE, taking into account the hack above
-    out[,4] = 0#vs$t.value[2:dim(data)[1],interestingTerm]
-    
-    fname = sprintf('%s_%s-%05f', out_name, Sys.info()["nodename"], runif(1, 1, 99999))
-    write.table(out, file=sprintf('%s.txt', fname), col.names=F, row.names=F)
-    system(sprintf('cat %s.txt | 3dUndump -master %s -datum float -prefix %s.nii.gz -overwrite -',
-                   fname, nii_template, fname), wait=T)
-    system(sprintf('fslmaths %s.nii.gz -abs -tfce 2 1 26 %s_tfce.nii.gz', fname, fname), wait=T)
-    system(sprintf('3dmaskdump -o %s_tfce.txt -overwrite -mask %s %s_tfce.nii.gz',
-                   fname, nii_template, fname), wait=T)
-    system(sprintf('rm %s.nii.gz %s_tfce.nii.gz', fname, fname), wait=T)
+        # make sure every family has at least two people
+        idx = table(a2Good$Nuclear.ID...FamilyIDs) >= 4
+        good_nuclear = names(table(a2Good$Nuclear.ID...FamilyIDs))[idx]
+        idx = table(a2Good$Extended.ID...FamilyIDs) >= 4
+        good_extended = names(table(a2Good$Extended.ID...FamilyIDs))[idx]
+        keep_me = c()
+        for (f in good_nuclear) {
+            keep_me = c(keep_me, a2Good[which(a2Good$Nuclear.ID...FamilyIDs == f),
+                                    'Medical.Record...MRN'])
+        }
+        for (f in good_extended) {
+            keep_me = c(keep_me, a2Good[which(a2Good$Extended.ID...FamilyIDs == f),
+                                    'Medical.Record...MRN'])
+        }
+        keep_me = unique(keep_me)
+
+        fam_subjs = c()
+        for (s in keep_me) {
+            fam_subjs = c(fam_subjs, which(a2Good[, 'Medical.Record...MRN'] == s))
+        }
+        a2GoodFam = a2Good[fam_subjs, ]
+        cat(sprintf('\tDown to %d scans only keeping families\n',
+                    nrow(a2GoodFam)))
+    }
 }
