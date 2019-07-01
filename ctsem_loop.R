@@ -1,6 +1,6 @@
 # Runs ctsem for a group of variables
 #
-# Usage: Rscript ctsem_loop.R [sx1 phen1 out_fname]
+# Usage: Rscript ctsem_loop.R [data_fname sx1 phen1 out_fname]
 # if arguments are specified, script runs those. IF nothing, it runs what's in
 # the code
 # 
@@ -9,10 +9,12 @@ library(ctsem)
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) > 0) {
-    sx = c(args[1])
-    phen = c(args[2])
-    out_fname = args[3]
+    data_fname = args[1]
+    sx = c(args[2])
+    phen = c(args[3])
+    out_fname = args[4]
 } else {
+    data_fname = '~/Downloads/wider_devel_names.csv'
     # assuming that T0..T2 variables start with these names
     sx = c('SX_HI', 'SX_inatt')#, 'SX_total')
     phen = c('fa_lcst', 'ixi_ADC_left_cst')
@@ -21,7 +23,6 @@ if (length(args) > 0) {
     out_fname = '~/tmp/T1_out.csv'
 }
 
-data_fname = '/lscratch/$SLURM_JOBID/wider_devel_names.csv'
 TIs = c('TI1')
 
 ### DONE DECLARING VARIABLES
