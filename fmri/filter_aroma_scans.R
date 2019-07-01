@@ -1,5 +1,5 @@
-pipelines = c('-gsr-p25', '-gsr-p5', '-p25', '-p5')
-at_least_mins = c(0) #, 3, 4)  # needs to have at least these minutes of data
+pipelines = c('-p25', '-p5', '-gsr-p25', '-gsr-p5', '-gsr-p25-nc', '-gsr-p5-nc', '-p5-nc', '-p25-nc')
+at_least_mins = c(0, 3, 4)  # needs to have at least these minutes of data
 
 a = read.csv('~/data/heritability_change/resting_demo_06262019.csv')
 cat(sprintf('Starting from %d scans\n', nrow(a)))

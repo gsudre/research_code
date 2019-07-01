@@ -10,7 +10,7 @@ home = os.path.expanduser('~')
 
 analysis = sys.argv[1]
 
-dir_name = home + '/data/heritability_change/'
+dir_name = home + '/data/tmp/'
 out_fname = dir_name + 'polygen_results_%s.csv' % analysis
 
 files = glob.glob(dir_name + analysis + '/*polygenic.out')
@@ -24,7 +24,7 @@ results = [header]
 for fname in files:
     res_file = fname.split('/')[-1]
     trait = res_file.replace('_polygenic.out', '')
-    print('Parsing %s' % trait)
+#    print('Parsing %s' % trait)
 
     result = [trait]
     # grab the univariate heritability estimates
