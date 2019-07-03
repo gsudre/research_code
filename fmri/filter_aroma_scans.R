@@ -1,7 +1,7 @@
 pipelines = c('-p25', '-p5', '-gsr-p25', '-gsr-p5', '-gsr-p25-nc', '-gsr-p5-nc', '-p5-nc', '-p25-nc')
 at_least_mins = c(0, 3, 4)  # needs to have at least these minutes of data
 
-a = read.csv('~/data/heritability_change/resting_demo_06262019.csv')
+a = read.csv('~/data/heritability_change/resting_demo_07032019.csv')
 cat(sprintf('Starting from %d scans\n', nrow(a)))
 # remove adults and subjects with a single scan. This way we make sure everything for this study was processed
 a = a[a$age_at_scan < 18, ]

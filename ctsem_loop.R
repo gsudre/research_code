@@ -35,6 +35,8 @@ for (t in 0:2) {
 out_res = c()
 for (s in sx) {
     for (p in phen) {
+        # just so we can get consistent results!
+        set.seed(42)
         cat(sprintf('Running %s and %s\n', s, p))
         myctmodel = ctModel(n.latent=2, n.manifest=2, Tpoints=3, n.TIpred=1,
                             manifestNames=c(s, p), latentNames=c(s, p),
@@ -58,7 +60,8 @@ for (s in sx) {
         }
         b = rbind(b, c(NA, res$omxsummary$BIC.Mx, NA, NA))
         b = rbind(b, c(NA, res$omxsummary$AIC.Mx, NA, NA))
-        rownames(b)[5:6] = c('BIC', 'AIC')
+        b = rbind(b, c(NA, res$omxsummary$npsolMessage, NA, NA))
+        rownames(b)[5:7] = c('BIC', 'AIC', 'msg')
         b$var = rownames(b)
         b$sx = s
         b$phen = p
