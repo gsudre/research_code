@@ -51,6 +51,10 @@ for (i in 1:nnets) {
     }
 }
 
+# cleaning up weird phenotype names
+header = gsub(' ', '', header)
+header = gsub('/', '', header)
+header = gsub('-', '', header)
 colnames(net_data) = header
 other_var_names = colnames(m)[!grepl(colnames(m), pattern="conn")]
 data = cbind(m[, other_var_names], net_data)
