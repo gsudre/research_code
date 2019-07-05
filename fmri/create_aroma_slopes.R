@@ -1,9 +1,9 @@
 args <- commandArgs(trailingOnly = TRUE)
-pipe = args[1]
-tmin = as.numeric(args[2])
+fname = args[1]
+
+today = format(Sys.time(), "%m%d%Y")
 
 source('~/research_code/lab_mgmt/merge_on_closest_date.R')
-fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best2scans.csv', pipe, tmin)
 m = read.csv(fname)
 df_var_names = colnames(m)[!grepl(colnames(m), pattern="conn")]
 clin = read.csv('~/data/heritability_change/clinical_06262019.csv')
@@ -64,8 +64,8 @@ colnames(res) = c('ID', 'sex', brain_var_names, c('SX_inatt', 'SX_HI',
                                               'inatt_baseline',
                                               'HI_baseline', 'DX', 'DX2'))
 # we only open this in R, so it's OK to be RData to load faster
-fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best2scansSlopes_n%d.RData',
-                        pipe, tmin, nrow(res))
+fname_root = sub('.csv', '', fname)
+fname = sprintf('%sSlopes_n%d_%s.RData', fname_root, nrow(res), today)
 save(res, file=fname)
 
 # and remove outliers
@@ -80,8 +80,7 @@ for (t in brain_var_names) {
     # remove within-variable outliers
     res_clean[bad_subjs, t] = NA
 }
-fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best2scansSlopesClean_n%d.RData',
-                        pipe, tmin, nrow(res_clean))
+fname = sprintf('%sSlopesClean_n%d_%s.RData', fname_root, nrow(res_clean), today)
 save(res_clean, file=fname)
 
 # and make sure every family has at least two people
@@ -105,9 +104,8 @@ for (s in keep_me) {
 res2 = res[fam_subjs, ]
 res2_clean = res_clean[fam_subjs, ]
 
-fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best2scansFamsSlopes_n%d.csv',
-                        pipe, tmin, nrow(res2))
+fname = sprintf('%sFamsSlopes_n%d_%s.csv', fname_root, nrow(res2), today)
 write.csv(res2, file=fname, row.names=F, na='', quote=F)
-fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best2scansFamsSlopesClean_n%d.csv',
-                        pipe, tmin, nrow(res2_clean))
+
+fname = sprintf('%sFamsSlopesClean_n%d_%s.csv', fname_root, nrow(res2_clean), today)
 write.csv(res2_clean, file=fname, row.names=F, na='', quote=F)
