@@ -104,8 +104,8 @@ for (s in keep_me) {
 res2 = res[fam_subjs, ]
 res2_clean = res_clean[fam_subjs, ]
 
-fname = sprintf('%sFamsSlopes_n%d_%s.RData', fname_root, nrow(res2), today)
+fname = sprintf('%sFamsSlopes_n%d_%s.csv', fname_root, nrow(res2), today)
 write.csv(res2, file=fname, row.names=F, na='', quote=F)
 
-fname = sprintf('%sFamsSlopesClean_n%d_%s.RData', fname_root, nrow(res2_clean), today)
+fname = sprintf('%sFamsSlopesClean_n%d_%s.csv', fname_root, nrow(res2_clean), today)
 write.csv(res2_clean, file=fname, row.names=F, na='', quote=F)
