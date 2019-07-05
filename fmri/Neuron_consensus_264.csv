@@ -131,10 +131,10 @@
 130,47,-50,29,Red,Default mode
 131,-49,-42,1,Red,Default mode
 132,-31,19,-19,White,Uncertain
-133,-2,-35,31,Gray,Memory retrieval?
-134,-7,-71,42,Gray,Memory retrieval?
-135,11,-66,42,Gray,Memory retrieval?
-136,4,-48,51,Gray,Memory retrieval?
+133,-2,-35,31,Gray,Memory retrieval
+134,-7,-71,42,Gray,Memory retrieval
+135,11,-66,42,Gray,Memory retrieval
+136,4,-48,51,Gray,Memory retrieval
 137,-46,31,-13,Red,Default mode
 138,-10,11,67,Teal,Ventral attention
 139,49,35,-12,Red,Default mode
@@ -219,7 +219,7 @@
 218,31,56,14,Black,Salience
 219,26,50,27,Black,Salience
 220,-39,51,17,Black,Salience
-221,2,-24,30,Gray,Memory retrieval?
+221,2,-24,30,Gray,Memory retrieval
 222,6,-24,0,Brown,Subcortical
 223,-2,-13,12,Brown,Subcortical
 224,-10,-18,7,Brown,Subcortical
