@@ -38,11 +38,11 @@ for (i in 1:nnets) {
                     net_names[i], net_names[j]))
         idx = (conn_map[,2]==net_names[i] | conn_map[,2]==net_names[j] |
                conn_map[,3]==net_names[i] | conn_map[,3]==net_names[j])
-        res = apply(m[, var_names[idx]], 1, mean)
+        res = apply(m[, var_names[idx]], 1, mean, na.rm=T)
         net_data = cbind(net_data, res)
-        res = apply(m[, var_names[idx]], 1, median)
+        res = apply(m[, var_names[idx]], 1, median, na.rm=T)
         net_data = cbind(net_data, res)
-        res = apply(m[, var_names[idx]], 1, max)
+        res = apply(m[, var_names[idx]], 1, max, na.rm=T)
         net_data = cbind(net_data, res)
         for (op in c('Mean', 'Median', 'Max')) {
             header = c(header, sprintf('conn%s_%sTO%s', op, net_names[i],
