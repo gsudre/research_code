@@ -22,7 +22,7 @@ ls -1 vlist*txt > file_list.txt;
 cat file_list.txt | parallel -j $SLURM_CPUS_PER_TASK --max-args=1 \
     Rscript ~/research_code/ctsem_voxel_developmental_time_3_timepoints.R \
         `basename $data_file` \
-        $sx {} ${tmp_dir}/tmp/${fbase}_${sx}_${v1}to${v2}_{}.csv;
+        $sx {} ${tmp_dir}/${fbase}_${sx}_${v1}to${v2}_{}.csv;
 
 tar -czf ${fbase}_${sx}_${v1}to${v2}.tgz *.csv
 cp *.tgz ${tmp_dir}/
