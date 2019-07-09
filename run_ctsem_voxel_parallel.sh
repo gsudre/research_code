@@ -14,10 +14,11 @@ rm -rf var_list.txt
 for v in `seq $v1 $v2`; do
     echo Y${v} >> var_list.txt;
 done
-split -n $SLURM_CPUS_PER_TASK var_list.txt;
+split -da 2 -l $((`wc -l < var_list.txt` /$SLURM_CPUS_PER_TASK)) \
+    var_list.txt vlist --additional-suffix=".txt";
 fbase=`basename -s .RData.gz $data_file`;
 
-ls -1 x?? > file_list.txt;
+ls -1 vlist*txt > file_list.txt;
 cat file_list.txt | parallel -j $SLURM_CPUS_PER_TASK --max-args=1 \
     Rscript ~/research_code/ctsem_voxel_developmental_time_3_timepoints.R \
         `basename $data_file` \
