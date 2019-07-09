@@ -3,7 +3,7 @@ data_file=$1
 sx=$2
 v1=$3
 v2=$4
-tmp_dir=/data/sudregp/tmp/
+tmp_dir=/data/sudregp/tmp2/
 
 # making sure we only access the network once
 cd /lscratch/${SLURM_JOBID};

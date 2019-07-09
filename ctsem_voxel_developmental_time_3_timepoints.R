@@ -11,8 +11,8 @@ s = args[2]
 phen_fname = args[3]
 out_fname = args[4]
 
-# TIs = c('TI1')
-TIs = c('TI1', 'TI2')
+TIs = c('TI1')
+# TIs = c('TI1', 'TI2')
 
 ### DONE DECLARING VARIABLES
 
