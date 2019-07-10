@@ -2,6 +2,7 @@ pipelines = c('')#, '-gsr',
             #   '-p25', '-p5', '-gsr-p25', '-gsr-p5',
             #   '-gsr-p25-nc', '-gsr-p5-nc', '-p5-nc', '-p25-nc')
 at_least_mins = c(0)#, 3, 4)  # needs to have at least these minutes of data
+num_scans = 3  # number of scans to select
 
 a = read.csv('~/data/heritability_change/resting_demo_07032019.csv')
 cat(sprintf('Starting from %d scans\n', nrow(a)))
@@ -10,8 +11,8 @@ a = a[a$age_at_scan < 18, ]
 cat(sprintf('Down to %d to keep < 18 only\n', nrow(a)))
 a = a[a$processed_AROMA == 'TRUE', ]
 cat(sprintf('Down to %d to keep only scans that have been processed\n', nrow(a)))
-# removing people with less than 3 scans
-idx = which(table(a$Medical.Record...MRN)>2)
+# removing people with less than num_scans scans
+idx = which(table(a$Medical.Record...MRN)>=num_scans)
 long_subjs = names(table(a$Medical.Record...MRN))[idx]
 keep_me = c()
 for (m in 1:nrow(a)) {
@@ -20,7 +21,8 @@ for (m in 1:nrow(a)) {
     }
 }
 a = a[keep_me,]
-cat(sprintf('Down to %d to keep only subjects with more than 2 scans\n', nrow(a)))
+cat(sprintf('Down to %d to keep only subjects with more than %d scans\n',
+            nrow(a), num_scans))
 for (p in pipelines) {
     pipe_dir = sprintf('/data/NCR_SBRB/xcpengine_output_AROMA%s/', p)
     cat(sprintf('Reading quality data from %s\n', pipe_dir))
@@ -127,8 +129,8 @@ for (p in pipelines) {
                         a2Good[sc, 'Mask.ID'], good_na_conns[sc], good_na_conns[sc]/nconn*100))
         }
 
-        fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best3scans.csv',
-                        p, min_time)
+        fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best%dscans.csv',
+                        p, min_time, num_scans)
         write.csv(a2Good, file=fname, row.names=F, na='', quote=F)
         # make sure every family has at least two people
         idx = table(a2Good$Nuclear.ID...FamilyIDs) >= 4
@@ -153,8 +155,8 @@ for (p in pipelines) {
         a2GoodFam = a2Good[fam_subjs, ]
         cat(sprintf('\t\tDown to %d scans only keeping families\n',
                     nrow(a2GoodFam)))
-        fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best3scansFams.csv',
-                        p, min_time)
+        fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best%dscansFams.csv',
+                        p, min_time, num_scans)
         write.csv(a2GoodFam, file=fname, row.names=F, na='', quote=F)
     }
 }
