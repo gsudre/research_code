@@ -1,7 +1,7 @@
-pipelines = c('', '-gsr',
-              '-p25', '-p5', '-gsr-p25', '-gsr-p5',
-              '-gsr-p25-nc', '-gsr-p5-nc', '-p5-nc', '-p25-nc')
-at_least_mins = c(0, 3, 4)  # needs to have at least these minutes of data
+pipelines = c('')#, '-gsr',
+            #   '-p25', '-p5', '-gsr-p25', '-gsr-p5',
+            #   '-gsr-p25-nc', '-gsr-p5-nc', '-p5-nc', '-p25-nc')
+at_least_mins = c(0)#, 3, 4)  # needs to have at least these minutes of data
 
 a = read.csv('~/data/heritability_change/resting_demo_07032019.csv')
 cat(sprintf('Starting from %d scans\n', nrow(a)))
@@ -10,7 +10,8 @@ a = a[a$age_at_scan < 18, ]
 cat(sprintf('Down to %d to keep < 18 only\n', nrow(a)))
 a = a[a$processed_AROMA == 'TRUE', ]
 cat(sprintf('Down to %d to keep only scans that have been processed\n', nrow(a)))
-idx = which(table(a$Medical.Record...MRN)>1)
+# removing people with less than 3 scans
+idx = which(table(a$Medical.Record...MRN)>2)
 long_subjs = names(table(a$Medical.Record...MRN))[idx]
 keep_me = c()
 for (m in 1:nrow(a)) {
@@ -19,7 +20,7 @@ for (m in 1:nrow(a)) {
     }
 }
 a = a[keep_me,]
-cat(sprintf('Down to %d to keep only subjects with more than 1 scan\n', nrow(a)))
+cat(sprintf('Down to %d to keep only subjects with more than 2 scans\n', nrow(a)))
 for (p in pipelines) {
     pipe_dir = sprintf('/data/NCR_SBRB/xcpengine_output_AROMA%s/', p)
     cat(sprintf('Reading quality data from %s\n', pipe_dir))
@@ -77,24 +78,44 @@ for (p in pipelines) {
         # keeping only the two best scans for each subject, at least 6 months apart
         keep_me = c()
         for (s in unique(m$Medical.Record...MRN)) {
+            subj_keep = c()
             subj_scans = m[m$Medical.Record...MRN==s, ]
             dates = as.Date(as.character(subj_scans$"record.date.collected...Scan"),
                                         format="%m/%d/%Y")
-            if (length(dates) >= 2) {
+            if (length(dates) >= 3) {
                 best_scans = sort(subj_scans$goodness, index.return=T)
-                # make sure there is at least 6 months between scans
+                # make sure they are at least 6 months apart. This is the idea:
+                # start with the best scan. Then, select the next best, such
+                # that there is at least 6mon between them. Keep going until we
+                # have 3 or we run out of scans
+                cur_scan = 1
                 next_scan = 2
-                while ((abs(dates[best_scans$ix[next_scan]] - dates[best_scans$ix[1]]) < 180) &&
-                        (next_scan < length(dates))) {
-                    next_scan = next_scan + 1
-                }
-                if (abs(dates[best_scans$ix[next_scan]] - dates[best_scans$ix[1]]) > 180) {
-                    idx1 = best_scans$ix[1]
-                    keep_me = c(keep_me, which(m$Mask.ID == subj_scans[idx1, 'Mask.ID']))
-                    idx2 = best_scans$ix[next_scan]
-                    keep_me = c(keep_me, which(m$Mask.ID == subj_scans[idx2, 'Mask.ID']))
+                # do this while we have scans and we haven't achieved the
+                # expected number of scans
+                while ((next_scan <= length(subj_scans)) &&
+                       (length(subj_keep) < 3)) {
+                    while ((abs(dates[best_scans$ix[next_scan]] -
+                                dates[best_scans$ix[cur_scan]]) < 180) &&
+                            (next_scan < length(dates))) {
+                        next_scan = next_scan + 1
+                    }
+                    # here we selected the next best scan. Add it to the list if the
+                    # time diff is good
+                    if (abs(dates[best_scans$ix[next_scan]] - dates[best_scans$ix[1]]) > 180) {
+                        idx1 = best_scans$ix[cur_scan]
+                        subj_keep = c(subj_keep,
+                                    which(m$Mask.ID == subj_scans[idx1,
+                                                                    'Mask.ID']))
+                        idx2 = best_scans$ix[next_scan]
+                        subj_keep = c(subj_keep,
+                                    which(m$Mask.ID == subj_scans[idx2,
+                                                                    'Mask.ID']))
+                        cur_scan = next_scan
+                        next_scan = next_scan + 1
+                    }
                 }
             }
+            keep_me = c(keep_me, unique(subj_keep))
         }
         a2Good = m[keep_me, ]
         cat(sprintf('\t\tDown to %d scans only keeping two best ones 6-mo apart\n',
@@ -106,7 +127,7 @@ for (p in pipelines) {
                         a2Good[sc, 'Mask.ID'], good_na_conns[sc], good_na_conns[sc]/nconn*100))
         }
 
-        fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best2scans.csv',
+        fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best3scans.csv',
                         p, min_time)
         write.csv(a2Good, file=fname, row.names=F, na='', quote=F)
         # make sure every family has at least two people
@@ -132,7 +153,7 @@ for (p in pipelines) {
         a2GoodFam = a2Good[fam_subjs, ]
         cat(sprintf('\t\tDown to %d scans only keeping families\n',
                     nrow(a2GoodFam)))
-        fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best2scansFams.csv',
+        fname = sprintf('~/data/heritability_change/rsfmri_AROMA%s_%dmin_best3scansFams.csv',
                         p, min_time)
         write.csv(a2GoodFam, file=fname, row.names=F, na='', quote=F)
     }
