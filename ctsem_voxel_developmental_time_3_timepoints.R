@@ -21,7 +21,7 @@ phen = as.character(read.table(phen_fname)[,1])
 out_res = c()
 for (p in phen) {
     cat(sprintf('Running %s and %s\n', s, p))
-    myctmodel = ctModel(n.latent=2, n.manifest=2, Tpoints=4, n.TIpred=2,
+    myctmodel = ctModel(n.latent=2, n.manifest=2, Tpoints=4, n.TIpred=length(TIs),
                         manifestNames=c(s, p), latentNames=c(s, p),
                         TIpredNames=TIs,LAMBDA=diag(2))
     cols = c(sprintf('%s_T0', s), sprintf('%s_T0', p),
