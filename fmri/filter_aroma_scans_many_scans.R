@@ -79,7 +79,10 @@ for (p in pipelines) {
 
         # keeping only the two best scans for each subject, at least 6 months apart
         keep_me = c()
+        cnt = 1
         for (s in unique(m$Medical.Record...MRN)) {
+            cat(sprintf('\t\t\tSubject %d/%d',
+                        cnt, length(unique(m$Medical.Record...MRN))))
             subj_scans = m[m$Medical.Record...MRN==s, ]
             dates = as.Date(as.character      (subj_scans$"record.date.collected...Scan"),
                                         format="%m/%d/%Y")
@@ -117,7 +120,11 @@ for (p in pipelines) {
             }
             if (found) {
                 keep_me = c(keep_me, subj_scans[cur_choice])
+                cat(sprintf(' choosing %s\n', subj_scans[cur_choice]))
+            } else {
+                cat(sprintf(' no usable scans out of %d\n', nrow[subj_scans]))
             }
+            cnt = cnt + 1
         }
         a2Good = m[keep_me, ]
         cat(sprintf('\t\tDown to %d scans only keeping %d best ones 6-mo apart\n',
