@@ -3,14 +3,16 @@ data_file=$1
 sx=$2
 v1=$3
 v2=$4
-tmp_dir=/data/sudregp/tmp2/
+tmp_dir=$5
 
 # making sure we only access the network once
 cd /lscratch/${SLURM_JOBID};
-cp $data_file $var_list ./;
+# let's create another directory just to avoid running into any sharing issues
+mkdir ${v1}to${v2};
+cd ${v1}to${v2};
+cp $data_file ./;
 
 # split the variable files so we have one per processor
-rm -rf var_list.txt
 for v in `seq $v1 $v2`; do
     echo Y${v} >> var_list.txt;
 done
