@@ -1,7 +1,7 @@
-pipelines = c('')#, '-gsr',
-            #   '-p25', '-p5', '-gsr-p25', '-gsr-p5',
-            #   '-gsr-p25-nc', '-gsr-p5-nc', '-p5-nc', '-p25-nc')
-at_least_mins = c(0)#, 3, 4)  # needs to have at least these minutes of data
+pipelines = c('', '-gsr',
+              '-p25', '-p5', '-gsr-p25', '-gsr-p5',
+              '-gsr-p25-nc', '-gsr-p5-nc', '-p5-nc', '-p25-nc')
+at_least_mins = c(0, 3, 4)  # needs to have at least these minutes of data
 num_scans = 3  # number of scans to select
 
 a = read.csv('~/data/heritability_change/resting_demo_07032019.csv')
@@ -81,8 +81,8 @@ for (p in pipelines) {
         keep_me = c()
         cnt = 1
         for (s in unique(m$Medical.Record...MRN)) {
-            cat(sprintf('\t\t\tSubject %d/%d\n',
-                        cnt, length(unique(m$Medical.Record...MRN))))
+            # cat(sprintf('\t\t\tSubject %d/%d\n',
+            #             cnt, length(unique(m$Medical.Record...MRN))))
             subj_idx = which(m$Medical.Record...MRN==s)
             subj_scans = m[subj_idx, ]
             dates = as.Date(as.character      (subj_scans$"record.date.collected...Scan"),
