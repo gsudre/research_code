@@ -80,48 +80,48 @@ for (p in pipelines) {
         # keeping only the two best scans for each subject, at least 6 months apart
         keep_me = c()
         for (s in unique(m$Medical.Record...MRN)) {
-            subj_keep = c()
             subj_scans = m[m$Medical.Record...MRN==s, ]
-            dates = as.Date(as.character(subj_scans$"record.date.collected...Scan"),
+            dates = as.Date(as.character      (subj_scans$"record.date.collected...Scan"),
                                         format="%m/%d/%Y")
-            if (length(dates) >= 3) {
-                best_scans = sort(subj_scans$goodness, index.return=T)
-                # make sure they are at least 6 months apart. This is the idea:
-                # start with the best scan. Then, select the next best, such
-                # that there is at least 6mon between them. Keep going until we
-                # have 3 or we run out of scans
-                cur_scan = 1
-                next_scan = 2
-                # do this while we have scans and we haven't achieved the
-                # expected number of scans
-                while ((next_scan <= length(subj_scans)) &&
-                       (length(subj_keep) < 3)) {
-                    while ((abs(dates[best_scans$ix[next_scan]] -
-                                dates[best_scans$ix[cur_scan]]) < 180) &&
-                            (next_scan < length(dates))) {
-                        next_scan = next_scan + 1
+            # assumes we only have people with at least num_scans scans!
+            best_scans = sort(subj_scans$goodness, index.return=T)
+            # make sure they are at least 6 months apart. This is the idea:
+            # grab the best X scans. Check the time difference between them.
+            # Any time the time difference is not enough, remove the worse
+            # scan and replace by the next in line. Keep doing this until
+            # the time difference is enough between all scans, or we run out
+            # of scans
+            cur_scan = 1
+            last_scan = num_scans
+            cur_choice = best_scans$ix[cur_scan:last_scan]
+            found = FALSE
+            while (!found && last_scan <= nrow(subj_scans)) {
+                time_diffs = abs(diff(dates[cur_choice]))
+                if (all(time_diffs > 180)) {
+                    found = TRUE
+                } else {
+                    # figure out which scan to remove. If there is more than one
+                    # to be removed, it will be taken care in the next iteration
+                    bad_diff = which.min(time_diffs)
+                    if (subj_scans$goodness[cur_choice[bad_diff]] >
+                        subj_scans$goodness[cur_choice[bad_diff + 1]]) {
+                        rm_scan = cur_choice[bad_diff]
+                    } else {
+                        rm_scan = cur_choice[bad_diff + 1]
                     }
-                    # here we selected the next best scan. Add it to the list if the
-                    # time diff is good
-                    if (abs(dates[best_scans$ix[next_scan]] - dates[best_scans$ix[1]]) > 180) {
-                        idx1 = best_scans$ix[cur_scan]
-                        subj_keep = c(subj_keep,
-                                    which(m$Mask.ID == subj_scans[idx1,
-                                                                    'Mask.ID']))
-                        idx2 = best_scans$ix[next_scan]
-                        subj_keep = c(subj_keep,
-                                    which(m$Mask.ID == subj_scans[idx2,
-                                                                    'Mask.ID']))
-                        cur_scan = next_scan
-                        next_scan = next_scan + 1
+                    last_scan = last_scan + 1
+                    if (last_scan <= nrow(subj_scans)) {
+                        cur_choice[cur_choice == rm_scan] = best_scans$ix[last_scan]
                     }
                 }
             }
-            keep_me = c(keep_me, unique(subj_keep))
+            if (found) {
+                keep_me = c(keep_me, subj_scans[cur_choice])
+            }
         }
         a2Good = m[keep_me, ]
-        cat(sprintf('\t\tDown to %d scans only keeping two best ones 6-mo apart\n',
-                    nrow(a2Good)))
+        cat(sprintf('\t\tDown to %d scans only keeping %d best ones 6-mo apart\n',
+                    nrow(a2Good), num_scans))
 
         good_na_conns = rowSums(is.na(a2Good))
         for (sc in which(good_na_conns > 1500)) {
