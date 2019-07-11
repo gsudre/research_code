@@ -83,7 +83,8 @@ for (p in pipelines) {
         for (s in unique(m$Medical.Record...MRN)) {
             cat(sprintf('\t\t\tSubject %d/%d\n',
                         cnt, length(unique(m$Medical.Record...MRN))))
-            subj_scans = m[m$Medical.Record...MRN==s, ]
+            subj_idx = which(m$Medical.Record...MRN==s)
+            subj_scans = m[subj_idx, ]
             dates = as.Date(as.character      (subj_scans$"record.date.collected...Scan"),
                                         format="%m/%d/%Y")
             # assumes we only have people with at least num_scans scans!
@@ -119,7 +120,7 @@ for (p in pipelines) {
                 }
             }
             if (found) {
-                keep_me = c(keep_me, subj_scans[cur_choice]))
+                keep_me = c(keep_me, subj_idx[cur_choice])
             }
             cnt = cnt + 1
         }
