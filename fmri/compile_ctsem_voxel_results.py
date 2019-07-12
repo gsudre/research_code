@@ -43,7 +43,7 @@ run_again = []
 
 # figure out how many voxels we're expecting
 cmd_line = '3dBrickStat -sum %s' % mask_fname
-nvox = 32#int(subprocess.check_output(cmd_line, shell=True).rstrip())
+nvox = int(subprocess.check_output(cmd_line, shell=True).rstrip())
 
 df = pd.read_csv(res_fname, header=None)
 msgs = pd.read_csv(msgs_fname, header=None)
