@@ -20,6 +20,8 @@ load(data_fname)
 phen = as.character(read.table(phen_fname)[,1])
 out_res = c()
 for (p in phen) {
+    set.seed(42)
+    
     cat(sprintf('Running %s and %s\n', s, p))
     myctmodel = ctModel(n.latent=2, n.manifest=2, Tpoints=4, n.TIpred=length(TIs),
                         manifestNames=c(s, p), latentNames=c(s, p),
