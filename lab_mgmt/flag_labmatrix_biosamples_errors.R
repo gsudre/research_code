@@ -65,6 +65,19 @@ idx = idx1
 print_table(data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Location',
                         'Box', 'Position')])
 
+cat('\nItems marked as "QUERY". What is wrong with them?\n')
+idx1 = data$Status == 'QUERY'
+idx = idx1
+print_table(data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Location',
+                        'Box', 'Position')])
+
+cat('\nItems with fake date. Can we update them or fix the entry otherwise?\n')
+idx1 = grepl(data$Date.In, pattern='1900')
+idx2 = grepl(data$Date.Out, pattern='1900')
+idx = idx1 | idx2
+print_table(data[idx, c('NSB', 'Date.Out', 'Type', 'Destination', 'Location',
+                        'Box', 'Position')])
+
 # this will be needed by many queries...
 nsbs = unique(data$NSB)
 
@@ -99,17 +112,17 @@ idx = idx1 & (idx2 | idx3)
 print_table(data[idx, c('NSB', 'Source', 'Type', 'Location', 'Box', 'Position')])
 
 cat('\nNSBs without a source == Subject entry. How do we know when it was collected?\n')
-cnt = 0
 bad = c()
 for (i in nsbs) {
     idx = data$NSB == i
     idx1 = which(data[idx,]$Source == 'Subject')
     if (length(idx1) == 0) {
-        bad = rbind(bad, data[idx, ])
-        cnt = cnt + 1
+        bad = c(bad, i)
     }
 }
-print_table(bad[, c('NSB', 'Source', 'Type')])
+for (b in sort(bad)) {
+    cat(sprintf('%d\n', b))
+}
 
 cat('\nItems with a Date Out not later than Date In. How is that even possible?\n')
 idx1 = data$Date.In != ''
