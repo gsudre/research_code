@@ -93,7 +93,7 @@ if len(run_again) == 0:
     idx = np.nonzero(imna)[0]
     res[idx, 0] = 0
     res[idx, 1] = 0
-    write_nifti(res. suffix=)
+    write_nifti(res, suffix='_maskZero')
 
     # second approach with impute the estimates and stderrors we're masking, and
     # re-calculate the p-values
