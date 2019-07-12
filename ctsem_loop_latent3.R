@@ -1,6 +1,6 @@
 # Runs ctsem for a group of variables
 #
-# Usage: Rscript ctsem_loop_latent3.R [data_fname sx1 phen1 cog1 out_fname]
+# Usage: Rscript ctsem_loop_latent3.R [data_fname sx1 brain1 cog1 out_fname]
 # if arguments are specified, script runs those. IF nothing, it runs what's in
 # the code
 # 
@@ -17,8 +17,8 @@ if (length(args) > 0) {
 } else {
     data_fname = '~/Downloads/DATA_DEVEL_TIME_DTI_SX_COG_no+PII.csv'
     # assuming that T0..T2 variables start with these names
-    sx = c('SX_hi')#, 'SX_inatt')
-    brain = sapply(1:2, function(x) sprintf('Y%d', x)) #sapply(1:44, function(x) sprintf('Y%d', x))
+    sx = c('SX_hi', 'SX_inatt')
+    brain = sapply(1:44, function(x) sprintf('Y%d', x))
     cog = sapply(45:46, function(x) sprintf('Y%d', x))
     out_fname = '~/tmp/T1_out.csv'
 }
@@ -54,14 +54,14 @@ for (s in sx) {
             tmp$note=NULL
             tmp$StdError=NA
             # grabbing SE from different table of results
-            for (r in rownames(b)) {
+            for (r in rownames(tmp)) {
                 idx = rownames(res$ctparameters)==r
                 tmp[r, 'StdError'] = res$ctparameters[idx, 'StdError']
             }
             tmp = rbind(tmp, c(NA, res$omxsummary$BIC.Mx, NA, NA))
             tmp = rbind(tmp, c(NA, res$omxsummary$AIC.Mx, NA, NA))
             tmp = rbind(tmp, c(NA, res$omxsummary$npsolMessage, NA, NA))
-            rownames(tmp)[5:7] = c('BIC', 'AIC', 'msg')
+            rownames(tmp)[10:12] = c('BIC', 'AIC', 'msg')
             tmp$var = rownames(tmp)
             tmp$sx = s
             tmp$brain = b
