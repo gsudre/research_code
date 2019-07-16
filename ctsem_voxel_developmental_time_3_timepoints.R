@@ -31,7 +31,7 @@ if (perm_seed > 0) {
     rnd_idx = sample.int(nrow(wider_resids_motion))
     s_cols = c(sprintf('%s_T0', s), sprintf('%s_T1', s),
                sprintf('%s_T2', s), sprintf('%s_T3', s))
-    wider_resids_motion[, s_cols]  wider_resids_motion[rnd_idx, s_cols]
+    wider_resids_motion[, s_cols] = wider_resids_motion[rnd_idx, s_cols]
 }
 
 out_res = c()
