@@ -27,5 +27,5 @@ cat file_list.txt | parallel -j $SLURM_CPUS_PER_TASK --max-args=1 \
         `basename $data_file` \
         $sx {} ${fbase}_${sx}_${v1}to${v2}_{}.csv $rnd_seed;
 
-tar -czf ${fbase}_${sx}_${v1}to${v2}.tgz *.csv;
+tar -czf ${fbase}_${sx}_${v1}to${v2}_${rnd_seed}.tgz *.csv;
 cp *.tgz ${tmp_dir}/
