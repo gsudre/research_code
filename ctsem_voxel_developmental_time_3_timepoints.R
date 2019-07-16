@@ -26,7 +26,7 @@ phen = as.character(read.table(phen_fname)[,1])
 
 if (perm_seed > 0) {
     # let's permute just the symptom columns
-    print('Permuting data!!!')
+    print(sprintf('Permuting data!!! (seed = %d)', perm_seed))
     set.seed(perm_seed)
     rnd_idx = sample.int(nrow(wider_resids_motion))
     s_cols = c(sprintf('%s_T0', s), sprintf('%s_T1', s),
