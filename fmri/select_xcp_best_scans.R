@@ -2,7 +2,7 @@
 
 # specify pipelines in order of most conservative ot less
 pipelines = c('-p25', '-p5', '')
-num_scans = 3  # number of scans to select
+num_scans = 2  # number of scans to select
 
 a = read.csv('~/data/heritability_change/resting_demo_07032019.csv')
 cat(sprintf('Starting from %d scans\n', nrow(a)))
@@ -25,15 +25,21 @@ cat(sprintf('Down to %d to keep only subjects with more than %d scans\n',
             nrow(a), num_scans))
 
 mvmt = read.csv('~/tmp/xcp_movement.csv')
-for (s in unique(a$Medical.Record...MRN)) {
+# keep only pipeline records that went all the way through
+mvmt = mvmt[mvmt$fcon, ]
+maskids = sapply(mvmt$subj, function(x) as.numeric(gsub('sub-', '', x)))
+mvmt$maskids = maskids
+m = merge(a, mvmt, by.x='Mask.ID', by.y='maskids')
+keep_me = c()
+for (s in unique(m$Medical.Record...MRN)) {
     found = F
     cur_pipe = 1
-    subj_idx = which(a$Medical.Record...MRN==s)
-    subj_scans = a[subj_idx, ]
+    subj_idx = which(m$Medical.Record...MRN==s)
+    subj_scans = m[subj_idx, ]
     while (!found && cur_pipe <= length(pipelines)) {
         # if subject has enough scans processed in this pipeline
-        idx = subj_scans$pipeline == pipelines[cur_pipe]
-        if (sum(idx) >= num_scans) {
+        idx = which(subj_scans$pipeline == pipelines[cur_pipe])
+        if (length(idx) >= num_scans) {
             pipe_scans = subj_scans[idx, ]
             dates = as.Date(as.character(pipe_scans$"record.date.collected...Scan"),
                                          format="%m/%d/%Y")
@@ -78,3 +84,7 @@ for (s in unique(a$Medical.Record...MRN)) {
         }
     }
 }
+filtered_data = m[keep_me, ]
+filtered_data$pipeline = sapply(filtered_data$pipeline,
+                                function(x) sprintf('"%s"', x))
+write.csv(filtered_data, file='~/tmp/filtered.csv', row.names=F)
