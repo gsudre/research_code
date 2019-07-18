@@ -86,7 +86,7 @@ if len(run_again) == 0:
             imna[v] = 1
         else:
             imna[v] = 0
-    print(f'Need to mask {np.sum(imna) * 100.0 / nvox}% of voxels.')
+    print(f'Need to mask %.2f%% of voxels.' % (np.sum(imna) * 100.0 / nvox))
 
     # first approach we just replace any voxels to be masked with a crappy
     # p-value and estimate
@@ -97,7 +97,33 @@ if len(run_again) == 0:
 
     # second approach with impute the estimates and stderrors we're masking, and
     # re-calculate the p-values
+    from sklearn.experimental import enable_iterative_imputer
+    from sklearn.impute import IterativeImputer
+    from sklearn.neighbors import KNeighborsRegressor
 
+    imp = IterativeImputer(estimator=KNeighborsRegressor(5), random_state=42)
+    # imputing estimates
+    ijk = pd.read_csv(ijk_fname, header=None, sep=' ')
+    ijk['val'] = res[:, 0]
+    ijk.loc[idx, 'val'] = np.nan
+    ijk = imp.fit_transform(ijk)
+    est = ijk[:, 3]
+    # imputing sderrs
+    ijk = pd.read_csv(ijk_fname, header=None, sep=' ')
+    ijk['val'] = res[:, 3]
+    ijk.loc[idx, 'val'] = np.nan
+    ijk = imp.fit_transform(ijk)
+    sderr = ijk[:, 3]
+    
+    # recalculating the values for the nifti file. Columns 4 and 5 don't matter
+    # as they're lb and ub
+    z = est / sderr
+    p = stats.norm.sf(abs(z))*2
+    res[:, 0] = est
+    res[:, 1] = 1-p
+    res[:, 2] = z
+    res[:, 3] = sderr
+    write_nifti(res, suffix='_maskImpute')
 else:
     print(f'Voxels not found: {len(run_again)}')
     fout_name = './vlist_rerun.' + res_fname.split('/')[-1].replace('.csv', '')
