@@ -1,6 +1,6 @@
 # selects the best X scans for a subject based on minimum FD
 
-num_scans = 3  # number of scans to select
+num_scans = 2  # number of scans to select
 
 a = read.csv('~/data/heritability_change/resting_demo_07032019.csv')
 cat(sprintf('Starting from %d scans\n', nrow(a)))
@@ -39,7 +39,7 @@ for (s in unique(m$Medical.Record...MRN)) {
     if (nrow(subj_scans) >= num_scans) {
         dates = as.Date(as.character(subj_scans$"record.date.collected...Scan"),
                                         format="%m/%d/%Y")
-        best_scans = sort(subj_scans$meanFD, index.return=T))
+        best_scans = sort(subj_scans$meanFD, index.return=T)
         # make sure they are at least 6 months apart. This is the idea:
         # grab the best X scans. Check the time difference between them.
         # Any time the time difference is not enough, remove the worse
