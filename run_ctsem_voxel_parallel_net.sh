@@ -13,6 +13,7 @@ done
 
 if [ ! -d $tmp_dir ]; then
     mkdir $tmp_dir;
+fi;
 
 cat var_list.txt | parallel -j $SLURM_CPUS_PER_TASK --max-args=1 \
     Rscript ~/research_code/ctsem_voxel_developmental_time_3_timepoints.R \
