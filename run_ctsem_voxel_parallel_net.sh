@@ -18,7 +18,8 @@ if [ ! -d $tmp_dir ]; then
     mkdir $tmp_dir;
 fi;
 
+fbase=`basename -s .RData.gz $data_file`;
 cat var_list.txt | parallel -j $SLURM_CPUS_PER_TASK --max-args=1 \
     Rscript ~/research_code/ctsem_voxel_developmental_time_3_timepoints.R \
         `basename $data_file` \
-        $sx {} ${tmp_dir}/${fbase}_${sx}_{}.csv $rnd_seed;
+        $sx {}.txt ${tmp_dir}/${fbase}_${sx}_{}.csv $rnd_seed;
