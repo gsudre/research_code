@@ -14,9 +14,7 @@ for v in `seq $v1 $v2`; do
     echo Y${v} >> var_list.txt;
 done
 
-if [ ! -d $tmp_dir ]; then
-    mkdir $tmp_dir;
-fi;
+mkdir -p $tmp_dir;
 
 fbase=`basename -s .RData.gz $data_file`;
 cat var_list.txt | parallel -j $SLURM_CPUS_PER_TASK --max-args=1 \
