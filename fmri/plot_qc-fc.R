@@ -19,11 +19,9 @@ mvmt_file = '/Volumes/Labs/AROMA_ICA/xcp_movement.csv'
 rm_outliers = T
 
 # looking at best fo 2 or 3 scans!!!
-scans_file = c('/Volumes/Labs/AROMA_ICA/filtered_minFD_2scans.csv',
-                '/Volumes/Labs/AROMA_ICA/filtered_minFD_3scans.csv')
-subjs = as.character(read.csv(scans_file[1])$subj)
-# subjs = c(subjs, as.character(read.csv(scans_file[2])$subj))
-subjs = unique(subjs)
+scans_file = '/Volumes/Labs/AROMA_ICA/filtered_minFD_2scans.csv'
+scans = read.csv(scans_file)
+subjs = unique(as.character(scans$subj))
 
 mvmt = read.csv(mvmt_file)
 pdist = c()
@@ -35,6 +33,8 @@ for (p in pipelines) {
     for (tmin in at_least_mins) {
         fc = c()
         qc = c()
+        sex = c()
+        age = c()
         # reading quality metric for all scans
         for (s in subjs) {
             midx = mvmt$subj==s & mvmt$pipeline==p
@@ -45,6 +45,8 @@ for (p in pipelines) {
                 data = read.table(fname)[, 1]
                 fc = cbind(fc, data)
                 qc = c(qc, mvmt[midx, 'meanFD'])
+                sex = c(sex, scans[scans$subj == s, 'Sex'])
+                age = c(age, scans[scans$subj == s, 'age_at_scan'])
             }
         }
         if (rm_outliers) {
@@ -53,15 +55,23 @@ for (p in pipelines) {
             imgood = qc < (qc_mu + 3 * qc_sd) & qc > (qc_mu - 3 * qc_sd)
             qc = qc[imgood]
             fc = fc[, imgood]
+            sex = sex[imgood]
+            age = age[imgood]
             cat(sprintf('Removing %d outliers out of %d scans\n',
-                        sum(imgood), length(imgood)))
+                        sum(!imgood), length(imgood)))
         }
         # compute correlations
         cat(sprintf('Computing correlations for at least %d minutes\n', tmin))
+        sex = as.factor(sex)
+        fc_resids = fc
+        for (conn in 1:nrow(fc)) {
+            fc_resids[conn, ] = scale(residuals(lm(fc[conn, ] ~ sex + age,
+                                                   na.action=na.exclude)))
+        }
         ps = c()
         rs = c()
         for (conn in 1:nrow(fc)) {
-            res = cor.test(fc[conn, ], qc)
+            res = cor.test(fc_resids[conn, ], qc, method='spearman')
             rs = c(rs, res$estimate)
             ps = c(ps, res$p.value)
         }
@@ -82,7 +92,7 @@ barplot(prop_sig, main="QC-FC p < .05 uncorrected connection",
 
 dev.new()
 par(mar=c(7.5,4,1,1))
-boxplot(rdist, main="QC-FC", ylab="Pearson r", las=2)
+boxplot(rdist, main="QC-FC", ylab="Correlation", las=2)
 
 # FC-QC to distance correlation
 cat('Calculating distance matrix between spheres\n')
