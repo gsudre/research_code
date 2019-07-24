@@ -12,16 +12,17 @@
 #   Strategies for Resting-State Functional MRI.” NeuroImage 171 (May 1, 2018):
 #   415–36. https://doi.org/10.1016/j.neuroimage.2017.12.073.
 
-pipelines = c('', '-p5', '-p25', '-gsr', '-gsr-p5', '-gsr-p25',
-              '-gsr-p5-nc', '-gsr-p25-nc', '-p5-nc', '-p25-nc')
+pipelines = c('', '-p5', '-p25') #, '-gsr', '-gsr-p5', '-gsr-p25',
+            #   '-gsr-p5-nc', '-gsr-p25-nc', '-p5-nc', '-p25-nc')
 at_least_mins = c(0, 3, 4)  # needs to have at least these minutes of data
 mvmt_file = '/Volumes/Labs/AROMA_ICA/xcp_movement.csv'
+rm_outliers = T
 
 # looking at best fo 2 or 3 scans!!!
 scans_file = c('/Volumes/Labs/AROMA_ICA/filtered_minFD_2scans.csv',
                 '/Volumes/Labs/AROMA_ICA/filtered_minFD_3scans.csv')
 subjs = as.character(read.csv(scans_file[1])$subj)
-subjs = c(subjs, as.character(read.csv(scans_file[2])$subj))
+# subjs = c(subjs, as.character(read.csv(scans_file[2])$subj))
 subjs = unique(subjs)
 
 mvmt = read.csv(mvmt_file)
@@ -45,6 +46,15 @@ for (p in pipelines) {
                 fc = cbind(fc, data)
                 qc = c(qc, mvmt[midx, 'meanFD'])
             }
+        }
+        if (rm_outliers) {
+            qc_mu = mean(qc)
+            qc_sd = sd(qc)
+            imgood = qc < (qc_mu + 3 * qc_sd) & qc > (qc_mu - 3 * qc_sd)
+            qc = qc[imgood]
+            fc = fc[, imgood]
+            cat(sprintf('Removing %d outliers out of %d scans\n',
+                        sum(imgood), length(imgood)))
         }
         # compute correlations
         cat(sprintf('Computing correlations for at least %d minutes\n', tmin))
