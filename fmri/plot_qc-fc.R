@@ -12,11 +12,11 @@
 #   Strategies for Resting-State Functional MRI.” NeuroImage 171 (May 1, 2018):
 #   415–36. https://doi.org/10.1016/j.neuroimage.2017.12.073.
 
-pipelines = c('', '-p5', '-p25') #, '-gsr', '-gsr-p5', '-gsr-p25',
+pipelines = c('')#'', '-p5', '-p25') #, '-gsr', '-gsr-p5', '-gsr-p25',
             #   '-gsr-p5-nc', '-gsr-p25-nc', '-p5-nc', '-p25-nc')
-at_least_mins = c(0, 3, 4)  # needs to have at least these minutes of data
+at_least_mins = c(0)#, 3, 4)  # needs to have at least these minutes of data
 mvmt_file = '/Volumes/Labs/AROMA_ICA/xcp_movement.csv'
-rm_outliers = T
+rm_outliers = F
 
 # looking at best fo 2 or 3 scans!!!
 scans_file = '/Volumes/Labs/AROMA_ICA/filtered_minFD_2scans.csv'
@@ -65,13 +65,13 @@ for (p in pipelines) {
         sex = as.factor(sex)
         fc_resids = fc
         for (conn in 1:nrow(fc)) {
-            fc_resids[conn, ] = scale(residuals(lm(fc[conn, ] ~ sex + age,
-                                                   na.action=na.exclude)))
+            fc_resids[conn, ] = residuals(lm(fc[conn, ] ~ sex + age,
+                                                   na.action=na.exclude))
         }
         ps = c()
         rs = c()
         for (conn in 1:nrow(fc)) {
-            res = cor.test(fc_resids[conn, ], qc, method='spearman')
+            res = cor.test(fc_resids[conn, ], qc)
             rs = c(rs, res$estimate)
             ps = c(ps, res$p.value)
         }
