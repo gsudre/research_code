@@ -2,8 +2,8 @@
 # 
 # GS, 07/2019
 
-pipelines = c('')#, '-gsr')
-fd_thresh = c(1)#, .2)
+pipelines = c('', '-gsr')
+fd_thresh = c(1, .2)
 mvmt_file = '/Volumes/Labs/AROMA_ICA/xcp_movement.csv'
 
 # make sure this file includes only kids, with correct amount of time between
@@ -22,7 +22,7 @@ out_dir = '~/data/heritability_change/'
 today = format(Sys.time(), "%m%d%Y")
 
 for (p in pipelines) {
-    pipe_dir = sprintf('~/data/AROMA_ICA/connectivity/xcpengine_output_AROMA%s/', pipeline)
+    pipe_dir = sprintf('~/data/AROMA_ICA/connectivity/xcpengine_output_AROMA%s/', p)
     cat(sprintf('Reading connectivity data from %s\n', pipe_dir))
     for (t in fd_thresh) {
         fc = c()
@@ -32,7 +32,7 @@ for (p in pipelines) {
         clean_subjs = c()
         # reading quality metric for all scans
         for (s in subjs) {
-            midx = mvmt$subj==s & mvmt$pipeline==pipeline
+            midx = mvmt$subj==s & mvmt$pipeline==p
             # if scan was successfully processed in this pipeline
             if (mvmt[midx,]$fcon && mvmt[midx,]$meanFD < t) {
                 clean_subjs = c(clean_subjs, s)
@@ -136,7 +136,7 @@ for (p in pipelines) {
         cnt = 1
         for (s in unique(res$ID)) {
             idx = which(m_resids$Medical.Record...MRN == s)
-            y = m_resids[idx[2], conns] - mres[idx[1], conns]
+            y = m_resids[idx[2], conns] - m_resids[idx[1], conns]
             x = m_resids[idx[2], 'age_at_scan'] - m_resids[idx[1],
                                                            'age_at_scan']
             slopes = y / x
@@ -144,6 +144,8 @@ for (p in pipelines) {
             cnt = cnt + 1
         }
 
+        cat(sprintf('Writing files to disk\n'))
+        
         fname = sprintf('%s/rsfmri_AROMA%s_FD%.2f_slopes_n%d_%s.csv',
                         out_dir, p, t, nrow(res), today)
         write.csv(res, file=fname, row.names=F)
@@ -151,32 +153,34 @@ for (p in pipelines) {
                         out_dir, p, t, nrow(res), today)
         write.csv(res_resid, file=fname, row.names=F)
 
-        # # special dataset for SOLAR, containing only people with relatives
-        # # make sure every family has at least two people
-        # good_nuclear = names(table(m$Nuclear.ID...FamilyIDs))[table(m$Nuclear.ID...FamilyIDs) >= 4]
-        # good_extended = names(table(m$Extended.ID...FamilyIDs))[table(m$Extended.ID...FamilyIDs) >= 4]
-        # keep_me = c()
-        # for (f in good_nuclear) {
-        #     keep_me = c(keep_me, m[which(m$Nuclear.ID...FamilyIDs == f),
-        #                             'Medical.Record...MRN'])
-        # }
-        # for (f in good_extended) {
-        #     keep_me = c(keep_me, m[which(m$Extended.ID...FamilyIDs == f),
-        #                             'Medical.Record...MRN'])
-        # }
-        # keep_me = unique(keep_me)
+        # special dataset for SOLAR, containing only people with relatives
+        # make sure every family has at least two people
+        good_nuclear = names(table(m$Nuclear.ID...FamilyIDs))[table(m$Nuclear.ID...FamilyIDs) >= 4]
+        good_extended = names(table(m$Extended.ID...FamilyIDs))[table(m$Extended.ID...FamilyIDs) >= 4]
+        keep_me = c()
+        for (f in good_nuclear) {
+            keep_me = c(keep_me, m[which(m$Nuclear.ID...FamilyIDs == f),
+                                    'Medical.Record...MRN'])
+        }
+        for (f in good_extended) {
+            keep_me = c(keep_me, m[which(m$Extended.ID...FamilyIDs == f),
+                                    'Medical.Record...MRN'])
+        }
+        keep_me = unique(keep_me)
 
-        # fam_subjs = c()
-        # for (s in keep_me) {
-        #     fam_subjs = c(fam_subjs, which(res[, 'ID'] == s))
-        # }
-        # res2 = res[fam_subjs, ]
-        # res2_clean = res_clean[fam_subjs, ]
+        fam_subjs = c()
+        for (s in keep_me) {
+            fam_subjs = c(fam_subjs, which(res[, 'ID'] == s))
+        }
+        res2 = res[fam_subjs, ]
+        res2_resid = res_resid[fam_subjs, ]
 
-        # fname = sprintf('%sFamsSlopes_n%d_%s.csv', fname_root, nrow(res2), today)
-        # write.csv(res2, file=fname, row.names=F, na='', quote=F)
+        fname = sprintf('%s/rsfmri_AROMA%s_FD%.2f_slopesFam_n%d_%s.csv',
+                        out_dir, p, t, nrow(res2), today)
+        write.csv(res2, file=fname, row.names=F, na='', quote=F)
 
-        # fname = sprintf('%sFamsSlopesClean_n%d_%s.csv', fname_root, nrow(res2_clean), today)
-        # write.csv(res2_clean, file=fname, row.names=F, na='', quote=F)        
+        fname = sprintf('%s/rsfmri_AROMA%s_FD%.2f_residSlopesFam_n%d_%s.csv',
+                        out_dir, p, t, nrow(res2), today)
+        write.csv(res2_resid, file=fname, row.names=F, na='', quote=F)        
     }
 }
