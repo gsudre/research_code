@@ -22,7 +22,7 @@ a = a[keep_me,]
 cat(sprintf('Down to %d to keep only subjects with more than %d scans\n',
             nrow(a), num_scans))
 
-mvmt = read.csv('~/tmp/xcp_movement.csv')
+mvmt = read.csv('~/data/tmp/xcp_movement.csv')
 # keep only pipeline records that went all the way through through the vanilla
 # AROMA pipeline
 mvmt = mvmt[mvmt$fcon, ]

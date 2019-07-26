@@ -144,8 +144,8 @@ for (p in pipelines) {
             cnt = cnt + 1
         }
 
-        cat(sprintf('Writing files to disk\n'))
-        
+        cat(sprintf('Writing association files to disk\n'))
+
         fname = sprintf('%s/rsfmri_AROMA%s_FD%.2f_slopes_n%d_%s.csv',
                         out_dir, p, t, nrow(res), today)
         write.csv(res, file=fname, row.names=F)
@@ -175,6 +175,8 @@ for (p in pipelines) {
         res2 = res[fam_subjs, ]
         res2_resid = res_resid[fam_subjs, ]
 
+        cat(sprintf('Writing family files to disk\n'))
+        
         fname = sprintf('%s/rsfmri_AROMA%s_FD%.2f_slopesFam_n%d_%s.csv',
                         out_dir, p, t, nrow(res2), today)
         write.csv(res2, file=fname, row.names=F, na='', quote=F)
