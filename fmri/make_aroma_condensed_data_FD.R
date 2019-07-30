@@ -2,15 +2,19 @@
 # 
 # GS, 07/2019
 
-pipelines = c('-gsr')#, '-gsr')
+pipelines = c('fc-36p_despike')
+        #     c('AROMA', 'AROMA-p5', 'AROMA-p25', 'fc-36p_despike', 'fc-36p',
+        #   'fc-36p_scrub_p25', 'fc-36p_scrub_p5', 'fc-36p_spkreg')
 fd_thresh = c(10)#, .2)
-mvmt_file = '/Volumes/Labs/AROMA_ICA/xcp_movement.csv'
-# mvmt_file = '~/data/tmp/xcp_movement.csv'
-make_plots = T
+# mvmt_file = '/Volumes/Labs/AROMA_ICA/xcp_movement.csv'
+mvmt_file = '~/data/rsfmri/power264/xcp_movement.csv'
+make_plots = F
+pos_only = T
 
 # make sure this file includes only kids, with correct amount of time between
 # scans, etc
-scans_file = '/Volumes/Labs/AROMA_ICA/filtered_minFD_2scans.csv'
+# scans_file = '/Volumes/Labs/AROMA_ICA/filtered_minFD_2scans.csv'
+scans_file = '~/data/rsfmri/power264/filtered_minFD_2scans.csv'
 scans = read.csv(scans_file)
 subjs = unique(as.character(scans$subj))
 
@@ -41,8 +45,7 @@ for (i in 1:(nverts-1)) {
 }
 
 for (p in pipelines) {
-    pipe_dir = sprintf('~/data/AROMA_ICA/connectivity/xcpengine_output_AROMA%s/', p)
-    # pipe_dir = '/Users/sudregp/data/36P/out/'
+    pipe_dir = sprintf('~/data/rsfmri/power264/xcpengine_output_%s/', p)
     cat(sprintf('Reading connectivity data from %s\n', pipe_dir))
     for (t in fd_thresh) {
         fc = c()
@@ -54,7 +57,9 @@ for (p in pipelines) {
         for (s in subjs) {
             midx = mvmt$subj==s & mvmt$pipeline==p
             # if scan was successfully processed in this pipeline
-            if (mvmt[midx,]$fcon && mvmt[midx,]$meanFD < t) {
+            if (sum(midx)>0 && mvmt[midx,]$fcon &&
+                !any(is.na(mvmt[midx,]$meanFD < t))
+                && mvmt[midx,]$meanFD < t) {
                 clean_subjs = c(clean_subjs, s)
                 fname = sprintf('%s/%s_power264_network.txt', pipe_dir, s)
                 # fname = sprintf('%s/%s/fcon/power264/%s_power264_network.txt',
@@ -71,6 +76,13 @@ for (p in pipelines) {
         cat(sprintf('Condensing data\n'))
         var_names = sapply(1:ncol(fc), function(x) sprintf('conn%d', x))
         colnames(fc) = var_names
+        # set any negative correlations to NaN
+        if (pos_only) {
+            fc[fc < 0] = NaN
+            pos_str = '_posOnly'
+        } else {
+            pos_str = ''
+        }
         net_data = c()
         header = c()
         for (i in 1:nnets) {
@@ -128,8 +140,8 @@ for (p in pipelines) {
         mres$SX_HI = as.numeric(as.character(mres$SX_hi))
         mres$SX_inatt = as.numeric(as.character(mres$SX_inatt))
         
-        fname = sprintf('%s/rsfmri_AROMA%s_condensed_FD%.2f_scans%d_%s.csv',
-                        out_dir, p, t, nrow(mres), today)
+        fname = sprintf('%s/rsfmri_%s_condensed%s_FD%.2f_scans%d_%s.csv',
+                        out_dir, p, pos_str, t, nrow(mres), today)
         write.csv(mres, file=fname, row.names=F)
 
         if (make_plots) {
@@ -238,27 +250,44 @@ for (p in pipelines) {
 
 
 
-comp = data.frame(subjs=mres36p$clean_subjs, P36=NA, vanilla=NA, gsr=NA, scrubbed=NA)
-for (s in mres36p$clean_subjs) {
-    comp[comp$subjs==s, ]$P36 = mres36p[mres36p$clean_subjs==s,
-                                     'connMedian_DefaultmodeTODefaultmode']
-    idx = mres1$clean_subjs==s
+comp = data.frame(subjs=mres_36p$clean_subjs, P36=NA, P36_despike=NA,
+                  P36_spkreg=NA, P36_scrub_p5=NA, P36_despike_posonly=NA, P36_scrub_p25=NA, aroma=NA)
+for (s in comp$subjs) {
+    idx = mres_36p$clean_subjs==s
+    comp[comp$subjs==s, ]$P36 = mres_36p[idx,
+                                         'connMedian_DefaultmodeTODefaultmode']
+    idx = mres_36p_despike$clean_subjs==s
     if (sum(idx) > 0) {
-        comp[comp$subjs==s, ]$vanilla = mres1[idx,
+        comp[comp$subjs==s, ]$P36_despike = mres_36p_despike[idx,
                                       'connMedian_DefaultmodeTODefaultmode']
     }
-    idx=mresp2$clean_subjs==s
+    idx=mres_36p_spkreg$clean_subjs==s
     if (sum(idx) > 0) {
-        comp[comp$subjs==s, ]$scrubbed = mresp2[idx,
+        comp[comp$subjs==s, ]$P36_spkreg = mres_36p_spkreg[idx,
                                      'connMedian_DefaultmodeTODefaultmode']
     }
-    idx=mres$clean_subjs==s
+    idx=mres_36p_scrub_p5$clean_subjs==s
     if (sum(idx) > 0) {
-        comp[comp$subjs==s, ]$gsr = mres[idx,
+        comp[comp$subjs==s, ]$P36_scrub_p5 = mres_36p_scrub_p5[idx,
+                                     'connMedian_DefaultmodeTODefaultmode']
+    }
+    idx=mres_36p_scrub_p25$clean_subjs==s
+    if (sum(idx) > 0) {
+        comp[comp$subjs==s, ]$P36_scrub_p25 = mres_36p_scrub_p25[idx,
+                                     'connMedian_DefaultmodeTODefaultmode']
+    }
+    idx=mres_36p_despike_posonly$clean_subjs==s
+    if (sum(idx) > 0) {
+        comp[comp$subjs==s, ]$P36_despike_posonly = mres_36p_despike_posonly[idx,
+                                     'connMedian_DefaultmodeTODefaultmode']
+    }
+    idx=mres_aroma$clean_subjs==s
+    if (sum(idx) > 0) {
+        comp[comp$subjs==s, ]$aroma = mres_aroma[idx,
                                      'connMedian_DefaultmodeTODefaultmode']
     }
 }
 library(tidyr)
-comp_long = gather(comp, pipeline, pearsonr, P36:scrubbed)
+comp_long = gather(comp, pipeline, pearsonr, P36:aroma)
 dev.new()
 ggplot(comp_long, aes(x=pipeline, y=pearsonr, color=subjs)) + geom_point() + theme(legend.position='none')
