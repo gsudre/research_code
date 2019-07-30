@@ -1,14 +1,16 @@
 # calculates TRs left, mean FD and meanDVARS for only the TRs used in each
 # pipeline
  
-pipes = c('36P')#, '-p5', '-p5-nc', '-p25', '-p25-nc',
-        #   '-gsr', '-gsr-p5', '-gsr-p5-nc', '-gsr-p25', '-gsr-p25-nc')
+pipes = c('', '-p5', '-p5-nc', '-p25', '-p25-nc',
+          '-gsr', '-gsr-p5', '-gsr-p5-nc', '-gsr-p25', '-gsr-p25-nc')
+pipes = c('fc-36p_despike', 'fc-36p', 'fc-36p_scrub_p25', 'fc-36p_scrub_p5',
+          'fc-36p_spkreg')
 
 # grab all subjects
 all_subjs = c()
 for (p in pipes) {
     # mydir = sprintf('/Volumes/Shaw/AROMA_ICA/xcpengine_output_AROMA%s', p)
-    mydir = '/Users/sudregp/data/36P/out/'
+    mydir = sprintf('/data/NCR_SBRB/xcpengine_output_%s', p)
     cat(sprintf('Gathering subjects from %s\n', mydir))
     subjs = list.files(path=mydir)
     all_subjs = c(all_subjs, subjs)
@@ -29,7 +31,7 @@ for (s in all_subjs) {
         res[r, 'pipeline'] = p
         # mydir = sprintf('/Volumes/Shaw/AROMA_ICA/xcpengine_output_AROMA%s/%s',
         #                 p, s)
-        mydir = sprintf('/Users/sudregp/data/36P/out/%s', s)
+        mydir = sprintf('/data/NCR_SBRB/xcpengine_output_%s', p)
         fname = sprintf('%s/%s-nFlags.1D', mydir, s)
         if (file.exists(fname)) {
             censored = read.table(fname)[, 1]
