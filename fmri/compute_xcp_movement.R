@@ -15,7 +15,7 @@ for (p in pipes) {
     subjs = list.files(path=mydir)
     all_subjs = c(all_subjs, subjs)
 }
-# all_subjs = all_subjs[grepl(all_subjs, pattern='^sub-')]
+all_subjs = all_subjs[grepl(all_subjs, pattern='^sub-')]
 all_subjs = unique(all_subjs)
 
 mycols = c('subj', 'pipeline', 'TRs_used', 'meanFD', 'meanDVARS',
@@ -31,7 +31,7 @@ for (s in all_subjs) {
         res[r, 'pipeline'] = p
         # mydir = sprintf('/Volumes/Shaw/AROMA_ICA/xcpengine_output_AROMA%s/%s',
         #                 p, s)
-        mydir = sprintf('/data/NCR_SBRB/xcpengine_output_%s', p)
+        mydir = sprintf('/data/NCR_SBRB/xcpengine_output_%s/%s', p, s)
         fname = sprintf('%s/%s-nFlags.1D', mydir, s)
         if (file.exists(fname)) {
             censored = read.table(fname)[, 1]
