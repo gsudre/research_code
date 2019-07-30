@@ -8,7 +8,7 @@ pipelines = c('fc-36p_despike')
 fd_thresh = c(10)#, .2)
 # mvmt_file = '/Volumes/Labs/AROMA_ICA/xcp_movement.csv'
 mvmt_file = '~/data/rsfmri/power264/xcp_movement.csv'
-make_plots = F
+make_plots = T
 pos_only = T
 
 # make sure this file includes only kids, with correct amount of time between
@@ -145,7 +145,29 @@ for (p in pipelines) {
         write.csv(mres, file=fname, row.names=F)
 
         if (make_plots) {
-
+            dev.new()
+            plot(sort(qc), main=sprintf('Sorted FD %s, thresh=%d', p, t))
+            dev.new()
+            mrns = unique(mres$Medical.Record...MRN)
+            myvar = 'connMedian_DefaultmodeTODefaultmode'
+            for (s in 1:length(mrns)) {
+                idx = mres$Medical.Record...MRN==mrns[s]
+                # if we still have 2 or more scans for this subject
+                if (sum(idx > 2)) {
+                    if (s == 1) {
+                        plot(mres[idx, 'age_at_scan'],
+                            mres[idx, myvar],
+                            type='l',
+                            xlim=c(min(mres$age_at_scan),
+                                    max(mres$age_at_scan)),
+                            ylim=c(min(mres[, myvar]), max(mres[, myvar])),
+                            main=myvar, ylab='pearson r', xlab='age')
+                    } else {
+                        lines(mres[idx, 'age_at_scan'], mres[idx, myvar],
+                              type='l')
+                    }
+                }
+            }
         }
         # # create slopes
         # # for this to go fast, and taking advantage of just having 2 scans, we
