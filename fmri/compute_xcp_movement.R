@@ -35,38 +35,40 @@ for (s in all_subjs) {
         res[r, 'subj'] = s
         res[r, 'pipeline'] = p
         mydir = sprintf('/data/NCR_SBRB/xcpengine_output_%s/%s', p, s)
-        fname = sprintf('%s/%s-nFlags.1D', mydir, s)
-        if (file.exists(fname)) {
-            censored = read.table(fname)[, 1]
-            fname = sprintf('%s/prestats/%s_fmriconf.tsv', mydir, s)
-            if (file.exists(fname)) {
-                data = read.table(fname, header=1)
-
-                # for some pipelines that don't need censoring xcpengine still
-                # makes a healthy nFlags file, so we need to identify those
-                # pipelines and skip their nFlags!
-                orig_TRs = nrow(data)
-                fname = sprintf('%s/qcfc/%s_dvars-raw.1D', mydir, s)
-                junk = read.table(fname)[, 1]
-                used_TRs = length(junk)
-                if (used_TRs == orig_TRs) {
-                    censored = rep(0, orig_TRs)
-                }
-                
-                good_TRs = censored == 0
-                res[r, 'TRs_used'] = sum(good_TRs)
-                
-                # massaging to avoid first NA
-                tmp = as.character(data[good_TRs, 'framewise_displacement'])
-                res[r, 'meanFD'] = mean(as.numeric(tmp[2:length(tmp)]),
-                                        na.rm=T)
-                tmp = as.character(data[good_TRs, 'dvars'])
-                res[r, 'meanDVARS'] = mean(as.numeric(tmp[2:length(tmp)]),
-                                           na.rm=T)
-            }
-        }
         fname = sprintf('%s/fcon/power264/%s_power264.net', mydir, s)
         res[r, 'power264'] = file.exists(fname)
+        if (res[r, 'power264']) {
+            fname = sprintf('%s/%s-nFlags.1D', mydir, s)
+            if (file.exists(fname)) {
+                censored = read.table(fname)[, 1]
+                fname = sprintf('%s/prestats/%s_fmriconf.tsv', mydir, s)
+                if (file.exists(fname)) {
+                    data = read.table(fname, header=1)
+
+                    # for some pipelines that don't need censoring xcpengine still
+                    # makes a healthy nFlags file, so we need to identify those
+                    # pipelines and skip their nFlags!
+                    orig_TRs = nrow(data)
+                    fname = sprintf('%s/qcfc/%s_dvars-raw.1D', mydir, s)
+                    junk = read.table(fname)[, 1]
+                    used_TRs = length(junk)
+                    if (used_TRs == orig_TRs) {
+                        censored = rep(0, orig_TRs)
+                    }
+                    
+                    good_TRs = censored == 0
+                    res[r, 'TRs_used'] = sum(good_TRs)
+                    
+                    # massaging to avoid first NA
+                    tmp = as.character(data[good_TRs, 'framewise_displacement'])
+                    res[r, 'meanFD'] = mean(as.numeric(tmp[2:length(tmp)]),
+                                            na.rm=T)
+                    tmp = as.character(data[good_TRs, 'dvars'])
+                    res[r, 'meanDVARS'] = mean(as.numeric(tmp[2:length(tmp)]),
+                                            na.rm=T)
+                }
+            }
+        }
         r = r + 1
     }
 }
