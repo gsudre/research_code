@@ -57,7 +57,7 @@ for (p in pipelines) {
         for (s in subjs) {
             midx = mvmt$subj==s & mvmt$pipeline==p
             # if scan was successfully processed in this pipeline
-            if (sum(midx)>0 && mvmt[midx,]$fcon &&
+            if (sum(midx)>0 && mvmt[midx,]$power264 &&
                 !any(is.na(mvmt[midx,]$meanFD < t))
                 && mvmt[midx,]$meanFD < t) {
                 clean_subjs = c(clean_subjs, s)
