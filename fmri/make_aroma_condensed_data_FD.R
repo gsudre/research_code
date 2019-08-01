@@ -5,7 +5,7 @@
 pipelines = c('fc-36p_despike')
         #     c('AROMA', 'AROMA-p5', 'AROMA-p25', 'fc-36p_despike', 'fc-36p',
         #   'fc-36p_scrub_p25', 'fc-36p_scrub_p5', 'fc-36p_spkreg')
-fd_thresh = c(10)#, .2)
+fd_thresh = c(10, .25, .1)
 # mvmt_file = '/Volumes/Labs/AROMA_ICA/xcp_movement.csv'
 mvmt_file = '~/data/rsfmri/power264/xcp_movement.csv'
 make_plots = T
