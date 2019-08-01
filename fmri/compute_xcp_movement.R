@@ -46,8 +46,8 @@ for (s in all_subjs) {
                 # makes a healthy nFlags file, so we need to identify those
                 # pipelines and skip their nFlags!
                 orig_TRs = nrow(data)
-                fname = sprintf('%s/qcfc/%s_dvars-raw.1D', mydir, s)[, 1]
-                junk = read.table(fname)
+                fname = sprintf('%s/qcfc/%s_dvars-raw.1D', mydir, s)
+                junk = read.table(fname)[, 1]
                 used_TRs = length(junk)
                 if (used_TRs == orig_TRs) {
                     censored = rep(0, orig_TRs)
