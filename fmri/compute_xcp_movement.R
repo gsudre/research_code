@@ -66,7 +66,7 @@ for (s in all_subjs) {
             }
         }
         fname = sprintf('%s/fcon/power264/%s_power264.net', mydir, s)
-        res[r, 'fcon'] = file.exists(fname)
+        res[r, 'power264'] = file.exists(fname)
         r = r + 1
     }
 }
