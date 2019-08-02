@@ -5,10 +5,10 @@
 pipelines = c('fc-36p_despike')
         #     c('AROMA', 'AROMA-p5', 'AROMA-p25', 'fc-36p_despike', 'fc-36p',
         #   'fc-36p_scrub_p25', 'fc-36p_scrub_p5', 'fc-36p_spkreg')
-fd_thresh = c(10, .25, .1)
+fd_thresh = c(10, 2.5, 1, .75, .5, .25)
 # mvmt_file = '/Volumes/Labs/AROMA_ICA/xcp_movement.csv'
 mvmt_file = '~/data/rsfmri/power264/xcp_movement.csv'
-make_plots = T
+make_plots = F
 pos_only = T
 
 # make sure this file includes only kids, with correct amount of time between
@@ -144,9 +144,15 @@ for (p in pipelines) {
                         out_dir, p, pos_str, t, nrow(mres), today)
         write.csv(mres, file=fname, row.names=F)
 
+        mres_resids = mres
+        for (conn in header) {
+            mres_resids[, conn] = residuals(lm(mres[, conn] ~ mres$qc,
+                                            na.action=na.exclude))
+        }
+
         if (make_plots) {
             dev.new()
-            plot(sort(qc), main=sprintf('Sorted FD %s, thresh=%d', p, t))
+            plot(sort(qc), main=sprintf('Sorted FD %s, thresh=%f', p, t))
             dev.new()
             mrns = unique(mres$Medical.Record...MRN)
             myvar = 'connMedian_DefaultmodeTODefaultmode'
@@ -169,147 +175,73 @@ for (p in pipelines) {
                 }
             }
         }
-        # # create slopes
-        # # for this to go fast, and taking advantage of just having 2 scans, we
-        # # can just calculate the slopes manually
-        # res = c()
-        # for (s in unique(mres$Medical.Record...MRN)) {
-        #     idx = which(mres$Medical.Record...MRN == s)
-        #     row = c(s, unique(mres[idx, 'Sex']))
-        #     phen_cols = c(conns, 'SX_inatt', 'SX_HI')
-        #     y = mres[idx[2], phen_cols] - mres[idx[1], phen_cols]
-        #     x = mres[idx[2], 'age_at_scan'] - mres[idx[1], 'age_at_scan']
-        #     slopes = y / x
-        #     row = c(row, slopes)
 
-        #     # grabbing inatt and HI at baseline
-        #     base_DOA = which.min(mres[idx, 'age_at_scan'])
-        #     row = c(row, mres[idx[base_DOA], 'SX_inatt'])
-        #     row = c(row, mres[idx[base_DOA], 'SX_HI'])
-        #     # DX1 is DSMV definition, DX2 will make SX >=4 as ADHD
-        #     if (mres[idx[base_DOA], 'age_at_scan'] < 16) {
-        #         if ((row[length(row)] >= 6) || (row[length(row)-1] >= 6)) {
-        #             DX = 'ADHD'
-        #         } else {
-        #             DX = 'NV'
-        #         }
-        #     } else {
-        #         if ((row[length(row)] >= 5) || (row[length(row)-1] >= 5)) {
-        #             DX = 'ADHD'
-        #         } else {
-        #             DX = 'NV'
-        #         }
-        #     }
-        #     if ((row[length(row)] >= 4) || (row[length(row)-1] >= 4)) {
-        #         DX2 = 'ADHD'
-        #     } else {
-        #         DX2 = 'NV'
-        #     }
-        #     row = c(row, DX)
-        #     row = c(row, DX2)
-        #     res = rbind(res, row)
-        #     print(nrow(res))
-        # }
-        # colnames(res) = c('ID', 'sex', conns, c('SX_inatt', 'SX_HI',
-        #                                             'inatt_baseline',
-        #                                             'HI_baseline', 'DX', 'DX2'))
+        # create slopes
+        # for this to go fast, and taking advantage of just having 2 scans, we
+        # can just calculate the slopes manually
+        res = c()
+        for (s in unique(mres$Medical.Record...MRN)) {
+            idx = which(mres$Medical.Record...MRN == s)
+            row = c(s, unique(mres[idx, 'Sex']))
+            phen_cols = c(header, 'SX_inatt', 'SX_HI', 'qc')
+            y = mres[idx[2], phen_cols] - mres[idx[1], phen_cols]
+            x = mres[idx[2], 'age_at_scan'] - mres[idx[1], 'age_at_scan']
+            slopes = y / x
+            row = c(row, slopes)
+
+            # grabbing inatt and HI at baseline
+            base_DOA = which.min(mres[idx, 'age_at_scan'])
+            row = c(row, mres[idx[base_DOA], 'SX_inatt'])
+            row = c(row, mres[idx[base_DOA], 'SX_HI'])
+            # DX1 is DSMV definition, DX2 will make SX >=4 as ADHD
+            if (mres[idx[base_DOA], 'age_at_scan'] < 16) {
+                if ((row[length(row)] >= 6) || (row[length(row)-1] >= 6)) {
+                    DX = 'ADHD'
+                } else {
+                    DX = 'NV'
+                }
+            } else {
+                if ((row[length(row)] >= 5) || (row[length(row)-1] >= 5)) {
+                    DX = 'ADHD'
+                } else {
+                    DX = 'NV'
+                }
+            }
+            if ((row[length(row)] >= 4) || (row[length(row)-1] >= 4)) {
+                DX2 = 'ADHD'
+            } else {
+                DX2 = 'NV'
+            }
+            row = c(row, DX)
+            row = c(row, DX2)
+            res = rbind(res, row)
+        }
+        colnames(res) = c('ID', 'sex', phen_cols, c('inatt_baseline',
+                                                    'HI_baseline', 'DX', 'DX2'))
         
-        # # and we do a shortened version in the residualized data
-        # res_resid = res
-        # cnt = 1
-        # for (s in unique(res$ID)) {
-        #     idx = which(m_resids$Medical.Record...MRN == s)
-        #     y = m_resids[idx[2], conns] - m_resids[idx[1], conns]
-        #     x = m_resids[idx[2], 'age_at_scan'] - m_resids[idx[1],
-        #                                                    'age_at_scan']
-        #     slopes = y / x
-        #     res_resid[cnt, conns] = slopes
-        #     cnt = cnt + 1
-        # }
+        # and we do a shortened version in the residualized data
+        res_resid = res
+        cnt = 1
+        for (s in unique(res[, 'ID'])) {
+            idx = which(mres_resids$Medical.Record...MRN == s)
+            y = mres_resids[idx[2], phen_cols] - mres_resids[idx[1], phen_cols]
+            x = mres_resids[idx[2], 'age_at_scan'] - mres_resids[idx[1],
+                                                           'age_at_scan']
+            slopes = y / x
+            res_resid[cnt, phen_cols] = slopes
+            cnt = cnt + 1
+        }
 
-        # cat(sprintf('Writing association files to disk\n'))
+        cat(sprintf('Writing association files to disk\n'))
 
-        # fname = sprintf('%s/rsfmri_AROMA%s_FD%.2f_slopes_n%d_%s.csv',
-        #                 out_dir, p, t, nrow(res), today)
-        # write.csv(res, file=fname, row.names=F)
-        # fname = sprintf('%s/rsfmri_AROMA%s_FD%.2f_residSlopes_n%d_%s.csv',
-        #                 out_dir, p, t, nrow(res), today)
-        # write.csv(res_resid, file=fname, row.names=F)
+        fname = sprintf('%s/rsfmri_%s_condensed%s_FD%.2f_slopes_n%d_%s.csv',
+                        out_dir, p, pos_str, t, nrow(res), today)
+        write.csv(res, file=fname, row.names=F)
+        fname = sprintf('%s/rsfmri_%s_condensed%s_FD%.2f_residSlopes_n%d_%s.csv',
+                        out_dir, p, pos_str, t, nrow(res), today)
+        write.csv(res_resid, file=fname, row.names=F)
 
-        # # special dataset for SOLAR, containing only people with relatives
-        # # make sure every family has at least two people
-        # good_nuclear = names(table(m$Nuclear.ID...FamilyIDs))[table(m$Nuclear.ID...FamilyIDs) >= 4]
-        # good_extended = names(table(m$Extended.ID...FamilyIDs))[table(m$Extended.ID...FamilyIDs) >= 4]
-        # keep_me = c()
-        # for (f in good_nuclear) {
-        #     keep_me = c(keep_me, m[which(m$Nuclear.ID...FamilyIDs == f),
-        #                             'Medical.Record...MRN'])
-        # }
-        # for (f in good_extended) {
-        #     keep_me = c(keep_me, m[which(m$Extended.ID...FamilyIDs == f),
-        #                             'Medical.Record...MRN'])
-        # }
-        # keep_me = unique(keep_me)
-
-        # fam_subjs = c()
-        # for (s in keep_me) {
-        #     fam_subjs = c(fam_subjs, which(res[, 'ID'] == s))
-        # }
-        # res2 = res[fam_subjs, ]
-        # res2_resid = res_resid[fam_subjs, ]
-
-        # cat(sprintf('Writing family files to disk\n'))
-        
-        # fname = sprintf('%s/rsfmri_AROMA%s_FD%.2f_slopesFam_n%d_%s.csv',
-        #                 out_dir, p, t, nrow(res2), today)
-        # write.csv(res2, file=fname, row.names=F, na='', quote=F)
-
-        # fname = sprintf('%s/rsfmri_AROMA%s_FD%.2f_residSlopesFam_n%d_%s.csv',
-        #                 out_dir, p, t, nrow(res2), today)
-        # write.csv(res2_resid, file=fname, row.names=F, na='', quote=F)        
+        # I'm not going to write a file specifically for SOLAR this time...
+        # let's see how it deals with so many unrelated subjects
     }
 }
-
-
-
-comp = data.frame(subjs=mres_36p$clean_subjs, P36=NA, P36_despike=NA,
-                  P36_spkreg=NA, P36_scrub_p5=NA, P36_despike_posonly=NA, P36_scrub_p25=NA, aroma=NA)
-for (s in comp$subjs) {
-    idx = mres_36p$clean_subjs==s
-    comp[comp$subjs==s, ]$P36 = mres_36p[idx,
-                                         'connMedian_DefaultmodeTODefaultmode']
-    idx = mres_36p_despike$clean_subjs==s
-    if (sum(idx) > 0) {
-        comp[comp$subjs==s, ]$P36_despike = mres_36p_despike[idx,
-                                      'connMedian_DefaultmodeTODefaultmode']
-    }
-    idx=mres_36p_spkreg$clean_subjs==s
-    if (sum(idx) > 0) {
-        comp[comp$subjs==s, ]$P36_spkreg = mres_36p_spkreg[idx,
-                                     'connMedian_DefaultmodeTODefaultmode']
-    }
-    idx=mres_36p_scrub_p5$clean_subjs==s
-    if (sum(idx) > 0) {
-        comp[comp$subjs==s, ]$P36_scrub_p5 = mres_36p_scrub_p5[idx,
-                                     'connMedian_DefaultmodeTODefaultmode']
-    }
-    idx=mres_36p_scrub_p25$clean_subjs==s
-    if (sum(idx) > 0) {
-        comp[comp$subjs==s, ]$P36_scrub_p25 = mres_36p_scrub_p25[idx,
-                                     'connMedian_DefaultmodeTODefaultmode']
-    }
-    idx=mres_36p_despike_posonly$clean_subjs==s
-    if (sum(idx) > 0) {
-        comp[comp$subjs==s, ]$P36_despike_posonly = mres_36p_despike_posonly[idx,
-                                     'connMedian_DefaultmodeTODefaultmode']
-    }
-    idx=mres_aroma$clean_subjs==s
-    if (sum(idx) > 0) {
-        comp[comp$subjs==s, ]$aroma = mres_aroma[idx,
-                                     'connMedian_DefaultmodeTODefaultmode']
-    }
-}
-library(tidyr)
-comp_long = gather(comp, pipeline, pearsonr, P36:aroma)
-dev.new()
-ggplot(comp_long, aes(x=pipeline, y=pearsonr, color=subjs)) + geom_point() + theme(legend.position='none')
