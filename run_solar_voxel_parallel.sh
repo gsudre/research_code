@@ -9,7 +9,7 @@ mkdir ${tmp_dir}/${phen_file}
 mkdir /lscratch/${SLURM_JOBID}/${phen_file}
 # making sure we only access the network once
 cp ${solar_dir}/pedigree.csv ${solar_dir}/procs.tcl /lscratch/${SLURM_JOBID}/${phen_file}/;
-sed "s/NA//g" ${solar_dir}/perms/${phen_file}.csv > /lscratch/${SLURM_JOBID}/${phen_file}/${phen_file}.csv;
+sed "s/NA//g" ${solar_dir}/${phen_file}.csv > /lscratch/${SLURM_JOBID}/${phen_file}/${phen_file}.csv;
 
 voxel_work() { 
      vox=`printf "%06d" $1`;
