@@ -4,6 +4,7 @@ import os
 import numpy as np
 import sys
 import glob
+import subprocess
 home = os.path.expanduser('~')
 
 if len(sys.argv) > 1:
