@@ -9,20 +9,23 @@ home = os.path.expanduser('~')
 if len(sys.argv) > 1:
     dir_name = sys.argv[1]
     analysis = sys.argv[2]
-    nvoxels = int(sys.argv[3])
+    mask_fname = sys.argv[3]
 else:
     dir_name = home + '/data/tmp/'
     analysis = 'phen_3min_net06'
-    nvoxels = 154058 # 116483  # len(voxel_folders)
+    mask_fname = home + '/data/heritability_change/group_epi_mask_fancy'
 
 out_fname = dir_name + 'polygen_results_%s.nii' % analysis
-mask_root = home + '/data/heritability_change/group_epi_mask_fancy'
+mask_root = mask_fname.replace('.gz', '').replace('.nii', '')
 
 # keep track of what voxels crapped out
 run_again = []
 
 folder = dir_name + analysis
 voxel_folders = glob.glob(folder + '/v*_polygenic.out')
+
+cmd_line = '3dBrickStat -sum %s' % mask_fname
+nvoxels = int(subprocess.check_output(cmd_line, shell=True).rstrip())
 
 # the results are: h2r, h_pval, h2r_se, c2, c2_pval, high_kurtosis
 res = np.empty([nvoxels, 6])
