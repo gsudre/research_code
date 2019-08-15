@@ -26,9 +26,10 @@ out_dir = '~/data/heritability_change/'
 today = format(Sys.time(), "%m%d%Y")
 
 nets = read.table('~/research_code/fmri/Schaefer2018_100Parcels_7Networks_order.txt')
-net_names = as.character(unique(nets[,2]))
-simple_net_names = sapply(net_names, function(y) strsplit(x=y, split='_')[[1]][3])
-nnets = length(unique(simple_net_names))
+all_net_names = sapply(as.character(unique(nets[,2])),
+                       function(y) strsplit(x=y, split='_')[[1]][3])
+net_names = unique(all_net_names)
+nnets = length(net_names)
 
 # figure out which connection goes to which network
 cat('Creating connection map...\n')
@@ -38,8 +39,7 @@ conn_map = c()
 for (i in 1:(nverts-1)) {
     for (j in (i+1):nverts) {
         conn = sprintf('conn%d', cnt)
-        conn_map = rbind(conn_map, c(conn, simple_net_names[i],
-                                     simple_net_names[j]))
+        conn_map = rbind(conn_map, c(conn, all_net_names[i], all_net_names[j]))
         cnt = cnt + 1
     }
 }
@@ -88,9 +88,9 @@ for (p in pipelines) {
         for (i in 1:nnets) {
             for (j in i:nnets) {
                 cat(sprintf('Evaluating connections from %s to %s\n',
-                            simple_net_names[i], simple_net_names[j]))
-                idx = (conn_map[,2]==simple_net_names[i] | conn_map[,2]==simple_net_names[j] |
-                    conn_map[,3]==simple_net_names[i] | conn_map[,3]==simple_net_names[j])
+                            net_names[i], net_names[j]))
+                idx = (conn_map[,2]==net_names[i] | conn_map[,2]==net_names[j] |
+                    conn_map[,3]==net_names[i] | conn_map[,3]==net_names[j])
                 res = apply(fc[, var_names[idx]], 1, mean, na.rm=T)
                 net_data = cbind(net_data, res)
                 res = apply(fc[, var_names[idx]], 1, median, na.rm=T)
@@ -98,8 +98,8 @@ for (p in pipelines) {
                 res = apply(fc[, var_names[idx]], 1, max, na.rm=T)
                 net_data = cbind(net_data, res)
                 for (op in c('Mean', 'Median', 'Max')) {
-                    header = c(header, sprintf('conn%s_%sTO%s', op, simple_net_names[i],
-                                                simple_net_names[j]))
+                    header = c(header, sprintf('conn%s_%sTO%s', op, net_names[i],
+                                                net_names[j]))
                 }
             }
         }
