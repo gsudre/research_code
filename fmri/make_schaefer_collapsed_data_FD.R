@@ -75,7 +75,7 @@ for (p in pipelines) {
 
         # keep only scans for the same subject
         cat(sprintf('Scans left at FD < %.2f (%d scans)\n', t, length(qc)))
-        df = data.frame(clean_subjs, qc, net_data)
+        df = data.frame(clean_subjs, qc, fc)
         m = merge(data.frame(clean_subjs), scans, by.x='clean_subjs',
                   by.y='subj')
         idx = which(table(m$Medical.Record...MRN)>1)
