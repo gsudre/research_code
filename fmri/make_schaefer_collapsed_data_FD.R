@@ -46,7 +46,7 @@ for (p in pipelines) {
                 && mvmt[midx,]$meanFD < t) {
                 clean_subjs = c(clean_subjs, s)
                 fname = sprintf('%s/%s/fcon/schaefer%d/%s_schaefer%d.net',
-                                pipe_dir, s, nrois, s, s, nrois)
+                                pipe_dir, s, nrois, s, nrois)
                 data = read.table(fname, skip=2)
                 b = matrix(nrow=nrois, ncol=nrois)
                 for (r in 1:nrow(data)) {
