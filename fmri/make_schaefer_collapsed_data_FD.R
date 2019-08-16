@@ -37,7 +37,7 @@ for (p in pipelines) {
         age = c()
         clean_subjs = c()
         # reading quality metric for all scans
-        for (s in subjs[1:5]) {
+        for (s in subjs) {
             midx = mvmt$subj==s & mvmt$pipeline==p
             # if scan was successfully processed in this pipeline
             # if power264 was created, it alsmost always creates the other ones!
