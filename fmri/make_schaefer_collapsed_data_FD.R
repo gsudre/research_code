@@ -1,12 +1,14 @@
-# creates files to run in SOLAR and R using the Schaefer atlas
+# creates files to run in SOLAR and R using the Schaefer atlas, averaging over
+# all connections of a given position
 # 
-# GS, 07/2019
+# GS, 08/2019
 
 pipelines = c('fc-36p_despike')
-fd_thresh = c(2.5, 1, .75, .5, .25)
+fd_thresh = c(2.5)#, 1, .75, .5, .25)
 mvmt_file = '~/data/rsfmri/power264/xcp_movement.csv'
 make_plots = F
 pos_only = F
+nrois = 100
 
 # make sure this file includes only kids, with correct amount of time between
 # scans, etc
@@ -25,25 +27,6 @@ clin = read.csv('~/data/heritability_change/clinical_06262019.csv')
 out_dir = '~/data/heritability_change/'
 today = format(Sys.time(), "%m%d%Y")
 
-nets = read.table('~/research_code/fmri/Schaefer2018_100Parcels_7Networks_order.txt')
-all_net_names = sapply(as.character(unique(nets[,2])),
-                       function(y) strsplit(x=y, split='_')[[1]][3])
-net_names = unique(all_net_names)
-nnets = length(net_names)
-
-# figure out which connection goes to which network
-cat('Creating connection map...\n')
-nverts = nrow(nets)
-cnt = 1
-conn_map = c()
-for (i in 1:(nverts-1)) {
-    for (j in (i+1):nverts) {
-        conn = sprintf('conn%d', cnt)
-        conn_map = rbind(conn_map, c(conn, all_net_names[i], all_net_names[j]))
-        cnt = cnt + 1
-    }
-}
-
 for (p in pipelines) {
     pipe_dir = sprintf('/Volumes/Labs/rsfmri_36P/xcpengine_output_%s/', p)
     cat(sprintf('Reading connectivity data from %s\n', pipe_dir))
@@ -54,7 +37,7 @@ for (p in pipelines) {
         age = c()
         clean_subjs = c()
         # reading quality metric for all scans
-        for (s in subjs) {
+        for (s in subjs[1:5]) {
             midx = mvmt$subj==s & mvmt$pipeline==p
             # if scan was successfully processed in this pipeline
             # if power264 was created, it alsmost always creates the other ones!
@@ -62,10 +45,16 @@ for (p in pipelines) {
                 !any(is.na(mvmt[midx,]$meanFD < t))
                 && mvmt[midx,]$meanFD < t) {
                 clean_subjs = c(clean_subjs, s)
-                fname = sprintf('%s/%s/fcon/schaefer100/%s_schaefer100_network.txt',
-                                pipe_dir, s, s, s)
-                data = read.table(fname)[, 1]
-                fc = cbind(fc, data)
+                fname = sprintf('%s/%s/fcon/schaefer%d/%s_schaefer%d.net',
+                                pipe_dir, s, nrois, s, s, nrois)
+                data = read.table(fname, skip=2)
+                b = matrix(nrow=nrois, ncol=nrois)
+                for (r in 1:nrow(data)) {
+                    b[data[r,1], data[r,2]] = data[r,3]
+                    b[data[r,2], data[r,1]] = data[r,3]
+                }
+                roi_conn = colMeans(b, na.rm=T)  # that's the same as rowMeans
+                fc = cbind(fc, roi_conn)
                 qc = c(qc, mvmt[midx, 'meanFD'])
                 sex = c(sex, scans[scans$subj == s, 'Sex'])
                 age = c(age, scans[scans$subj == s, 'age_at_scan'])
@@ -74,7 +63,7 @@ for (p in pipelines) {
         # grabbing which connections belong to each network
         fc = t(fc)
         cat(sprintf('Condensing data\n'))
-        var_names = sapply(1:ncol(fc), function(x) sprintf('conn%d', x))
+        var_names = sapply(1:ncol(fc), function(x) sprintf('roi%d', x))
         colnames(fc) = var_names
         # set any negative correlations to NaN
         if (pos_only) {
@@ -83,30 +72,6 @@ for (p in pipelines) {
         } else {
             pos_str = ''
         }
-        net_data = c()
-        header = c()
-        for (i in 1:nnets) {
-            for (j in i:nnets) {
-                cat(sprintf('Evaluating connections from %s to %s\n',
-                            net_names[i], net_names[j]))
-                idx = (conn_map[,2]==net_names[i] | conn_map[,2]==net_names[j] |
-                    conn_map[,3]==net_names[i] | conn_map[,3]==net_names[j])
-                res = apply(fc[, var_names[idx]], 1, mean, na.rm=T)
-                net_data = cbind(net_data, res)
-                res = apply(fc[, var_names[idx]], 1, median, na.rm=T)
-                net_data = cbind(net_data, res)
-                res = apply(fc[, var_names[idx]], 1, max, na.rm=T)
-                net_data = cbind(net_data, res)
-                for (op in c('Mean', 'Median', 'Max')) {
-                    header = c(header, sprintf('conn%s_%sTO%s', op, net_names[i],
-                                                net_names[j]))
-                }
-            }
-        }
-        header = gsub(' ', '', header)
-        header = gsub('/', '', header)
-        header = gsub('-', '', header)
-        colnames(net_data) = header
 
         # keep only scans for the same subject
         cat(sprintf('Scans left at FD < %.2f (%d scans)\n', t, length(qc)))
