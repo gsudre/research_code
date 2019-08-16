@@ -6,7 +6,6 @@
 pipelines = c('fc-36p_despike')
 fd_thresh = c(2.5)#, 1, .75, .5, .25)
 mvmt_file = '~/data/rsfmri/power264/xcp_movement.csv'
-make_plots = F
 pos_only = F
 nrois = 100
 
@@ -72,7 +71,8 @@ for (p in pipelines) {
         } else {
             pos_str = ''
         }
-
+        header = var_names
+        
         # keep only scans for the same subject
         cat(sprintf('Scans left at FD < %.2f (%d scans)\n', t, length(qc)))
         df = data.frame(clean_subjs, qc, fc)
@@ -90,7 +90,7 @@ for (p in pipelines) {
         m = merge(m, df, by='clean_subjs')
 
         # attaching clinicals
-        df_var_names = colnames(m)[!grepl(colnames(m), pattern="^conn")]
+        df_var_names = colnames(m)[!grepl(colnames(m), pattern="^roi")]
         df = mergeOnClosestDate(m[, df_var_names], clin,
                                 unique(m$Medical.Record...MRN),
                                 x.date='record.date.collected...Scan',
@@ -105,40 +105,14 @@ for (p in pipelines) {
         mres$SX_HI = as.numeric(as.character(mres$SX_hi))
         mres$SX_inatt = as.numeric(as.character(mres$SX_inatt))
         
-        fname = sprintf('%s/rsfmri_%s_schaefer100Condensed%s_FD%.2f_scans%d_%s.rds',
-                        out_dir, p, pos_str, t, nrow(mres), today)
+        fname = sprintf('%s/rsfmri_%s_schaefer%dCollapsed%s_FD%.2f_scans%d_%s.rds',
+                        out_dir, p, nrois, pos_str, t, nrow(mres), today)
         saveRDS(mres, file=fname)
 
         mres_resids = mres
         for (conn in header) {
             mres_resids[, conn] = residuals(lm(mres[, conn] ~ mres$qc,
                                             na.action=na.exclude))
-        }
-
-        if (make_plots) {
-            dev.new()
-            plot(sort(qc), main=sprintf('Sorted FD %s, thresh=%f', p, t))
-            dev.new()
-            mrns = unique(mres$Medical.Record...MRN)
-            myvar = 'connMedian_DefaultmodeTODefaultmode'
-            for (s in 1:length(mrns)) {
-                idx = mres$Medical.Record...MRN==mrns[s]
-                # if we still have 2 or more scans for this subject
-                if (sum(idx > 2)) {
-                    if (s == 1) {
-                        plot(mres[idx, 'age_at_scan'],
-                            mres[idx, myvar],
-                            type='l',
-                            xlim=c(min(mres$age_at_scan),
-                                    max(mres$age_at_scan)),
-                            ylim=c(min(mres[, myvar]), max(mres[, myvar])),
-                            main=myvar, ylab='pearson r', xlab='age')
-                    } else {
-                        lines(mres[idx, 'age_at_scan'], mres[idx, myvar],
-                              type='l')
-                    }
-                }
-            }
         }
 
         # create slopes
@@ -199,11 +173,11 @@ for (p in pipelines) {
 
         cat(sprintf('Writing association files to disk\n'))
 
-        fname = sprintf('%s/rsfmri_%s_schaefer100Condensed%s_FD%.2f_slopes_n%d_%s.csv',
-                        out_dir, p, pos_str, t, nrow(res), today)
+        fname = sprintf('%s/rsfmri_%s_schaefer%dCollapsed%s_FD%.2f_slopes_n%d_%s.csv',
+                        out_dir, p, nrois, pos_str, t, nrow(res), today)
         write.csv(res, file=fname, row.names=F)
-        fname = sprintf('%s/rsfmri_%s_schaefer100Condensed%s_FD%.2f_residSlopes_n%d_%s.csv',
-                        out_dir, p, pos_str, t, nrow(res), today)
+        fname = sprintf('%s/rsfmri_%s_schaefer%dCollapsed%s_FD%.2f_residSlopes_n%d_%s.csv',
+                        out_dir, p, nrois, pos_str, t, nrow(res), today)
         write.csv(res_resid, file=fname, row.names=F)
 
         # I'm not going to write a file specifically for SOLAR this time...
