@@ -4,7 +4,7 @@
 # GS, 08/2019
 
 pipelines = c('fc-36p_despike')
-fd_thresh = c(2.5)#, 1, .75, .5, .25)
+fd_thresh = c(2.5, 1, .75, .5, .25)
 mvmt_file = '~/data/rsfmri/power264/xcp_movement.csv'
 pos_only = F
 nrois = 100
@@ -61,7 +61,7 @@ for (p in pipelines) {
         }
         # grabbing which connections belong to each network
         fc = t(fc)
-        cat(sprintf('Condensing data\n'))
+        cat(sprintf('Collapsing data\n'))
         var_names = sapply(1:ncol(fc), function(x) sprintf('roi%d', x))
         colnames(fc) = var_names
         # set any negative correlations to NaN
