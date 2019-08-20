@@ -51,11 +51,12 @@ print(tail(probe_names))
 
 load('MNI_STATS.RData')
 model <- mni.vertex.statistics(demo_df,'y ~ Sex + sample_type',methylation_df)
-for (probe in probe_names) {
-  reg <- summary(lm(sprintf('%s ~ Sex + sample_type',probe),data=complete_df))$coefficients[2:3,4]
-  sig_df[c,] <- c(probe,reg[2],reg[3])
-  c = c + 1
-}
+# GS comment: sig_df not used anywhere else in the code...
+# for (probe in probe_names) {
+#   reg <- summary(lm(sprintf('%s ~ Sex + sample_type',probe),data=complete_df))$coefficients[2:3,4]
+#   sig_df[c,] <- c(probe,reg[2],reg[3])
+#   c = c + 1
+# }
 save(model,file="mni_vertex_stats_model.RData")
 rm(methylation_df)
 #rename probe names to manifest names
@@ -151,6 +152,10 @@ file_count_list=c()
 
 #Generate lists for parallelization
 
+# GS comment: need to create directories first
+dir.create('swarms_reduced_cov')
+dir.create('data')
+
 while (cur_probe < ncond){
   last_probe <- min(cur_probe+bundle-1,ncond) 
   #Only add the entry if the file doesn't exist (saves time)
@@ -178,7 +183,7 @@ while (cur_probe < ncond){
 }
 #Process the datasets on all available cores (to save time)
 #cores=detectCores()
-cores <- 30
+cores <- 10
 print(cores)
 
 mclapply(seq(1,length(cur_probe_list)), save_parallel,mc.cores = cores)
