@@ -48,7 +48,7 @@ for (i in 1:(nverts-1)) {
 }
 
 for (p in pipelines) {
-    pipe_dir = sprintf('/Volumes/Labs/rsfmri_36P/xcpengine_output_%s/', p)
+    pipe_dir = sprintf('~/Shaw/rsfmri_36P/xcpengine_output_%s/', p)
     cat(sprintf('Reading connectivity data from %s\n', pipe_dir))
     for (t in fd_thresh) {
         fc = c()
@@ -75,23 +75,17 @@ for (p in pipelines) {
                 }
                 # at this point we habe a nrois by nrois mirror matrix for the
                 # subject. All we need to do is average within each network
-                roi_conn = matrix(nrow=nrois, nnets)
+                roi_conn = c()
                 for (n in 1:nnets) {
-                    roi_conn[, n] = colMeans(b[, all_net_names==net_names[n]],
-                                             na.rm=T)
+                    net_idx = all_net_names==net_names[n]
+                    roi_conn = c(roi_conn, rowMeans(b[, net_idx], na.rm=T))
                 }
-                  # that's the same as rowMeans
-                fc = cbind(fc, roi_conn)
+                fc = rbind(fc, roi_conn)
                 qc = c(qc, mvmt[midx, 'meanFD'])
                 sex = c(sex, scans[scans$subj == s, 'Sex'])
                 age = c(age, scans[scans$subj == s, 'age_at_scan'])
             }
         }
-        # grabbing which connections belong to each network
-        fc = t(fc)
-        cat(sprintf('Collapsing data\n'))
-        var_names = sapply(1:ncol(fc), function(x) sprintf('roi%d', x))
-        colnames(fc) = var_names
         # set any negative correlations to NaN
         if (pos_only) {
             fc[fc < 0] = NaN
@@ -99,7 +93,13 @@ for (p in pipelines) {
         } else {
             pos_str = ''
         }
-        header = var_names
+        header = c()
+        for (n in 1:nnets) {
+            this_header = sapply(1:nrois, function(x) sprintf('%03dTO%s',
+                                                              x, net_names[n]))
+            header = c(header, this_header)
+        }
+        colnames(fc) = header
         
         # keep only scans for the same subject
         cat(sprintf('Scans left at FD < %.2f (%d scans)\n', t, length(qc)))
