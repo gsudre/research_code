@@ -34,19 +34,6 @@ all_net_names = sapply(as.character(unique(nets[,2])),
 net_names = unique(all_net_names)
 nnets = length(net_names)
 
-# figure out which connection goes to which network
-cat('Creating connection map...\n')
-nverts = nrow(nets)
-cnt = 1
-conn_map = c()
-for (i in 1:(nverts-1)) {
-    for (j in (i+1):nverts) {
-        conn = sprintf('conn%d', cnt)
-        conn_map = rbind(conn_map, c(conn, all_net_names[i], all_net_names[j]))
-        cnt = cnt + 1
-    }
-}
-
 for (p in pipelines) {
     pipe_dir = sprintf('~/Shaw/rsfmri_36P/xcpengine_output_%s/', p)
     cat(sprintf('Reading connectivity data from %s\n', pipe_dir))
