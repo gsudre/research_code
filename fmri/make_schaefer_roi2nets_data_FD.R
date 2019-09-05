@@ -6,8 +6,8 @@
 pipelines = c('fc-36p_despike')
 fd_thresh = c(2.5, 1, .75, .5, .25)
 mvmt_file = '~/data/rsfmri/power264/xcp_movement.csv'
-pos_only = F
-nrois = 100
+pos_only = T
+nrois = 400
 
 # make sure this file includes only kids, with correct amount of time between
 # scans, etc
@@ -35,7 +35,7 @@ net_names = unique(all_net_names)
 nnets = length(net_names)
 
 for (p in pipelines) {
-    pipe_dir = sprintf('~/Shaw/rsfmri_36P/xcpengine_output_%s/', p)
+    pipe_dir = sprintf('/Volumes/Shaw/rsfmri_36P/xcpengine_output_%s/', p)
     cat(sprintf('Reading connectivity data from %s\n', pipe_dir))
     for (t in fd_thresh) {
         fc = c()
@@ -82,8 +82,8 @@ for (p in pipelines) {
         }
         header = c()
         for (n in 1:nnets) {
-            this_header = sapply(1:nrois, function(x) sprintf('%03dTO%s',
-                                                              x, net_names[n]))
+            this_header = sapply(1:nrois, function(x) sprintf('%sTO%03d',
+                                                              net_names[n], x))
             header = c(header, this_header)
         }
         colnames(fc) = header
@@ -105,7 +105,7 @@ for (p in pipelines) {
         m = merge(m, df, by='clean_subjs')
 
         # attaching clinicals
-        df_var_names = colnames(m)[!grepl(colnames(m), pattern="^roi")]
+        df_var_names = colnames(m)[!grepl(colnames(m), pattern="TO")]
         df = mergeOnClosestDate(m[, df_var_names], clin,
                                 unique(m$Medical.Record...MRN),
                                 x.date='record.date.collected...Scan',
@@ -120,7 +120,7 @@ for (p in pipelines) {
         mres$SX_HI = as.numeric(as.character(mres$SX_hi))
         mres$SX_inatt = as.numeric(as.character(mres$SX_inatt))
         
-        fname = sprintf('%s/rsfmri_%s_schaefer%dCollapsed%s_FD%.2f_scans%d_%s.rds',
+        fname = sprintf('%s/rsfmri_%s_schaefer%droi2nets%s_FD%.2f_scans%d_%s.rds',
                         out_dir, p, nrois, pos_str, t, nrow(mres), today)
         saveRDS(mres, file=fname)
 
@@ -188,10 +188,10 @@ for (p in pipelines) {
 
         cat(sprintf('Writing association files to disk\n'))
 
-        fname = sprintf('%s/rsfmri_%s_schaefer%dCollapsed%s_FD%.2f_slopes_n%d_%s.csv',
+        fname = sprintf('%s/rsfmri_%s_schaefer%droi2nets%s_FD%.2f_slopes_n%d_%s.csv',
                         out_dir, p, nrois, pos_str, t, nrow(res), today)
         write.csv(res, file=fname, row.names=F)
-        fname = sprintf('%s/rsfmri_%s_schaefer%dCollapsed%s_FD%.2f_residSlopes_n%d_%s.csv',
+        fname = sprintf('%s/rsfmri_%s_schaefer%droi2nets%s_FD%.2f_residSlopes_n%d_%s.csv',
                         out_dir, p, nrois, pos_str, t, nrow(res), today)
         write.csv(res_resid, file=fname, row.names=F)
 
