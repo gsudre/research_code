@@ -75,7 +75,7 @@ for (p in pipelines) {
         }
         # set any negative correlations to NaN
         if (pos_only) {
-            fc[fc < 0] = NaN
+            fc[fc < 0] = NA
             pos_str = '_posOnly'
         } else {
             pos_str = ''
@@ -190,10 +190,10 @@ for (p in pipelines) {
 
         fname = sprintf('%s/rsfmri_%s_schaefer%droi2nets%s_FD%.2f_slopes_n%d_%s.csv',
                         out_dir, p, nrois, pos_str, t, nrow(res), today)
-        write.csv(res, file=fname, row.names=F, na='NA', quote=F)
+        write.csv(res, file=fname, row.names=F, na='', quote=F)
         fname = sprintf('%s/rsfmri_%s_schaefer%droi2nets%s_FD%.2f_residSlopes_n%d_%s.csv',
                         out_dir, p, nrois, pos_str, t, nrow(res), today)
-        write.csv(res_resid, file=fname, row.names=F, na='NA', quote=F)
+        write.csv(res_resid, file=fname, row.names=F, na='', quote=F)
 
         # I'm not going to write a file specifically for SOLAR this time...
         # let's see how it deals with so many unrelated subjects
