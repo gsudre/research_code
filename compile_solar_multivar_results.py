@@ -67,7 +67,7 @@ for fname in files:
             se = "".join(se.split())
             result.append(se.rstrip())
         if line.find('Individuals:') >= 0:
-            n = line.split('duals:')[-1].split(' ')[0]
+            n = int(line.split('duals:')[-1])
             result.append(n)
     fid.close()
     results.append(result)
