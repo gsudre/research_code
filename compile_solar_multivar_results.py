@@ -16,7 +16,7 @@ out_fname = dir_name + 'polygen_results_%s.csv' % analysis
 files = glob.glob(dir_name + analysis + '/*polygenic.out')
 files.sort()
 
-header = ['phen', 'h2r', 'h_pval', 'h2r_se', 'c2', 'c2_pval', 'high_kurtosis']
+header = ['phen', 'n', 'h2r', 'h_pval', 'h2r_se', 'c2', 'c2_pval', 'high_kurtosis']
 
 results = [header]
 
@@ -66,6 +66,9 @@ for fname in files:
             se.replace('\"','')
             se = "".join(se.split())
             result.append(se.rstrip())
+        if line.find('Individuals:') >= 0:
+            n = line.split('duals:')[-1]
+            result.append(n)
     fid.close()
     results.append(result)
 

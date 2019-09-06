@@ -7,7 +7,7 @@ pipelines = c('fc-36p_despike')
 fd_thresh = c(2.5, 1, .75, .5, .25)
 mvmt_file = '~/data/rsfmri/power264/xcp_movement.csv'
 pos_only = T
-nrois = 400
+nrois = 100
 
 # make sure this file includes only kids, with correct amount of time between
 # scans, etc
@@ -190,10 +190,10 @@ for (p in pipelines) {
 
         fname = sprintf('%s/rsfmri_%s_schaefer%droi2nets%s_FD%.2f_slopes_n%d_%s.csv',
                         out_dir, p, nrois, pos_str, t, nrow(res), today)
-        write.csv(res, file=fname, row.names=F)
+        write.csv(res, file=fname, row.names=F, na='NA', quote=F)
         fname = sprintf('%s/rsfmri_%s_schaefer%droi2nets%s_FD%.2f_residSlopes_n%d_%s.csv',
                         out_dir, p, nrois, pos_str, t, nrow(res), today)
-        write.csv(res_resid, file=fname, row.names=F)
+        write.csv(res_resid, file=fname, row.names=F, na='NA', quote=F)
 
         # I'm not going to write a file specifically for SOLAR this time...
         # let's see how it deals with so many unrelated subjects
