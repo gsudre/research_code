@@ -94,10 +94,15 @@ for (i in 1:nnets) {
 colnames(net_dataP) = header
 rownames(net_dataP) = qc_data_clean$id0
 
+var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
+              "conn_DorsAttnTOCont", "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn", "conn_SalVentAttnTOCont",
+              "conn_SalVentAttnTODefault", "conn_ContTOCont",
+              "conn_ContTODefault", "conn_DefaultTODefault")
+
 iso <- isolationForest$new()
-iso$fit(as.data.frame(net_dataP))
+iso$fit(as.data.frame(net_dataP[, var_names]))
 scores_if = as.matrix(iso$scores)[,3]
-scores_lof = lof(net_dataP, k = round(.5 * nrow(net_dataP)))
+scores_lof = lof(net_dataP[, var_names], k = round(.5 * nrow(net_dataP)))
 
 thresh_lof = quantile(scores_lof, qtile)
 thresh_if = quantile(scores_if, qtile)
@@ -228,7 +233,7 @@ colnames(res) = c('ID', 'sex', tract_names, qc_vars, c('SX_inatt', 'SX_HI',
                                               'HI_baseline',
                                               'DX', 'DX2'))
 # out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_OD%.2f_posOnly_median', qtile)
-out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_OD%.2f', qtile)
+out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_4nets_OD%.2f', qtile)
 write.csv(res, file=sprintf('%s.csv', out_fname), row.names=F, na='', quote=F)
 
 data = read.csv(sprintf('%s.csv', out_fname))
