@@ -94,6 +94,9 @@ for (i in 1:nnets) {
 colnames(net_dataP) = header
 rownames(net_dataP) = qc_data_clean$id0
 
+# out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_OD%.2f_posOnly_median', qtile)
+out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_4nets_OD%.2f_median', qtile)
+
 var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
               "conn_DorsAttnTOCont", "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn", "conn_SalVentAttnTOCont",
               "conn_SalVentAttnTODefault", "conn_ContTOCont",
@@ -232,8 +235,6 @@ colnames(res) = c('ID', 'sex', tract_names, qc_vars, c('SX_inatt', 'SX_HI',
                                               'inatt_baseline',
                                               'HI_baseline',
                                               'DX', 'DX2'))
-# out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_OD%.2f_posOnly_median', qtile)
-out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_4nets_OD%.2f', qtile)
 write.csv(res, file=sprintf('%s.csv', out_fname), row.names=F, na='', quote=F)
 
 data = read.csv(sprintf('%s.csv', out_fname))
