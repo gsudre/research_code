@@ -113,6 +113,9 @@ mres = df
 mres$SX_HI = as.numeric(as.character(mres$SX_hi))
 mres$SX_inatt = as.numeric(as.character(mres$SX_inatt))
 
+out_fname = sprintf('~/data/heritability_change/dti_JHUtracts_ADRDonly_OD%.2f', qtile)
+write.csv(df, file=sprintf('%s_twoTimePoints.csv', out_fname), row.names=F, na='', quote=F)
+
 res = c()
 for (s in unique(mres$Medical.Record...MRN...Subjects)) {
     idx = which(mres$Medical.Record...MRN...Subjects == s)
@@ -161,8 +164,7 @@ colnames(res) = c('ID', 'sex', tract_names, qc_vars, c('SX_inatt', 'SX_HI',
                                               'inatt_baseline',
                                               'HI_baseline',
                                               'DX', 'DX2'))
-write.csv(res, file=sprintf('~/data/heritability_change/dti_JHUtracts_ADRDonly_OD%.2f.csv', qtile),
-          row.names=F, na='', quote=F)
+write.csv(res, file=sprintf('%s.csv', out_fname), row.names=F, na='', quote=F)
 
 
 # now we work on DTITK tracts

@@ -74,7 +74,7 @@ fc = t(fc)
 var_names = sapply(1:ncol(fc), function(x) sprintf('conn%d', x))
 colnames(fc) = var_names
 fcP = fc
-# fcP[fc<0] = NA
+fcP[fc<0] = NA
 
 net_dataP = c()
 header = c()
@@ -188,6 +188,8 @@ mres = df
 mres$SX_HI = as.numeric(as.character(mres$SX_hi))
 mres$SX_inatt = as.numeric(as.character(mres$SX_inatt))
 tract_names = header
+
+write.csv(df, file=sprintf('%s_twoTimePoints.csv', out_fname), row.names=F, na='', quote=F)
 
 res = c()
 for (s in unique(mres$Medical.Record...MRN)) {
