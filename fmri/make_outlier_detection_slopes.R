@@ -1,4 +1,4 @@
-qtile = .8
+qtile = .9
 
 demo = read.csv('~/data/heritability_change/resting_demo_07032019.csv')
 cat(sprintf('Starting from %d scans\n', nrow(demo)))

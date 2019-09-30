@@ -1,4 +1,4 @@
-qtile=.8
+qtile=.95
 
 b = read.csv('/Volumes/Shaw/MasterQC/master_qc_20190314.csv')
 a = read.csv('~/data/heritability_change/ready_1020.csv')
