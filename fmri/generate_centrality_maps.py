@@ -3,7 +3,21 @@ import nibabel as nb
 import numpy as np
 import networkx as nx
 
-home = os.path.expanduser('$SL')
+home = os.path.expanduser('~')
+
+
+def corr2_coeff(A,B):
+    # Rowwise mean of input arrays & subtract from input arrays themeselves
+    A_mA = A - A.mean(1)[:,None]
+    B_mB = B - B.mean(1)[:,None]
+
+    # Sum of squares across rows
+    ssA = (A_mA**2).sum(1);
+    ssB = (B_mB**2).sum(1);
+
+    # Finally get corr coeff
+    return np.dot(A_mA,B_mB.T)/np.sqrt(np.dot(ssA[:,None],ssB[None]))
+
 
 mask_fname = home + '/tmp/gray_matter_mask.nii'
 data_fname = home + '/tmp/sub-2206_std.nii.gz'
@@ -23,36 +37,20 @@ data = np.reshape(img.get_data(), [nvoxels, trs])[gv, :]
 # I couldn't find a way to calculate overall correlation without running out of
 # memory, even in the cluster. So, instead I can just create a graph and place
 # edges in a per-voxel basis
-nvoxels = 5
+
 G = nx.Graph()
-G.add_nodes_from(range(nvoxels))
-for v in range(nvoxels):
-    cc = np.corrcoef(data, data[v])
-#         for node in range(nfeats):
-#             G.add_node(node)
-# have to split matrix so it all fits into memory
-# number of rows in one chunk
-SPLITROWS = 1000
+G.add_nodes_from(range(nvoxels_msk))
 
-numrows = data.shape[0]
-
-# subtract means form the input data
-data -= np.mean(data, axis=1)[:,None]
-
-# normalize the data
-data /= np.sqrt(np.sum(data*data, axis=1))[:,None]
-
-# reserve the resulting table onto HDD
-res = np.memmap("/lscratch/"+os.getenv('SLURM_JOBID')+"/mydata.dat", 'float64', mode='w+', shape=(numrows, numrows))
-
-for r in range(0, numrows, SPLITROWS):
-    for c in range(0, numrows, SPLITROWS):
-        r1 = r + SPLITROWS
-        c1 = c + SPLITROWS
-        print(r1, c1)
-        chunk1 = data[r:r1]
-        chunk2 = data[c:c1]
-        res[r:r1, c:c1] = np.dot(chunk1, chunk2.T)
-
-cc[cc<=thresh] = 0
-cc[cc]
+vox_chunk = 1000
+cnt = 0
+while cnt < nvoxels:
+    print(cnt)
+    mymax = min(cnt + vox_chunk, nvoxels_msk)
+    cc = corr2_coeff(data, data[cnt:mymax, :])
+    gc = cc>.25
+    gc_idx = np.nonzero(gc)
+    my_edges = []
+    for i, j in zip(*gc_idx):
+        my_edges.append((i, j + cnt, {'weight': cc[i, j]})) 
+    G.add_edges_from(my_edges)
+    cnt += vox_chunk
