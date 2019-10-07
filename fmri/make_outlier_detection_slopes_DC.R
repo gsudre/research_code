@@ -1,4 +1,4 @@
-qtile = .8
+qtile = .9
 prop = 's' 
 prop = 'sz'
 voxdir = sprintf('~/data/heritability_change/%sdc_weighted/', prop)
@@ -52,8 +52,8 @@ cat(sprintf('Down to %d after removing QC outliers\n', nrow(qc_data_clean)))
 net_dataP = c()
 good_subjs = c()
 for (s in qc_data_clean$id0) {
-    fname = sprintf('%s/%sDegreeCentrality_PositiveWeightedSumBrainMap_%s.txt',
-                                voxdir, prop, s)
+    m = as.numeric(gsub(s, pattern='sub-', replacement=''))
+    fname = sprintf('%s/%sdc_%04d.txt', voxdir, prop, m)
     if (file.exists(fname)) {
         subj_data = read.table(fname)[, 4]
         net_dataP = rbind(net_dataP, subj_data)
@@ -211,25 +211,25 @@ colnames(res) = c('ID', 'sex', tract_names, qc_vars, c('SX_inatt', 'SX_HI',
                                               'DX', 'DX2'))
 write.csv(res, file=sprintf('%s.csv', out_fname), row.names=F, na='', quote=F)
 
-data = read.csv(sprintf('%s.csv', out_fname))
-tmp = read.csv('~/data/heritability_change/pedigree.csv')
-data = merge(data, tmp[, c('ID', 'FAMID')], by='ID', all.x=T, all.y=F)
-related = names(table(data$FAMID))[table(data$FAMID) >= 2]
-keep_me = data$FAMID %in% related
-data2 = data[keep_me, ]
-write.csv(data2, file=sprintf('%s_Fam.csv', out_fname),
-          row.names=F, na='', quote=F)
+# data = read.csv(sprintf('%s.csv', out_fname))
+# tmp = read.csv('~/data/heritability_change/pedigree.csv')
+# data = merge(data, tmp[, c('ID', 'FAMID')], by='ID', all.x=T, all.y=F)
+# related = names(table(data$FAMID))[table(data$FAMID) >= 2]
+# keep_me = data$FAMID %in% related
+# data2 = data[keep_me, ]
+# write.csv(data2, file=sprintf('%s_Fam.csv', out_fname),
+#           row.names=F, na='', quote=F)
 
-data = read.csv(sprintf('%s.csv', out_fname))
+# data = read.csv(sprintf('%s.csv', out_fname))
 
-iso <- isolationForest$new()
-iso$fit(as.data.frame(data[, tract_names]))
-scores_if = as.matrix(iso$scores)[,3]
-scores_lof = lof(data[, tract_names], k = round(.5 * nrow(data)))
+# iso <- isolationForest$new()
+# iso$fit(as.data.frame(data[, tract_names]))
+# scores_if = as.matrix(iso$scores)[,3]
+# scores_lof = lof(data[, tract_names], k = round(.5 * nrow(data)))
 
-thresh_lof = quantile(scores_lof, qtile)
-thresh_if = quantile(scores_if, qtile)
-idx = scores_lof < thresh_lof & scores_if < thresh_if
-data2 = data[idx, ]
-write.csv(data2, file=sprintf('%s_QC.csv', out_fname),
-          row.names=F, na='', quote=F)
+# thresh_lof = quantile(scores_lof, qtile)
+# thresh_if = quantile(scores_if, qtile)
+# idx = scores_lof < thresh_lof & scores_if < thresh_if
+# data2 = data[idx, ]
+# write.csv(data2, file=sprintf('%s_QC.csv', out_fname),
+#           row.names=F, na='', quote=F)
