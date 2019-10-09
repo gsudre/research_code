@@ -4,7 +4,6 @@
 
 import glob
 import re
-from shutil import copytree
 import sys
 import os
 
@@ -62,8 +61,10 @@ for maskid in fid:
                     print("Not a number")
             scan_num -= 1
         mprage = mprage_dirs[scan_num]
-        print('Copying', maskid.rstrip(), 'to', copy_to % int(maskid.rstrip()))
-        copytree(mprage, copy_to % int(maskid) + '/')
+        dest = copy_to % int(maskid.rstrip())
+        print('Copying', maskid.rstrip(), 'to', dest)
+        cmd_str = 'mkdir -p %s; cp %s/* %s/' % (dest, mprage, dest)
+        os.system(cmd_str)
         copied_cnt += 1
     else:
         print('Did not find MPRAGE for', maskid)
