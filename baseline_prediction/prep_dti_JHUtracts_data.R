@@ -13,7 +13,7 @@ for (s in unique(clin$MRN)) {
     subj_idx = which(clin$MRN==s & !is.na(clin$SX_inatt) & !is.na(clin$SX_HI))
         if (length(subj_idx) > 0) {
         subj_data = clin[subj_idx, ]
-        dates = as.Date(as.character(subj_data$DOA), format="%m/%d/%Y")
+        dates = as.Date(as.character(subj_data$DOA), format="%m/%d/%y")
         base_DOA = which.min(dates)
         if (subj_data[base_DOA,]$SX_HI >= 4 || subj_data[base_DOA,]$SX_inat >= 4) {
             keep_me = c(keep_me, subj_idx)
@@ -26,13 +26,6 @@ b = read.csv('/Volumes/Shaw/MasterQC/master_qc_20190314.csv')
 a = read.csv('~/data/heritability_change/ready_1020.csv')
 qc_data = merge(a, b, by.y='Mask.ID', by.x='Mask.ID...Scan', all.x=F)
 
-# crop imaging data to only keep the people in adhd_clin!
-
-
-
-
-
-
 # restrict based on QC
 qc_vars = c("meanX.trans", "meanY.trans", "meanZ.trans",
             "meanX.rot", "meanY.rot", "meanZ.rot",
@@ -41,28 +34,35 @@ qc_data = qc_data[qc_data$"age_at_scan...Scan...Subjects" < 18, ]
 qc_data = qc_data[qc_data$"goodVolumes" <= 61, ]
 qc_data = qc_data[qc_data$"numVolumes" < 80, ]
 
+# crop imaging data to only keep the people in adhd_clin!
+df = mergeOnClosestDate(qc_data, adhd_clin,
+                        unique(adhd_clin$MRN),
+                         x.date='record.date.collected...Scan',
+                         x.id='Medical.Record...MRN...Subjects')
+
+cat(sprintf('Starting with %d scans\n', nrow(df)))
+
 library(solitude)
 iso <- isolationForest$new()
-iso$fit(qc_data[, qc_vars])
+iso$fit(df[, qc_vars])
 scores_if = as.matrix(iso$scores)[,3]
 library(dbscan)
 # here I set the number of neighbors to a percentage of the total data
-scores_lof = lof(qc_data[, qc_vars], k = round(.5 * nrow(qc_data)))
+scores_lof = lof(df[, qc_vars], k = round(.5 * nrow(df)))
 
 thresh_lof = quantile(scores_lof, qtile)
 thresh_if = quantile(scores_if, qtile)
 idx = scores_lof < thresh_lof & scores_if < thresh_if
-qc_data = qc_data[idx,]
+df_clean = df[idx,]
 
-# let's do JHU tracts first
-tracts = read.csv('~/data/heritability_change/jhu_tracts_1020.csv')
+cat(sprintf('Down to %d scans after removing on QC variables\n', nrow(df_clean)))
+
+tracts = read.csv('~/data/baseline_prediction/jhu_tracts_1020.csv')
 # somehow I have two entries for 1418?
 x = duplicated(tracts$id)
-data = merge(qc_data, tracts[!x, ], by.x='Mask.ID...Scan', by.y='id')
+data = merge(df_clean, tracts[!x, ], by.x='Mask.ID...Scan', by.y='id')
 tract_names = colnames(tracts)[grepl(colnames(tracts), pattern="^ad") | 
                                 grepl(colnames(tracts), pattern="^rd")]
-# tract_names = colnames(tracts)[grepl(colnames(tracts), pattern="^fa")]
-# tract_names = colnames(tracts)[2:ncol(tracts)]
 
 iso <- isolationForest$new()
 iso$fit(data[, tract_names])
@@ -72,278 +72,78 @@ scores_lof = lof(data[, tract_names], k = round(.5 * nrow(data)))
 thresh_lof = quantile(scores_lof, qtile)
 thresh_if = quantile(scores_if, qtile)
 idx = scores_lof < thresh_lof & scores_if < thresh_if
+data_clean = data[idx, ]
 
+cat(sprintf('Down to %d scans after removing on data QC\n', nrow(data_clean)))
 
-
-
-
-
-df = mergeOnClosestDate(filtered_data, clin,
-                        unique(filtered_data$Medical.Record...MRN...Subjects),
-                         x.date='record.date.collected...Scan',
-                         x.id='Medical.Record...MRN...Subjects')
-
-
-
-
-num_scans = 2  # number of scans to select
-data$scores = scores_lof
-a = data[idx, ]
-# removing people with less than num_scans scans
-idx = which(table(a$Medical.Record...MRN)>=num_scans)
-long_subjs = names(table(a$Medical.Record...MRN))[idx]
+# choosing only baseline scan for each person, provided that they have a later
+# clinical assessment. At this point, all scans are good, so it's OK to just
+# choose baseline (provided that there are later clinical assessments)
 keep_me = c()
-for (m in 1:nrow(a)) {
-    if (a[m, ]$Medical.Record...MRN %in% long_subjs) {
-        keep_me = c(keep_me, m)
+for (s in unique(data_clean$Medical.Record...MRN...Subjects)) {
+    subj_idx = which(data_clean$Medical.Record...MRN...Subjects==s)
+    subj_data = data_clean[subj_idx, ]
+    dates = as.Date(as.character(subj_data$record.date.collected...Scan),
+                    format="%m/%d/%Y")
+    base_DOA = which.min(dates)
+    subj_clin = adhd_clin[which(adhd_clin$MRN==s), ]
+    clin_dates = as.Date(as.character(subj_clin$DOA), format="%m/%d/%y")
+    # make sure we have at least one clinical date at least 9 months apart from
+    # the currently matched clinical date!
+    cur_clin = as.Date(as.character(subj_data[base_DOA,]$DOA),
+                       format="%m/%d/%Y")
+    if (sum((clin_dates - cur_clin) > 30*9) > 0) {
+        keep_me = c(keep_me, subj_idx[base_DOA])
     }
 }
-a = a[keep_me,]
-cat(sprintf('Down to %d to keep only subjects with more than %d scans\n',
-            nrow(a), num_scans))
-keep_me = c()
-for (s in unique(a$Medical.Record...MRN)) {
-    found = F
-    subj_idx = which(a$Medical.Record...MRN==s)
-    subj_scans = a[subj_idx, ]
-    dates = as.Date(as.character(subj_scans$"record.date.collected...Scan"),
-                                    format="%m/%d/%Y")
-    best_scans = sort(subj_scans$scores, index.return=T)
-    # make sure they are at least 6 months apart. This is the idea:
-    # grab the best X scans. Check the time difference between them.
-    # Any time the time difference is not enough, remove the worse
-    # scan and replace by the next in line. Keep doing this until
-    # the time difference is enough between all scans, or we run out
-    # of scans
-    cur_scan = 1
-    last_scan = num_scans
-    cur_choice = best_scans$ix[cur_scan:last_scan]
-    while (!found && last_scan <= nrow(subj_scans)) {
-        time_diffs = abs(diff(dates[cur_choice]))
-        if (all(time_diffs > 180)) {
-            found = TRUE
-        } else {
-            # figure out which scan to remove. If there is more than one
-            # to be removed, it will be taken care in the next iteration
-            bad_diff = which.min(time_diffs)
-            if (subj_scans$scores[cur_choice[bad_diff]] >
-                subj_scans$scores[cur_choice[bad_diff + 1]]) {
-                rm_scan = cur_choice[bad_diff]
-            } else {
-                rm_scan = cur_choice[bad_diff + 1]
-            }
-            last_scan = last_scan + 1
-            if (last_scan <= nrow(subj_scans)) {
-                cur_choice[cur_choice == rm_scan] = best_scans$ix[last_scan]
-            }
-        }
-    }
-    if (found) {
-        keep_me = c(keep_me, subj_idx[cur_choice])
-    }
-}
-filtered_data = a[keep_me, ]
+data_base = data_clean[keep_me, ]
+cat(sprintf('Down to %d scans after keeping only baseline with future clinicals\n', nrow(data_base)))
 
-source('~/research_code/lab_mgmt/merge_on_closest_date.R')
+# remember to keep the entire symptom history. This way we can compute slopes
+# starting at the beginning, at current itme, and ending either one year later,
+# or last observation. One year later only makes sense if starting at current
+# time, though. So, we're talking about 3 continuous targets and 3 binary ones.
 
-clin = read.csv('~/data/heritability_change/clinical_09182019.csv')
-df = mergeOnClosestDate(filtered_data, clin,
-                        unique(filtered_data$Medical.Record...MRN...Subjects),
-                         x.date='record.date.collected...Scan',
-                         x.id='Medical.Record...MRN...Subjects')
-mres = df
-mres$SX_HI = as.numeric(as.character(mres$SX_hi))
-mres$SX_inatt = as.numeric(as.character(mres$SX_inatt))
+data_base[, c('SX_HI_slopeNext', 'SX_inatt_slopeNext',
+              'SX_HI_slopeLast', 'SX_inatt_slopeLast',
+              'SX_HI_slopeStudy', 'SX_inatt_slopeStudy')] = NA
+for (r in 1:nrow(data_base)) {
+    subj = data_base[r,]$Medical.Record...MRN...Subjects
+    subj_clin = adhd_clin[which(adhd_clin$MRN==subj), ]
+    clin_dates = as.Date(as.character(subj_clin$DOA), format="%m/%d/%y")
+    dob = as.Date(as.character(data_base[r, 'Date.of.Birth...Subjects']),
+                  format="%m/%d/%Y")
+    age_clinical = as.numeric((clin_dates - dob)/365.25)
 
-out_fname = sprintf('~/data/heritability_change/dti_JHUtracts_ADRDonly_OD%.2f', qtile)
-write.csv(df, file=sprintf('%s_twoTimePoints.csv', out_fname), row.names=F, na='', quote=F)
-
-res = c()
-for (s in unique(mres$Medical.Record...MRN...Subjects)) {
-    idx = which(mres$Medical.Record...MRN...Subjects == s)
-    row = c(s, unique(mres[idx, 'Sex...Subjects']))
-    y = mres[idx[2], c(tract_names, qc_vars)] - mres[idx[1], c(tract_names, qc_vars)]
-    x = mres[idx[2], 'age_at_scan...Scan...Subjects'] - mres[idx[1], 'age_at_scan...Scan...Subjects']
-    slopes = y / x
-    row = c(row, slopes)
+    ordered_ages = sort(age_clinical, index.return=T)
+    subj_clin = subj_clin[ordered_ages$ix, ]
+    cur_age_clin = as.numeric((as.Date(as.character(data_base[r,]$DOA),
+                                       format="%m/%d/%Y") - dob)/365.25)
+    # in case there are duplicates, take the last one
+    date_idx = max(which(ordered_ages$x==cur_age_clin))
+        
     for (t in c('SX_inatt', 'SX_HI')) {
-        fm_str = sprintf('%s ~ age_at_scan...Scan...Subjects', t)
-        fit = lm(as.formula(fm_str), data=mres[idx, ], na.action=na.exclude)
-        row = c(row, coefficients(fit)[2])
-    }
-    # grabbing inatt and HI at baseline
-    base_DOA = which.min(mres[idx, 'age_at_scan...Scan...Subjects'])
-    row = c(row, mres[idx[base_DOA], tract_names])
-    row = c(row, mres[idx[base_DOA], 'SX_inatt'])
-    row = c(row, mres[idx[base_DOA], 'SX_HI'])
-    # DX1 is DSMV definition, DX2 will make SX >=4 as ADHD
-    if (mres[idx[base_DOA], 'age_at_scan...Scan...Subjects'] < 16) {
-        if ((row[length(row)] >= 6) || (row[length(row)-1] >= 6)) {
-            DX = 'ADHD'
-        } else {
-            DX = 'NV'
-        }
-    } else {
-        if ((row[length(row)] >= 5) || (row[length(row)-1] >= 5)) {
-            DX = 'ADHD'
-        } else {
-            DX = 'NV'
-        }
-    }
-    if ((row[length(row)] >= 4) || (row[length(row)-1] >= 4)) {
-        DX2 = 'ADHD'
-    } else {
-        DX2 = 'NV'
-    }
-    row = c(row, DX)
-    row = c(row, DX2)
-    res = rbind(res, row)
-    print(nrow(res))
-}
-tract_base = sapply(tract_names, function(x) sprintf('%s_baseline', x))
-colnames(res) = c('ID', 'sex', tract_names, qc_vars, c('SX_inatt', 'SX_HI',
-                                              tract_base,
-                                              'inatt_baseline',
-                                              'HI_baseline',
-                                              'DX', 'DX2'))
-write.csv(res, file=sprintf('%s.csv', out_fname), row.names=F, na='', quote=F)
+        # the easiest one is overall study slope
+        fm_str = sprintf('%s ~ age_clinical', t)
+        fit = lm(as.formula(fm_str), data=subj_clin, na.action=na.exclude)
+        data_base[r, sprintf('%s_slopeStudy', t)] = coefficients(fit)[2]
 
+        slope = ((subj_clin[date_idx + 1, t] - subj_clin[date_idx, t]) / 
+                 (ordered_ages$x[date_idx + 1] - ordered_ages$x[date_idx]))
+        data_base[r, sprintf('%s_slopeNext', t)] = slope
 
-# now we work on DTITK tracts
-tracts = read.csv('~/data/heritability_change/dti_mean_phenotype_1020.csv')
-# somehow I have two entries for 1418?
-x = duplicated(tracts$file)
-data = merge(qc_data, tracts[!x, ], by.x='Mask.ID...Scan', by.y='file')
-tract_names = colnames(tracts)[grepl(colnames(tracts), pattern="^AD") |
-                                grepl(colnames(tracts), pattern="^RD")]
-# tract_names = colnames(tracts)[grepl(colnames(tracts), pattern="^FA")]
-# tract_names = colnames(tracts)[2:ncol(tracts)]
-
-iso <- isolationForest$new()
-iso$fit(data[, tract_names])
-scores_if = as.matrix(iso$scores)[,3]
-scores_lof = lof(data[, tract_names], k = round(.5 * nrow(data)))
-
-thresh_lof = quantile(scores_lof, qtile)
-thresh_if = quantile(scores_if, qtile)
-idx = scores_lof < thresh_lof & scores_if < thresh_if
-
-num_scans = 2  # number of scans to select
-data$scores = scores_lof
-a = data[idx, ]
-# removing people with less than num_scans scans
-idx = which(table(a$Medical.Record...MRN)>=num_scans)
-long_subjs = names(table(a$Medical.Record...MRN))[idx]
-keep_me = c()
-for (m in 1:nrow(a)) {
-    if (a[m, ]$Medical.Record...MRN %in% long_subjs) {
-        keep_me = c(keep_me, m)
+        slope = ((subj_clin[nrow(subj_clin), t] - subj_clin[date_idx, t]) / 
+                 (ordered_ages$x[nrow(subj_clin)] - ordered_ages$x[date_idx]))
+        data_base[r, sprintf('%s_slopeLast', t)] = slope
     }
 }
-a = a[keep_me,]
-cat(sprintf('Down to %d to keep only subjects with more than %d scans\n',
-            nrow(a), num_scans))
-keep_me = c()
-for (s in unique(a$Medical.Record...MRN)) {
-    found = F
-    subj_idx = which(a$Medical.Record...MRN==s)
-    subj_scans = a[subj_idx, ]
-    dates = as.Date(as.character(subj_scans$"record.date.collected...Scan"),
-                                    format="%m/%d/%Y")
-    best_scans = sort(subj_scans$scores, index.return=T)
-    # make sure they are at least 6 months apart. This is the idea:
-    # grab the best X scans. Check the time difference between them.
-    # Any time the time difference is not enough, remove the worse
-    # scan and replace by the next in line. Keep doing this until
-    # the time difference is enough between all scans, or we run out
-    # of scans
-    cur_scan = 1
-    last_scan = num_scans
-    cur_choice = best_scans$ix[cur_scan:last_scan]
-    while (!found && last_scan <= nrow(subj_scans)) {
-        time_diffs = abs(diff(dates[cur_choice]))
-        if (all(time_diffs > 180)) {
-            found = TRUE
-        } else {
-            # figure out which scan to remove. If there is more than one
-            # to be removed, it will be taken care in the next iteration
-            bad_diff = which.min(time_diffs)
-            if (subj_scans$scores[cur_choice[bad_diff]] >
-                subj_scans$scores[cur_choice[bad_diff + 1]]) {
-                rm_scan = cur_choice[bad_diff]
-            } else {
-                rm_scan = cur_choice[bad_diff + 1]
-            }
-            last_scan = last_scan + 1
-            if (last_scan <= nrow(subj_scans)) {
-                cur_choice[cur_choice == rm_scan] = best_scans$ix[last_scan]
-            }
-        }
-    }
-    if (found) {
-        keep_me = c(keep_me, subj_idx[cur_choice])
-    }
-}
-filtered_data = a[keep_me, ]
-
-source('~/research_code/lab_mgmt/merge_on_closest_date.R')
-
-clin = read.csv('~/data/heritability_change/clinical_09182019.csv')
-df = mergeOnClosestDate(filtered_data, clin,
-                        unique(filtered_data$Medical.Record...MRN...Subjects),
-                         x.date='record.date.collected...Scan',
-                         x.id='Medical.Record...MRN...Subjects')
-mres = df
-mres$SX_HI = as.numeric(as.character(mres$SX_hi))
-mres$SX_inatt = as.numeric(as.character(mres$SX_inatt))
-
-res = c()
-for (s in unique(mres$Medical.Record...MRN...Subjects)) {
-    idx = which(mres$Medical.Record...MRN...Subjects == s)
-    row = c(s, unique(mres[idx, 'Sex...Subjects']))
-    y = mres[idx[2], c(tract_names, qc_vars)] - mres[idx[1], c(tract_names, qc_vars)]
-    x = mres[idx[2], 'age_at_scan...Scan...Subjects'] - mres[idx[1], 'age_at_scan...Scan...Subjects']
-    slopes = y / x
-    row = c(row, slopes)
+for (s in c('Next', 'Last', 'Study')) {
     for (t in c('SX_inatt', 'SX_HI')) {
-        fm_str = sprintf('%s ~ age_at_scan...Scan...Subjects', t)
-        fit = lm(as.formula(fm_str), data=mres[idx, ], na.action=na.exclude)
-        row = c(row, coefficients(fit)[2])
+        data_base[, sprintf('%s_group%s', t, s)] = NA
+        idx = data_base[, sprintf('%s_slope%s', t, s)] < 0
+        data_base[idx, sprintf('%s_group%s', t, s)] = 'improvers'
+        data_base[!idx, sprintf('%s_group%s', t, s)] = 'nonimprovers'
     }
-    # grabbing inatt and HI at baseline
-    base_DOA = which.min(mres[idx, 'age_at_scan...Scan...Subjects'])
-    row = c(row, mres[idx[base_DOA], tract_names])
-    row = c(row, mres[idx[base_DOA], 'SX_inatt'])
-    row = c(row, mres[idx[base_DOA], 'SX_HI'])
-    # DX1 is DSMV definition, DX2 will make SX >=4 as ADHD
-    if (mres[idx[base_DOA], 'age_at_scan...Scan...Subjects'] < 16) {
-        if ((row[length(row)] >= 6) || (row[length(row)-1] >= 6)) {
-            DX = 'ADHD'
-        } else {
-            DX = 'NV'
-        }
-    } else {
-        if ((row[length(row)] >= 5) || (row[length(row)-1] >= 5)) {
-            DX = 'ADHD'
-        } else {
-            DX = 'NV'
-        }
-    }
-    if ((row[length(row)] >= 4) || (row[length(row)-1] >= 4)) {
-        DX2 = 'ADHD'
-    } else {
-        DX2 = 'NV'
-    }
-    row = c(row, DX)
-    row = c(row, DX2)
-    res = rbind(res, row)
-    print(nrow(res))
 }
-tract_base = sapply(tract_names, function(x) sprintf('%s_baseline', x))
-colnames(res) = c('ID', 'sex', tract_names, qc_vars, c('SX_inatt', 'SX_HI',
-                                              tract_base,
-                                              'inatt_baseline',
-                                              'HI_baseline',
-                                              'DX', 'DX2'))
-write.csv(res, file=sprintf('~/data/heritability_change/dti_tracts_ADRDonly_OD%.2f.csv', qtile),
-          row.names=F, na='', quote=F)
+out_fname = sprintf('~/data/baseline_prediction/dti_JHUtracts_ADRDonly_OD%.2f', qtile)
+write.csv(df, file=sprintf('%s.csv', out_fname), row.names=F, na='', quote=F)
