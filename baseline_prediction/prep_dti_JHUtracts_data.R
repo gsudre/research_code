@@ -146,4 +146,4 @@ for (s in c('Next', 'Last', 'Study')) {
     }
 }
 out_fname = sprintf('~/data/baseline_prediction/dti_JHUtracts_ADRDonly_OD%.2f', qtile)
-write.csv(df, file=sprintf('%s.csv', out_fname), row.names=F, na='', quote=F)
+write.csv(data_base, file=sprintf('%s.csv', out_fname), row.names=F, na='', quote=F)
