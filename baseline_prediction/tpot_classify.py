@@ -21,7 +21,10 @@ data.rename(columns={target: 'class'}, inplace=True)
 data['class'] = data['class'].map({'improvers': 1, 'nonimprovers': -1})
 print(data['class'].value_counts())
 
-feature_names = [fname for fname in data.columns if fname[:2] in ['ad', 'rd']]
+fid = open(features_fname, 'r')
+feature_names = [line.rstrip() for line in fid]
+fid.close()
+
 target_class = data['class'].values
 training_indices, validation_indices = train_test_split(data.index,
 														stratify = target_class, train_size=0.75,
