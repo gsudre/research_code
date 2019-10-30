@@ -6,15 +6,16 @@ from dask.distributed import Client
 import sys
 import os
 
-ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '2'))
-
-client = Client(n_workers=ncpus, threads_per_worker=1)
 
 phen_fname = sys.argv[1]
 target = sys.argv[2]
 features_fname = sys.argv[3]
 output_dir = sys.argv[4]
 myseed = int(sys.argv[5])
+
+# setting up DASK
+ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '2'))
+client = Client(n_workers=ncpus, threads_per_worker=1)
 
 data = pd.read_csv(phen_fname)
 data.rename(columns={target: 'class'}, inplace=True)
