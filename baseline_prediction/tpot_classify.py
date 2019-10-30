@@ -61,7 +61,8 @@ if __name__ == '__main__':
     tpot.fit(X[training_indices], target_class[training_indices])
 
     ### after
-    out_fname = '%s_%s_%d'
+    out_fname = '%s_%s_%d' % (phen_fname.split('/')[-1].replace('.csv', ''),
+                              target, myseed)
     tpot.export('%s/%s_tpot_pipeline.py' % (output_dir, out_fname))
 
     val_score = tpot.score(X[validation_indices],
