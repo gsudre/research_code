@@ -9,17 +9,17 @@ import multiprocessing
 
 home = os.path.expanduser('~')
 
-# phen_fname = sys.argv[1]
-# target = sys.argv[2]
-# features_fname = sys.argv[3]
-# output_dir = sys.argv[4]
-# myseed = int(sys.argv[5])
+phen_fname = sys.argv[1]
+target = sys.argv[2]
+features_fname = sys.argv[3]
+output_dir = sys.argv[4]
+myseed = int(sys.argv[5])
 
-phen_fname = home + '/data/baseline_prediction/dti_JHUtracts_ADRDonly_OD0.95.csv'
-target = 'SX_HI_groupStudy'
-features_fname = home + '/data/baseline_prediction/ad_rd_vars.txt'
-output_dir = home + '/data/tmp/'
-myseed = 42
+# phen_fname = home + '/data/baseline_prediction/dti_JHUtracts_ADRDonly_OD0.95.csv'
+# target = 'SX_HI_groupStudy'
+# features_fname = home + '/data/baseline_prediction/ad_rd_vars.txt'
+# output_dir = home + '/data/tmp/'
+# myseed = 42
 
 # setting up DASK
 ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '2'))
@@ -50,11 +50,11 @@ if __name__ == '__main__':
 
     X = data[feature_names].values
 
-    # create the estimator normally
-    tpot = TPOTClassifier(verbosity=2, max_time_mins=2, max_eval_time_mins=0.04, population_size=40, n_jobs=ncpus, use_dask=False)
+    # # quick estimator for testing
+    # tpot = TPOTClassifier(verbosity=2, max_time_mins=2, max_eval_time_mins=0.04, population_size=40, n_jobs=ncpus, use_dask=False)
 
-    # tpot = TPOTClassifier(n_jobs=-1, random_state=myseed, verbosity=2,
-    # 						config_dict=my_config, use_dask=True, scoring='roc_auc')
+    tpot = TPOTClassifier(n_jobs=ncpus, random_state=myseed, verbosity=2,
+    						config_dict=my_config, use_dask=False,  scoring='roc_auc')
 
 
     # perform the fit in this context manager
@@ -65,8 +65,10 @@ if __name__ == '__main__':
                               target, myseed)
     tpot.export('%s/%s_tpot_pipeline.py' % (output_dir, out_fname))
 
+    train_score = tpot.score(X[training_indices],
+                        data.loc[training_indices, 'class'].values)
+
     val_score = tpot.score(X[validation_indices],
                         data.loc[validation_indices, 'class'].values)
-
     fout = open('%s/results.csv' % output_dir, 'a')
-    fout.write('%s,%f\n' % (out_fname, val_score))
+    fout.write('%s,%f,%f\n' % (out_fname, train_score, val_score))
