@@ -35,8 +35,8 @@ if __name__ == '__main__':
 
     target_class = data['class'].values
     training_indices, validation_indices = train_test_split(data.index,
-                                                            train_size=0.75,
-                                                            test_size=0.25,
+                                                            train_size=0.8,
+                                                            test_size=0.2,
                                                             random_state=myseed)
 
     # removing some warnings by hard coding parameters in the dictionary
