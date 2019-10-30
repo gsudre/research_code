@@ -39,8 +39,10 @@ preproc = [v for v in my_config.keys() if v.find('preprocessing') > 0]
 for p in preproc:
 	my_config[p]['validate'] = [False]
 
-tpot = TPOTClassifier(n_jobs=-1, random_state=myseed, verbosity=2,
-						config_dict=my_config, use_dask=True, scoring='roc_auc')
+tpot = TPOTClassifier(verbosity=2, max_time_mins=2, max_eval_time_mins=0.04, population_size=40)
+
+# tpot = TPOTClassifier(n_jobs=-1, random_state=myseed, verbosity=2,
+# 						config_dict=my_config, use_dask=True, scoring='roc_auc')
 
 X = data[feature_names].values
 tpot.fit(X[training_indices], target_class[training_indices])
