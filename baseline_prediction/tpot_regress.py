@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     target_class = data['class'].values
     training_indices, validation_indices = train_test_split(data.index,
-                                                            stratify = target_class, train_size=0.75,
+                                                            train_size=0.75,
                                                             test_size=0.25,
                                                             random_state=myseed)
 
