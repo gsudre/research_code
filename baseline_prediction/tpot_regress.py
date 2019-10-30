@@ -42,19 +42,15 @@ if __name__ == '__main__':
                                                             random_state=myseed)
 
     # removing some warnings by hard coding parameters in the dictionary
-    my_config = config.classifier_config_dict
-    my_config['sklearn.linear_model.LogisticRegression']['solver'] = 'lbfgs'
-    preproc = [v for v in my_config.keys() if v.find('preprocessing') > 0]
-    for p in preproc:
-        my_config[p]['validate'] = [False]
+    my_config = config.regressor_config_dict
 
     X = data[feature_names].values
 
     # # quick estimator for testing
-    # tpot = TPOTClassifier(verbosity=2, max_time_mins=2, max_eval_time_mins=0.04, population_size=40, n_jobs=ncpus, use_dask=False)
+    # tpot = TPOTRegressor(verbosity=2, max_time_mins=2, max_eval_time_mins=0.04, population_size=40, n_jobs=ncpus, use_dask=False)
 
-    tpot = TPOTClassifier(n_jobs=ncpus, random_state=myseed, verbosity=2,
-    						config_dict=my_config, use_dask=False,  scoring='roc_auc')
+    tpot = TPOTRegressor(n_jobs=ncpus, random_state=myseed, verbosity=2,
+    						config_dict=my_config, use_dask=False,  scoring='neg_mean_absolute_error')
 
 
     # perform the fit in this context manager
@@ -70,6 +66,6 @@ if __name__ == '__main__':
 
     val_score = tpot.score(X[validation_indices],
                         data.loc[validation_indices, 'class'].values)
-    fout = open('%s/classification_results.csv' % output_dir, 'a')
+    fout = open('%s/regression_results.csv' % output_dir, 'a')
     fout.write('%s,%f,%f\n' % (out_fname, train_score, val_score))
     fout.close()
