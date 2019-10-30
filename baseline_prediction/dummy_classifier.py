@@ -15,12 +15,6 @@ features_fname = sys.argv[3]
 output_dir = sys.argv[4]
 myseed = int(sys.argv[5])
 
-phen_fname = home + '/data/baseline_prediction/dti_JHUtracts_ADRDonly_OD0.95.csv'
-target = 'SX_HI_groupStudy'
-features_fname = home + '/data/baseline_prediction/ad_rd_vars.txt'
-output_dir = home + '/data/tmp/'
-myseed = 42
-
 data = pd.read_csv(phen_fname)
 data.rename(columns={target: 'class'}, inplace=True)
 data['class'] = data['class'].map({'improvers': 1, 'nonimprovers': -1})
