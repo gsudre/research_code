@@ -24,8 +24,8 @@ fid.close()
 
 target_class = data['class'].values
 training_indices, validation_indices = train_test_split(data.index,
-                                                        train_size=0.75,
-                                                        test_size=0.25,
+                                                        train_size=0.8,
+                                                        test_size=0.2,
                                                         random_state=myseed)
 
 X = data[feature_names].values
