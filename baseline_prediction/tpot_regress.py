@@ -1,4 +1,4 @@
-from tpot import TPOTClassifier, config
+from tpot import TPOTRegressor, config
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
@@ -28,8 +28,6 @@ if __name__ == '__main__':
     multiprocessing.set_start_method('forkserver')
     data = pd.read_csv(phen_fname)
     data.rename(columns={target: 'class'}, inplace=True)
-    data['class'] = data['class'].map({'improvers': 1, 'nonimprovers': -1})
-    print(data['class'].value_counts())
 
     fid = open(features_fname, 'r')
     feature_names = [line.rstrip() for line in fid]
