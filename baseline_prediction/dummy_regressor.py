@@ -33,15 +33,12 @@ X = data[feature_names].values
 clf = DummyRegressor(strategy='mean')
 clf.fit(X[training_indices], target_class[training_indices])
 preds = clf.predict(X[validation_indices])
-score_mean = -1 * mean_absolute_error(data.loc[validation_indices, 'class'].values,
-                                  preds)
+score_mean = -1 * mean_absolute_error(target_class[validation_indices], preds)
                            
 clf = DummyRegressor(strategy='median')
 clf.fit(X[training_indices], target_class[training_indices])
 preds = clf.predict(X[validation_indices])
-score_median = -1 * mean_absolute_error(data.loc[validation_indices,
-                                             'class'].values,
-                                    preds)
+score_median = -1 * mean_absolute_error(target_class[validation_indices], preds)
 
 ### after
 phen = phen_fname.split('/')[-1].replace('.csv', '')
