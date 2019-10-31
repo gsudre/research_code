@@ -1,6 +1,6 @@
 qtile=.95
 nvox=11990
-prop='rd'
+prop='fa'
 
 print(sprintf('Voxelwise %s with %f quantile OD', prop, qtile))
 
