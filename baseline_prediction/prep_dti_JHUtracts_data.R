@@ -1,4 +1,5 @@
 qtile=.95
+min_time = 30*9  # time between assessments in days
 
 source('~/research_code/lab_mgmt/merge_on_closest_date.R')
 
@@ -6,6 +7,8 @@ clin = read.csv('~/data/baseline_prediction/clinical_09182019_clean.csv')
 # make sure the SX columns are numeric!
 clin$SX_HI = as.numeric(as.character(clin$SX_hi))
 clin$SX_inatt = as.numeric(as.character(clin$SX_inatt))
+# let's remove on-medication items to not confuse the slopes
+clin = clin[clin$source != 'DICA_on', ]
 
 # we'll keep anyone that starts off with 4 or more symptoms
 keep_me = c()
@@ -92,7 +95,7 @@ for (s in unique(data_clean$Medical.Record...MRN...Subjects)) {
     # the currently matched clinical date!
     cur_clin = as.Date(as.character(subj_data[base_DOA,]$DOA),
                        format="%m/%d/%Y")
-    if (sum((clin_dates - cur_clin) > 30*9) > 0) {
+    if (sum((clin_dates - cur_clin) > min_time) > 0) {
         keep_me = c(keep_me, subj_idx[base_DOA])
     }
 }
@@ -128,8 +131,14 @@ for (r in 1:nrow(data_base)) {
         fit = lm(as.formula(fm_str), data=subj_clin, na.action=na.exclude)
         data_base[r, sprintf('%s_slopeStudy', t)] = coefficients(fit)[2]
 
-        slope = ((subj_clin[date_idx + 1, t] - subj_clin[date_idx, t]) / 
-                 (ordered_ages$x[date_idx + 1] - ordered_ages$x[date_idx]))
+        # next time point has to be at least min_time from current scan
+        cur = 1
+        while ((date_idx + cur) < nrow(subj_clin) &&
+               ((ordered_ages$x[date_idx + cur] - ordered_ages$x[date_idx]) < min_time/365.25)) {
+            cur = cur + 1
+        }
+        slope = ((subj_clin[date_idx + cur, t] - subj_clin[date_idx, t]) / 
+                 (ordered_ages$x[date_idx + cur] - ordered_ages$x[date_idx]))
         data_base[r, sprintf('%s_slopeNext', t)] = slope
 
         slope = ((subj_clin[nrow(subj_clin), t] - subj_clin[date_idx, t]) / 
