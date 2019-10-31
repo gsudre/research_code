@@ -44,8 +44,8 @@ score_strat = roc_auc_score(data.loc[validation_indices, 'class'].values,
                                preds)
 
 
-out_fname = '%s_%s_%d' % (phen_fname.split('/')[-1].replace('.csv', ''),
-                            target, myseed)
-fout = open('%s/classification_dummy_results.csv' % output_dir, 'a')
+phen = phen_fname.split('/')[-1].replace('.csv', '')
+out_fname = '%s_%s_%d' % (phen, target, myseed)
+fout = open('%s/classification_dummy_results_%s.csv' % (output_dir, phen), 'a')
 fout.write('%s,%f,%f\n' % (out_fname, score_majority, score_strat))
 fout.close()

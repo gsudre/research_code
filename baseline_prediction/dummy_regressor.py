@@ -44,8 +44,8 @@ score_median = -1 * mean_absolute_error(data.loc[validation_indices,
                                     preds)
 
 ### after
-out_fname = '%s_%s_%d' % (phen_fname.split('/')[-1].replace('.csv', ''),
-                            target, myseed)
-fout = open('%s/regression_dummy_results.csv' % output_dir, 'a')
+phen = phen_fname.split('/')[-1].replace('.csv', '')
+out_fname = '%s_%s_%d' % (phen, target, myseed)
+fout = open('%s/regression_dummy_results_%s.csv' % (output_dir, phen), 'a')
 fout.write('%s,%f,%f\n' % (out_fname, score_mean, score_median))
 fout.close()
