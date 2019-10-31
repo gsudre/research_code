@@ -55,15 +55,15 @@ if __name__ == '__main__':
     tpot.fit(X[training_indices], target_class[training_indices])
 
     ### after
-    out_fname = '%s_%s_%d' % (phen_fname.split('/')[-1].replace('.csv', ''),
-                              target, myseed)
+    phen = phen_fname.split('/')[-1].replace('.csv', '')
+    out_fname = '%s_%s_%d' % (phen, target, myseed)
     tpot.export('%s/%s_tpot_pipeline.py' % (output_dir, out_fname))
 
     train_score = tpot.score(X[training_indices],
-                        data.loc[training_indices, 'class'].values)
-
+                             target_class[training_indices])
     val_score = tpot.score(X[validation_indices],
-                        data.loc[validation_indices, 'class'].values)
-    fout = open('%s/regression_results.csv' % output_dir, 'a')
+                           target_class[validation_indices])
+
+    fout = open('%s/regression_results_%s.csv' % (output_dir, phen), 'a')
     fout.write('%s,%f,%f\n' % (out_fname, train_score, val_score))
     fout.close()

@@ -27,7 +27,7 @@ if __name__ == '__main__':
     multiprocessing.set_start_method('forkserver')
     data = pd.read_csv(phen_fname)
     data.rename(columns={target: 'class'}, inplace=True)
-    data['class'] = data['class'].map({'improvers': 1, 'nonimprovers': -1})
+    data['class'] = data['class'].map({'improvers': 1, 'nonimprovers': 0})
     print(data['class'].value_counts())
 
     fid = open(features_fname, 'r')
