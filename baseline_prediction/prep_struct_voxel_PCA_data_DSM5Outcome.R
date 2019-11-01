@@ -1,5 +1,5 @@
 qtile = .95
-prop= 'thickness'
+prop= 'volume'
 min_time = 30*9  # time between assessments in days
 
 print(sprintf('Voxelwise %s with %f quantile OD', prop, qtile))
@@ -82,7 +82,7 @@ load(sprintf('~/data/baseline_prediction/rh.%s.ico4.gzip', prop))
 rh_data = as.data.frame(data)
 colnames(rh_data) = sapply(1:ncol(rh_data), function(x) sprintf('rh%04d', x))
 var_names = c(colnames(lh_data), colnames(rh_data))
-slist = read.table('~/data/baseline_prediction/subjects_list.txt')[, 1]
+slist = read.table('~/data/baseline_prediction/subjects_list_1163.txt')[, 1]
 brain_data = cbind(slist, lh_data, rh_data)
 colnames(brain_data)[1] = 'maskid'
 data = merge(df_clean, brain_data, by='maskid')
@@ -140,7 +140,7 @@ data_base = cbind(data_base_full[, nondata], data.frame(pca$x[, keep_me]))
 
 data_base[, c('lastPersistent')] = NA
 for (r in 1:nrow(data_base)) {
-    subj = data_base[r,]$Medical.Record...MRN...Subjects
+    subj = data_base[r,]$MRN
     subj_clin = adhd_clin[which(adhd_clin$MRN==subj), ]
     clin_dates = as.Date(as.character(subj_clin$DOA), format="%m/%d/%y")
     dob = as.Date(as.character(data_base[r, 'DOB']),
