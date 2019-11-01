@@ -1,5 +1,5 @@
 qtile = .95
-prop= 'volume'
+prop= 'area'
 min_time = 30*9  # time between assessments in days
 
 print(sprintf('Voxelwise %s with %f quantile OD', prop, qtile))
