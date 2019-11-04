@@ -58,22 +58,42 @@ if __name__ == '__main__':
     from sklearn.model_selection import RandomizedSearchCV
     from sklearn.ensemble import RandomForestClassifier
     from scipy.stats import randint as sp_randint
+    from sklearn.feature_selection import SelectPercentile, f_classif
+    from sklearn.model_selection import StratifiedShuffleSplit
 
-    param_dist = {"clf__max_depth": [3, None],
-              "clf__max_features": sp_randint(1, 11),
-              "clf__min_samples_split": sp_randint(2, 11),
-              "clf__bootstrap": [True, False],
-              "clf__criterion": ["gini", "entropy"],
-              "clf__n_estimators": [10, 100]}
+    # param_dist = {"clf__max_depth": [3, None],
+    #           "clf__max_features": sp_randint(1, 11),
+    #           "clf__min_samples_split": sp_randint(2, 11),
+    #           "clf__bootstrap": [True, False],
+    #           "clf__criterion": ["gini", "entropy"],
+    #           "clf__n_estimators": [10, 100],
+    #           'selector__percentile': [5, 10]}
+    param_dist = {"clf__kernel": ['linear', 'rbf'],
+            'selector__percentile': [5, 10]}
     
-    estimators = [('reduce_dim', PCA()), ('clf', RandomForestClassifier())]
+    estimators = [('reduce_dim', PCA()),
+                  ('selector', SelectPercentile(f_classif)),
+                  ('clf', SVC(gamma='scale'))]
     pipe = Pipeline(estimators)
     n_iter_search = 20
+    ss = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=myseed)
     random_search = RandomizedSearchCV(pipe, param_distributions=param_dist,
-                                   n_iter=n_iter_search, cv=5, iid=False)
+                                   n_iter=n_iter_search, cv=ss, iid=False,
+                                   refit=True, random_state=myseed, verbose=1, scoring='roc_auc', n_jobs=-1)
 
     X = data[feature_names].values
 
     random_search.fit(X[training_indices], y[training_indices])
 
     report(random_search.cv_results_)
+
+    train_score = random_search.score(X[training_indices], y[training_indices])
+    val_score = random_search.score(X[testing_indices], y[testing_indices])
+
+    print('Testing: %.2f' % val_score)
+
+    phen = phen_fname.split('/')[-1].replace('.csv', '')
+    out_fname = '%s_%s_%d' % (phen, target, myseed)
+    fout = open('%s/classification_results_%s.csv' % (output_dir, phen), 'a')
+    fout.write('%s,%f,%f\n' % (out_fname, train_score, val_score))
+    fout.close()
