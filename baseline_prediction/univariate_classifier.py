@@ -65,6 +65,7 @@ if __name__ == '__main__':
     from scipy.stats import randint as sp_randint
     from sklearn.feature_selection import SelectPercentile, f_classif, VarianceThreshold
     from sklearn.model_selection import StratifiedShuffleSplit
+    from sklearn.preprocessing import StandardScaler
     
     # param_dist = {"clf__max_depth": [3, None],
     #           "clf__max_features": sp_randint(1, 11),
@@ -77,7 +78,9 @@ if __name__ == '__main__':
             'clf__C': [.001, .01, .1, 1, 10, 100, 1000],
             'selector__percentile': [5, 10, 15, 20]}
     
-    estimators = [('selector', SelectPercentile(f_classif)),
+    estimators = [('some_variace', VarianceThreshold(threshold=0)),
+                  ('unit_variance', StandardScaler()),
+                  ('selector', SelectPercentile(f_classif)),
                   ('reduce_dim', PCA()),
                   ('clf', SVC(gamma='scale'))]
     pipe = Pipeline(estimators)
@@ -94,10 +97,6 @@ if __name__ == '__main__':
     # use negative seed to randomize the data
     if make_random:
         X = np.random.uniform(np.min(X), np.max(X), X.shape)
-    else:
-        # remove constant features
-        selector = VarianceThreshold()
-        X = selector.fit_transform(X)
 
     my_search.fit(X[training_indices], y[training_indices])
 

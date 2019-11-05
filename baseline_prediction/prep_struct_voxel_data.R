@@ -1,5 +1,5 @@
 qtile = .95
-prop= 'volume'
+prop= 'area'
 min_time = 30*9  # time between assessments in days
 
 print(sprintf('Voxelwise %s with %f quantile OD', prop, qtile))
@@ -186,6 +186,6 @@ for (s in c('Next', 'Last', 'Study')) {
     }
 }
 today = format(Sys.time(), "%m%d%Y")
-out_fname = sprintf('~/data/baseline_prediction/struct_%s_OD%.2f', prop, qtile, today)
+out_fname = sprintf('~/data/baseline_prediction/struct_%s_OD%.2f_%s', prop, qtile, today)
 write.csv(data_base, file=sprintf('%s.csv', out_fname), row.names=F, na='', 
           quote=F)
