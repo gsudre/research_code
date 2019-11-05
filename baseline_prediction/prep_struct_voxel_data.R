@@ -1,6 +1,5 @@
-qtile=.95
-nvox=11990
-prop='fa'
+qtile = .95
+prop= 'volume'
 min_time = 30*9  # time between assessments in days
 
 print(sprintf('Voxelwise %s with %f quantile OD', prop, qtile))
@@ -35,23 +34,26 @@ for (s in unique(clin$MRN)) {
 }
 adhd_clin = clin[keep_me, ]
 
-b = read.csv('/Volumes/Shaw/MasterQC/master_qc_20190314.csv')
-a = read.csv('~/data/heritability_change/ready_1020.csv')
-qc_data = merge(a, b, by.y='Mask.ID', by.x='Mask.ID...Scan', all.x=F)
+qc_data = read.csv('~/data/baseline_prediction/struct_demo_withQC.csv')
 
 # restrict based on QC
-qc_vars = c("meanX.trans", "meanY.trans", "meanZ.trans",
-            "meanX.rot", "meanY.rot", "meanZ.rot",
-            "goodVolumes")
-qc_data = qc_data[qc_data$"age_at_scan...Scan...Subjects" < 18, ]
-qc_data = qc_data[qc_data$"goodVolumes" <= 61, ]
-qc_data = qc_data[qc_data$"numVolumes" < 80, ]
+qc_vars = colnames(qc_data)[8:ncol(qc_data)] 
+qc_data = qc_data[qc_data$"age_at_scan" < 18, ]
+
+# for some reason we don't have volumne for 1875, so I'll exclude it from the
+# get go
+qc_data = qc_data[qc_data$maskid != 1875, ]
+# also, I have a few mask ids with more than one mprage. Ideally in the future
+# we will only keep the one on which we ran Freesurfer for mriqc purposes. For
+# now, since I don't know which one it was, I'll keep any single one, under the
+# idea that if the person had more than one mprage it was bad to begin with.
+qc_data = qc_data[!duplicated(qc_data$maskid), ]
 
 # crop imaging data to only keep the people in adhd_clin!
 df = mergeOnClosestDate(qc_data, adhd_clin,
                         unique(adhd_clin$MRN),
-                         x.date='record.date.collected...Scan',
-                         x.id='Medical.Record...MRN...Subjects')
+                         x.date='date_scan',
+                         x.id='MRN')
 
 cat(sprintf('Starting with %d scans\n', nrow(df)))
 
@@ -70,19 +72,20 @@ df_clean = df[idx,]
 
 cat(sprintf('Down to %d scans after removing on QC variables\n', nrow(df_clean)))
 
-dti_data = matrix(nrow=nrow(df_clean), ncol=nvox)
-for (s in 1:nrow(dti_data)) {
-    a = read.table(sprintf('~/data/baseline_prediction/dti_voxels/%04d_%s.txt',
-                            df_clean[s,]$Mask.ID...Scan, prop))
-    dti_data[s, ] = a[, 4]
-}
-var_names = sapply(1:nvox, function(x) sprintf('v%05d', x))
-colnames(dti_data) = var_names
-data = cbind(df_clean$Mask.ID...Scan, dti_data)
-colnames(data)[1] = 'mask.id'
-
-x = duplicated(data[, 'mask.id'])
-data = merge(df_clean, data[!x, ], by.x='Mask.ID...Scan', by.y='mask.id')
+# I created the huge brain data file with 641 scans following the instructions
+# in the Freesurfer notes. Maybe it will include everyone that we will need, as
+# it was created before QC. But we might need to recreate it later.
+load(sprintf('~/data/baseline_prediction/lh.%s.ico4.gzip', prop))
+lh_data = as.data.frame(data)
+colnames(lh_data) = sapply(1:ncol(lh_data), function(x) sprintf('lh%04d', x))
+load(sprintf('~/data/baseline_prediction/rh.%s.ico4.gzip', prop))
+rh_data = as.data.frame(data)
+colnames(rh_data) = sapply(1:ncol(rh_data), function(x) sprintf('rh%04d', x))
+var_names = c(colnames(lh_data), colnames(rh_data))
+slist = read.table('~/data/baseline_prediction/subjects_list_1163.txt')[, 1]
+brain_data = cbind(slist, lh_data, rh_data)
+colnames(brain_data)[1] = 'maskid'
+data = merge(df_clean, brain_data, by='maskid')
 
 iso <- isolationForest$new()
 iso$fit(data[, var_names])
@@ -100,10 +103,10 @@ cat(sprintf('Down to %d scans after removing on data QC\n', nrow(data_clean)))
 # clinical assessment. At this point, all scans are good, so it's OK to just
 # choose baseline (provided that there are later clinical assessments)
 keep_me = c()
-for (s in unique(data_clean$Medical.Record...MRN...Subjects)) {
-    subj_idx = which(data_clean$Medical.Record...MRN...Subjects==s)
+for (s in unique(data_clean$MRN)) {
+    subj_idx = which(data_clean$MRN==s)
     subj_data = data_clean[subj_idx, ]
-    dates = as.Date(as.character(subj_data$record.date.collected...Scan),
+    dates = as.Date(as.character(subj_data$date_scan),
                     format="%m/%d/%Y")
     base_DOA = which.min(dates)
     subj_clin = adhd_clin[which(adhd_clin$MRN==s), ]
@@ -140,11 +143,10 @@ data_base[, c('SX_HI_slopeNext', 'SX_inatt_slopeNext',
               'SX_HI_slopeLast', 'SX_inatt_slopeLast',
               'SX_HI_slopeStudy', 'SX_inatt_slopeStudy')] = NA
 for (r in 1:nrow(data_base)) {
-    subj = data_base[r,]$Medical.Record...MRN...Subjects
+    subj = data_base[r,]$MRN
     subj_clin = adhd_clin[which(adhd_clin$MRN==subj), ]
     clin_dates = as.Date(as.character(subj_clin$DOA), format="%m/%d/%y")
-    dob = as.Date(as.character(data_base[r, 'Date.of.Birth...Subjects']),
-                  format="%m/%d/%Y")
+    dob = as.Date(as.character(data_base[r, 'DOB']), format="%m/%d/%Y")
     age_clinical = as.numeric((clin_dates - dob)/365.25)
 
     ordered_ages = sort(age_clinical, index.return=T)
@@ -184,6 +186,6 @@ for (s in c('Next', 'Last', 'Study')) {
     }
 }
 today = format(Sys.time(), "%m%d%Y")
-out_fname = sprintf('~/data/baseline_prediction/dti_%s_OD%.2f_%s', prop, qtile, today)
+out_fname = sprintf('~/data/baseline_prediction/struct_%s_OD%.2f', prop, qtile, today)
 write.csv(data_base, file=sprintf('%s.csv', out_fname), row.names=F, na='', 
           quote=F)
