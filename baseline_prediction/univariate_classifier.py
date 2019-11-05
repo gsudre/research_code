@@ -18,7 +18,8 @@ myseed = int(sys.argv[4])
 # output_dir = home + '/data/tmp/'
 # myseed = 42
 
-ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '2'))
+# 16 if running it locally
+ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '16'))
 
 # Utility function to report best scores
 def report(results, n_top=3):
@@ -84,7 +85,7 @@ if __name__ == '__main__':
     ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2, random_state=myseed)
     random_search = RandomizedSearchCV(pipe, param_distributions=param_dist,
                                    n_iter=n_iter_search, cv=ss, iid=False,
-                                   refit=True, random_state=myseed, verbose=1, scoring='roc_auc', n_jobs=-1)
+                                   refit=True, random_state=myseed, verbose=1, scoring='roc_auc', n_jobs=ncpus)
 
     X = data[feature_names].values
 
