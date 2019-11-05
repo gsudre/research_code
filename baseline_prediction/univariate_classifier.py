@@ -60,7 +60,7 @@ if __name__ == '__main__':
     from sklearn.pipeline import Pipeline
     from sklearn.svm import SVC
     from sklearn.decomposition import PCA
-    from sklearn.model_selection import RandomizedSearchCV
+    from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
     from sklearn.ensemble import RandomForestClassifier
     from scipy.stats import randint as sp_randint
     from sklearn.feature_selection import SelectPercentile, f_classif, VarianceThreshold
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     #           "clf__criterion": ["gini", "entropy"],
     #           "clf__n_estimators": [10, 100],
     #           'selector__percentile': [5, 10]}
-    param_dist = {"clf__kernel": ['linear', 'rbf'],
+    params = {"clf__kernel": ['linear', 'rbf'],
             'clf__C': [.001, .01, .1, 1, 10, 100, 1000],
             'selector__percentile': [5, 10, 15, 20]}
     
@@ -83,9 +83,11 @@ if __name__ == '__main__':
     pipe = Pipeline(estimators)
     n_iter_search = 200
     ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2, random_state=myseed)
-    random_search = RandomizedSearchCV(pipe, param_distributions=param_dist,
+    my_search = RandomizedSearchCV(pipe, param_distributions=params,
                                    n_iter=n_iter_search, cv=ss, iid=False,
                                    refit=True, random_state=myseed, verbose=1, scoring='roc_auc', n_jobs=ncpus)
+    my_search = GridSearchCV(pipe, cv=ss, iid=False, param_grid=params,
+                                   refit=True, verbose=1, scoring='roc_auc', n_jobs=ncpus)
 
     X = data[feature_names].values
 
@@ -97,12 +99,12 @@ if __name__ == '__main__':
         selector = VarianceThreshold()
         X = selector.fit_transform(X)
 
-    random_search.fit(X[training_indices], y[training_indices])
+    my_search.fit(X[training_indices], y[training_indices])
 
-    report(random_search.cv_results_, n_top=10)
+    report(my_search.cv_results_, n_top=10)
 
-    train_score = random_search.score(X[training_indices], y[training_indices])
-    val_score = random_search.score(X[testing_indices], y[testing_indices])
+    train_score = my_search.score(X[training_indices], y[training_indices])
+    val_score = my_search.score(X[testing_indices], y[testing_indices])
 
     print('Testing: %.2f' % val_score)
 
