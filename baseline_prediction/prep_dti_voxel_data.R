@@ -1,5 +1,15 @@
 qtile=.95
+nvox=11990
+prop='rd'
 min_time = 30*9  # time between assessments in days
+
+print(sprintf('Voxelwise %s with %f quantile OD', prop, qtile))
+
+# the idea is to do this for voxel data, and then after we remove the bad scans
+# we run a PCA in the entire clean dataset to summarize the data. I know we'd
+# need to do this in a train/test split, but it's unsupervised and its's not
+# that costly to always redo it. The size of our data also justifies it a bit,
+# as it does make a difference adding a few more subjects.
 
 source('~/research_code/lab_mgmt/merge_on_closest_date.R')
 
@@ -60,17 +70,24 @@ df_clean = df[idx,]
 
 cat(sprintf('Down to %d scans after removing on QC variables\n', nrow(df_clean)))
 
-tracts = read.csv('~/data/baseline_prediction/jhu_tracts_1020.csv')
-# somehow I have two entries for 1418?
-x = duplicated(tracts$id)
-data = merge(df_clean, tracts[!x, ], by.x='Mask.ID...Scan', by.y='id')
-tract_names = colnames(tracts)[grepl(colnames(tracts), pattern="^ad") | 
-                                grepl(colnames(tracts), pattern="^rd")]
+dti_data = matrix(nrow=nrow(df_clean), ncol=nvox)
+for (s in 1:nrow(dti_data)) {
+    a = read.table(sprintf('~/data/baseline_prediction/dti_voxels/%04d_%s.txt',
+                            df_clean[s,]$Mask.ID...Scan, prop))
+    dti_data[s, ] = a[, 4]
+}
+var_names = sapply(1:nvox, function(x) sprintf('v%05d', x))
+colnames(dti_data) = var_names
+data = cbind(df_clean$Mask.ID...Scan, dti_data)
+colnames(data)[1] = 'mask.id'
+
+x = duplicated(data[, 'mask.id'])
+data = merge(df_clean, data[!x, ], by.x='Mask.ID...Scan', by.y='mask.id')
 
 iso <- isolationForest$new()
-iso$fit(data[, tract_names])
+iso$fit(data[, var_names])
 scores_if = as.matrix(iso$scores)[,3]
-scores_lof = lof(data[, tract_names], k = round(.5 * nrow(data)))
+scores_lof = lof(data[, var_names], k = round(.5 * nrow(data)))
 
 thresh_lof = quantile(scores_lof, qtile)
 thresh_if = quantile(scores_if, qtile)
@@ -78,17 +95,6 @@ idx = scores_lof < thresh_lof & scores_if < thresh_if
 data_clean = data[idx, ]
 
 cat(sprintf('Down to %d scans after removing on data QC\n', nrow(data_clean)))
-
-# changing variable names to make it easier to find them later
-new_names = c()
-for (v in colnames(data_clean)) {
-    if (v %in% tract_names) {
-        new_names = c(new_names, sprintf('v_%s', v))
-    } else {
-        new_names = c(new_names, v)
-    }
-}
-colnames(data_clean) = new_names
 
 # choosing only baseline scan for each person, provided that they have a later
 # clinical assessment. At this point, all scans are good, so it's OK to just
@@ -110,8 +116,20 @@ for (s in unique(data_clean$Medical.Record...MRN...Subjects)) {
         keep_me = c(keep_me, subj_idx[base_DOA])
     }
 }
-data_base = data_clean[keep_me, ]
-cat(sprintf('Down to %d scans after keeping only baseline with future clinicals\n', nrow(data_base)))
+data_base_full = data_clean[keep_me, ]
+cat(sprintf('Down to %d scans after keeping only baseline with future clinicals\n', nrow(data_base_full)))
+
+# changing variable names to make it easier to find them later
+new_names = c()
+for (v in colnames(data_base_full)) {
+    if (v %in% var_names) {
+        new_names = c(new_names, sprintf('v_%s', v))
+    } else {
+        new_names = c(new_names, v)
+    }
+}
+colnames(data_base_full) = new_names
+data_base = data_base_full
 
 # remember to keep the entire symptom history. This way we can compute slopes
 # starting at the beginning, at current itme, and ending either one year later,
@@ -165,7 +183,7 @@ for (s in c('Next', 'Last', 'Study')) {
         data_base[!idx, sprintf('%s_group%s', t, s)] = 'nonimprovers'
     }
 }
-
 today = format(Sys.time(), "%m%d%Y")
-out_fname = sprintf('~/data/baseline_prediction/dti_JHUtracts_ADRDonly_OD%.2f_%s', qtile, today)
-write.csv(data_base, file=sprintf('%s.csv', out_fname), row.names=F, na='', quote=F)
+out_fname = sprintf('~/data/baseline_prediction/dti_%s_OD%.2f_%s', prop, qtile, today)
+write.csv(data_base, file=sprintf('%s.csv', out_fname), row.names=F, na='', 
+          quote=F)

@@ -10,13 +10,11 @@ home = os.path.expanduser('~')
 
 phen_fname = sys.argv[1]
 target = sys.argv[2]
-features_fname = sys.argv[3]
-output_dir = sys.argv[4]
-myseed = int(sys.argv[5])
+output_dir = sys.argv[3]
+myseed = int(sys.argv[4])
 
-# phen_fname = home + '/data/baseline_prediction/dti_JHUtracts_ADRDonly_OD0.95.csv'
+# phen_fname = home + '/data/baseline_prediction/dti_rd_OD0.95_11052019.csv'
 # target = 'SX_HI_groupStudy'
-# features_fname = home + '/data/baseline_prediction/ad_rd_vars.txt'
 # output_dir = home + '/data/tmp/'
 # myseed = 42
 
@@ -42,9 +40,8 @@ if __name__ == '__main__':
     data['class'] = data['class'].map({'improvers': 1, 'nonimprovers': 0})
     print(data['class'].value_counts())
 
-    fid = open(features_fname, 'r')
-    feature_names = [line.rstrip() for line in fid]
-    fid.close()
+    # it's a feature to be used if it starts with v_
+    feature_names = [f for f in data.columns if f.find('v_') == 0]
 
     if myseed < 0:
         make_random = True
@@ -65,9 +62,9 @@ if __name__ == '__main__':
     from sklearn.model_selection import RandomizedSearchCV
     from sklearn.ensemble import RandomForestClassifier
     from scipy.stats import randint as sp_randint
-    from sklearn.feature_selection import SelectPercentile, f_classif
+    from sklearn.feature_selection import SelectPercentile, f_classif, VarianceThreshold
     from sklearn.model_selection import StratifiedShuffleSplit
-
+    
     # param_dist = {"clf__max_depth": [3, None],
     #           "clf__max_features": sp_randint(1, 11),
     #           "clf__min_samples_split": sp_randint(2, 11),
@@ -79,8 +76,8 @@ if __name__ == '__main__':
             'clf__C': [.001, .01, .1, 1, 10, 100, 1000],
             'selector__percentile': [5, 10, 15, 20]}
     
-    estimators = [('reduce_dim', PCA()),
-                  ('selector', SelectPercentile(f_classif)),
+    estimators = [('selector', SelectPercentile(f_classif)),
+                  ('reduce_dim', PCA()),
                   ('clf', SVC(gamma='scale'))]
     pipe = Pipeline(estimators)
     n_iter_search = 200
@@ -94,6 +91,10 @@ if __name__ == '__main__':
     # use negative seed to randomize the data
     if make_random:
         X = np.random.uniform(np.min(X), np.max(X), X.shape)
+    else:
+        # remove constant features
+        selector = VarianceThreshold()
+        X = selector.fit_transform(X)
 
     random_search.fit(X[training_indices], y[training_indices])
 
