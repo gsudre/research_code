@@ -8,17 +8,17 @@ import multiprocessing
 
 home = os.path.expanduser('~')
 
-# phen_fname = sys.argv[1]
-# target = sys.argv[2]
-# features_fname = sys.argv[3]
-# output_dir = sys.argv[4]
-# myseed = int(sys.argv[5])
+phen_fname = sys.argv[1]
+target = sys.argv[2]
+features_fname = sys.argv[3]
+output_dir = sys.argv[4]
+myseed = int(sys.argv[5])
 
-phen_fname = home + '/data/baseline_prediction/dti_JHUtracts_ADRDonly_OD0.95.csv'
-target = 'SX_HI_groupStudy'
-features_fname = home + '/data/baseline_prediction/ad_rd_vars.txt'
-output_dir = home + '/data/tmp/'
-myseed = 42
+# phen_fname = home + '/data/baseline_prediction/dti_JHUtracts_ADRDonly_OD0.95.csv'
+# target = 'SX_HI_groupStudy'
+# features_fname = home + '/data/baseline_prediction/ad_rd_vars.txt'
+# output_dir = home + '/data/tmp/'
+# myseed = 42
 
 ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '2'))
 
@@ -46,6 +46,13 @@ if __name__ == '__main__':
     feature_names = [line.rstrip() for line in fid]
     fid.close()
 
+    if myseed < 0:
+        make_random = True
+        print('Creating random data!!!')
+        myseed = -1 * myseed
+    else:
+        make_random = False
+
     y = data['class'].values
     training_indices, testing_indices = train_test_split(data.index,
                                                             stratify = y, train_size=0.8,
@@ -69,31 +76,52 @@ if __name__ == '__main__':
     #           "clf__n_estimators": [10, 100],
     #           'selector__percentile': [5, 10]}
     param_dist = {"clf__kernel": ['linear', 'rbf'],
-            'selector__percentile': [5, 10]}
+            'clf__C': [.001, .01, .1, 1, 10, 100, 1000],
+            'selector__percentile': [5, 10, 15, 20]}
     
     estimators = [('reduce_dim', PCA()),
                   ('selector', SelectPercentile(f_classif)),
                   ('clf', SVC(gamma='scale'))]
     pipe = Pipeline(estimators)
-    n_iter_search = 20
-    ss = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=myseed)
+    n_iter_search = 200
+    ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2, random_state=myseed)
     random_search = RandomizedSearchCV(pipe, param_distributions=param_dist,
                                    n_iter=n_iter_search, cv=ss, iid=False,
                                    refit=True, random_state=myseed, verbose=1, scoring='roc_auc', n_jobs=-1)
 
     X = data[feature_names].values
 
+    # use negative seed to randomize the data
+    if make_random:
+        X = np.random.uniform(np.min(X), np.max(X), X.shape)
+
     random_search.fit(X[training_indices], y[training_indices])
 
-    report(random_search.cv_results_)
+    report(random_search.cv_results_, n_top=10)
 
     train_score = random_search.score(X[training_indices], y[training_indices])
     val_score = random_search.score(X[testing_indices], y[testing_indices])
 
     print('Testing: %.2f' % val_score)
 
+    from sklearn.dummy import DummyClassifier
+    from sklearn.metrics import roc_auc_score
+    clf = DummyClassifier(strategy='most_frequent', random_state=myseed)
+    clf.fit(X[training_indices], y[training_indices])
+    preds = clf.predict(X[testing_indices])
+    score_majority = roc_auc_score(y[testing_indices], preds)
+                            
+    clf = DummyClassifier(strategy='stratified', random_state=myseed)
+    clf.fit(X[training_indices], y[training_indices])
+    preds = clf.predict(X[testing_indices])
+    score_strat = roc_auc_score(y[testing_indices], preds)
+
+    print('Dummy majority: %.2f' % score_majority)
+    print('Dummy stratified: %.2f' % score_strat)
+
     phen = phen_fname.split('/')[-1].replace('.csv', '')
     out_fname = '%s_%s_%d' % (phen, target, myseed)
     fout = open('%s/classification_results_%s.csv' % (output_dir, phen), 'a')
-    fout.write('%s,%f,%f\n' % (out_fname, train_score, val_score))
+    fout.write('%s,%f,%f,%f,%f\n' % (out_fname, train_score, val_score,
+                               score_majority, score_strat))
     fout.close()
