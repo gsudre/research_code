@@ -192,8 +192,8 @@ if (with_qc) {
         colnames(data_base)[cidx] = sprintf('v_%s', v)
     }
     # make sure all non-binary variables are in the same scale
-    myvars = grepl(colnames(data_base), pattern='^v_')
-    data_base[myvars] = scale(data_base[my_vars])
+    my_vars = grepl(colnames(data_base), pattern='^v_')
+    data_base[my_vars] = scale(data_base[my_vars])
     data_base$v_isMale = 0
     data_base[data_base$Sex...Subjects == 'Male',]$v_isMale = 1 
     suffix = 'withQC_'
