@@ -1,6 +1,7 @@
 qtile = .95
 prop= 'area'
 min_time = 30*9  # time between assessments in days
+with_qc = T
 
 print(sprintf('Voxelwise %s with %f quantile OD', prop, qtile))
 
@@ -185,7 +186,24 @@ for (s in c('Next', 'Last', 'Study')) {
         data_base[!idx, sprintf('%s_group%s', t, s)] = 'nonimprovers'
     }
 }
+if (with_qc) {
+    # change the names of QC variables, sex, and age to be included in
+    # prediction
+    for (v in c(qc_vars, 'age_at_scan')) {
+        cidx = which(colnames(data_base) == v)
+        colnames(data_base)[cidx] = sprintf('v_%s', v)
+    }
+    # make sure all non-binary variables are in the same scale
+    my_vars = grepl(colnames(data_base), pattern='^v_')
+    data_base[my_vars] = scale(data_base[my_vars])
+    data_base$v_isMale = 0
+    data_base[data_base$Sex == 'Male',]$v_isMale = 1 
+    suffix = 'withQC_'
+} else {
+    suffix = ''
+}
 today = format(Sys.time(), "%m%d%Y")
-out_fname = sprintf('~/data/baseline_prediction/struct_%s_OD%.2f_%s', prop, qtile, today)
+out_fname = sprintf('~/data/baseline_prediction/struct_%s_OD%.2f_%s%s', prop,
+                    qtile, suffix, today)
 write.csv(data_base, file=sprintf('%s.csv', out_fname), row.names=F, na='', 
           quote=F)
