@@ -21,18 +21,6 @@ myseed = int(sys.argv[4])
 # 16 if running it locally
 ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '16'))
 
-# Utility function to report best scores
-def report(results, n_top=3):
-    for i in range(1, n_top + 1):
-        candidates = np.flatnonzero(results['rank_test_score'] == i)
-        for candidate in candidates:
-            print("Model with rank: {0}".format(i))
-            print("Mean validation score: {0:.3f} (std: {1:.3f})".format(
-                  results['mean_test_score'][candidate],
-                  results['std_test_score'][candidate]))
-            print("Parameters: {0}".format(results['params'][candidate]))
-            print("")
-
 
 if __name__ == '__main__':
     # multiprocessing.set_start_method('forkserver')
@@ -66,18 +54,6 @@ if __name__ == '__main__':
     from sklearn.feature_selection import SelectPercentile, f_classif, VarianceThreshold, SelectFpr, RFECV
     from sklearn.model_selection import StratifiedShuffleSplit
     from sklearn.preprocessing import StandardScaler
-    
-    # param_dist = {"clf__max_depth": [3, None],
-    #           "clf__max_features": sp_randint(1, 11),
-    #           "clf__min_samples_split": sp_randint(2, 11),
-    #           "clf__bootstrap": [True, False],
-    #           "clf__criterion": ["gini", "entropy"],
-    #           "clf__n_estimators": [10, 100],
-    #           'selector__percentile': [5, 10]}
-    params = {"clf__kernel": ['linear', 'rbf'],
-            'clf__C': [.001, .01, .1, 1, 10, 100, 1000],
-            # 'selector__percentile': [5, 10, 15, 20],
-            'selector__alpha': np.arange(.01, .11, .02)}
     
     clf = SVC(kernel='linear', gamma='scale')
     ss = StratifiedShuffleSplit(n_splits=10, test_size=0.2, random_state=myseed)
