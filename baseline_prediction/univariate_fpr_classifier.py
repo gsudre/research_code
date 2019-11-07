@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     # remove columns that are all NaNs
     data.dropna(axis=1, how='all', inplace=True)
-    
+
     data.rename(columns={target: 'class'}, inplace=True)
     data['class'] = data['class'].map({'improvers': 1, 'nonimprovers': 0})
     print(data['class'].value_counts())
@@ -130,7 +130,10 @@ if __name__ == '__main__':
 
     phen = phen_fname.split('/')[-1].replace('.csv', '')
     out_fname = '%s_%s_%d' % (phen, target, myseed)
-    fout = open('%s/classification_results_FPR_%s.csv' % (output_dir, phen), 'a')
+    if make_random:
+        fout = open('%s/classification_results_RND_FPR_%s.csv' % (output_dir, phen), 'a')
+    else:
+        fout = open('%s/classification_results_FPR_%s.csv' % (output_dir, phen), 'a')
     fout.write('%s,%f,%f,%f,%f\n' % (out_fname, train_score, val_score,
                                score_majority, score_strat))
     fout.close()
