@@ -1,5 +1,5 @@
 qtile = .95
-prop= 'thickness'
+prop= 'area'
 min_time = 30*9  # time between assessments in days
 with_qc = T
 

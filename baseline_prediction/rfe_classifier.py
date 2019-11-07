@@ -25,6 +25,10 @@ ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '16'))
 if __name__ == '__main__':
     # multiprocessing.set_start_method('forkserver')
     data = pd.read_csv(phen_fname)
+
+    # remove columns that are all NaNs
+    data.dropna(axis=1, how='all', inplace=True)
+    
     data.rename(columns={target: 'class'}, inplace=True)
     data['class'] = data['class'].map({'improvers': 1, 'nonimprovers': 0})
     print(data['class'].value_counts())
@@ -62,6 +66,7 @@ if __name__ == '__main__':
 
     X = data[feature_names].values
 
+    #
     # use negative seed to randomize the data
     if make_random:
         X = np.random.uniform(np.min(X), np.max(X), X.shape)

@@ -1,6 +1,6 @@
 qtile=.95
 nvox=11990
-prop='rd'
+prop='fa'
 min_time = 30*9  # time between assessments in days
 with_qc = T
 
