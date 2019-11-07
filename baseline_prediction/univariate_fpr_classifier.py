@@ -37,6 +37,10 @@ def report(results, n_top=3):
 if __name__ == '__main__':
     # multiprocessing.set_start_method('forkserver')
     data = pd.read_csv(phen_fname)
+
+    # remove columns that are all NaNs
+    data.dropna(axis=1, how='all', inplace=True)
+    
     data.rename(columns={target: 'class'}, inplace=True)
     data['class'] = data['class'].map({'improvers': 1, 'nonimprovers': 0})
     print(data['class'].value_counts())
