@@ -42,7 +42,12 @@ if __name__ == '__main__':
     data.dropna(axis=1, how='all', inplace=True)
 
     data.rename(columns={target: 'class'}, inplace=True)
-    data['class'] = data['class'].map({'improvers': 1, 'nonimprovers': 0})
+    if len(np.unique(data['class'])) == 2:
+        data['class'] = data['class'].map({'improvers': 1, 'nonimprovers': 0})
+        scoring='roc_auc'
+    else:
+        scoring='f1_weighted'
+    
     print(data['class'].value_counts())
 
     # it's a feature to be used if it starts with v_
@@ -62,7 +67,7 @@ if __name__ == '__main__':
                                                             random_state=myseed)
 
     from sklearn.pipeline import Pipeline
-    from sklearn.svm import SVC
+    from sklearn.svm import SVC, LinearSVC
     from sklearn.decomposition import PCA
     from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
     from sklearn.ensemble import RandomForestClassifier
@@ -92,11 +97,8 @@ if __name__ == '__main__':
     pipe = Pipeline(estimators)
     n_iter_search = 200
     ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2, random_state=myseed)
-    my_search = RandomizedSearchCV(pipe, param_distributions=params,
-                                   n_iter=n_iter_search, cv=ss, iid=False,
-                                   refit=True, random_state=myseed, verbose=1, scoring='roc_auc', n_jobs=ncpus)
     my_search = GridSearchCV(pipe, cv=ss, iid=False, param_grid=params,
-                                   refit=True, verbose=1, scoring='roc_auc', n_jobs=ncpus)
+                                   refit=True, verbose=1, scoring=scoring, n_jobs=ncpus)
 
     X = data[feature_names].values
 
@@ -114,16 +116,21 @@ if __name__ == '__main__':
     print('Testing: %.2f' % val_score)
 
     from sklearn.dummy import DummyClassifier
-    from sklearn.metrics import roc_auc_score
+    from sklearn.metrics import roc_auc_score, f1_score
     clf = DummyClassifier(strategy='most_frequent', random_state=myseed)
     clf.fit(X[training_indices], y[training_indices])
     preds = clf.predict(X[testing_indices])
-    score_majority = roc_auc_score(y[testing_indices], preds)
-                            
+    if len(np.unique(data['class'])) == 2:
+        score_majority = roc_auc_score(y[testing_indices], preds)
+    else:
+        score_majority = f1_score(y[testing_indices], preds, average='weighted')
     clf = DummyClassifier(strategy='stratified', random_state=myseed)
     clf.fit(X[training_indices], y[training_indices])
     preds = clf.predict(X[testing_indices])
-    score_strat = roc_auc_score(y[testing_indices], preds)
+    if len(np.unique(data['class'])) == 2:
+        score_strat = roc_auc_score(y[testing_indices], preds)
+    else:
+        score_strat = f1_score(y[testing_indices], preds, average='weighted')
 
     print('Dummy majority: %.2f' % score_majority)
     print('Dummy stratified: %.2f' % score_strat)
