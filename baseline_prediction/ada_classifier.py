@@ -19,7 +19,7 @@ myseed = int(sys.argv[4])
 # myseed = 42
 
 # 16 if running it locally
-ncpus = 1 #int(os.environ.get('SLURM_CPUS_PER_TASK', '16'))
+ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '16'))
 
 # Utility function to report best scores
 def report(results, n_top=3):
@@ -70,22 +70,21 @@ if __name__ == '__main__':
     from sklearn.svm import SVC, LinearSVC
     from sklearn.decomposition import PCA
     from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
-    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.ensemble import GradientBoostingClassifier
     from scipy.stats import randint as sp_randint
     from sklearn.feature_selection import SelectPercentile, f_classif, VarianceThreshold, SelectFpr
     from sklearn.model_selection import StratifiedShuffleSplit
     from sklearn.preprocessing import StandardScaler
     
-    params = {'clf__n_estimators': [200, 500],
-              'clf__max_features': ['auto', 'sqrt', 'log2'],
+    params = {'clf__n_estimators': [100, 200, 500],
               'clf__max_depth': [4,5,6,7,8],
-              'clf__criterion':['gini', 'entropy'],
+              'clf__learning_rate':[.001, .01, .1, .3, .5, .7, .9],
               'selector__alpha': [.01, .03, .05, .07, .1, 1]}
     
     estimators = [('some_variace', VarianceThreshold(threshold=0)),
                   ('unit_variance', StandardScaler()),
                     ('selector', SelectFpr(f_classif)),
-                  ('clf', RandomForestClassifier(random_state=myseed))]
+                  ('clf', GradientBoostingClassifier(random_state=myseed))]
     pipe = Pipeline(estimators)
     ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2, random_state=myseed)
     my_search = GridSearchCV(pipe, cv=ss, iid=False, param_grid=params,

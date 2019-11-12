@@ -70,11 +70,11 @@ if __name__ == '__main__':
     from sklearn.svm import SVC, LinearSVC
     from sklearn.decomposition import PCA
     from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
-    from sklearn.ensemble import GradientBoostingClassifier
     from scipy.stats import randint as sp_randint
     from sklearn.feature_selection import SelectPercentile, f_classif, VarianceThreshold, SelectFpr
     from sklearn.model_selection import StratifiedShuffleSplit
     from sklearn.preprocessing import StandardScaler
+    from xgboost import XGBClassifier
     
     params = {'clf__n_estimators': [100, 200, 500],
               'clf__max_depth': [4,5,6,7,8],
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     estimators = [('some_variace', VarianceThreshold(threshold=0)),
                   ('unit_variance', StandardScaler()),
                     ('selector', SelectFpr(f_classif)),
-                  ('clf', RandomForestClassifier(random_state=myseed))]
+                  ('clf', XGBClassifier(random_state=myseed))]
     pipe = Pipeline(estimators)
     ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2, random_state=myseed)
     my_search = GridSearchCV(pipe, cv=ss, iid=False, param_grid=params,
