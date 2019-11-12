@@ -19,7 +19,7 @@ myseed = int(sys.argv[4])
 # myseed = 42
 
 # 16 if running it locally
-ncpus = 1 #int(os.environ.get('SLURM_CPUS_PER_TASK', '16'))
+ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '16'))
 
 # Utility function to report best scores
 def report(results, n_top=3):
@@ -76,19 +76,20 @@ if __name__ == '__main__':
     from sklearn.preprocessing import StandardScaler
     from xgboost import XGBClassifier
     
-    params = {'clf__n_estimators': [100, 200, 500],
-              'clf__max_depth': [4,5,6,7,8],
-              'clf__learning_rate':[.001, .01, .1, .3, .5, .7, .9],
+    params = {#'clf__n_estimators': [100, 200, 500],
+    #           'clf__max_depth': [4,5,6,7,8],
+    #           'clf__learning_rate':[.001, .01, .1, .3, .5, .7, .9],
               'selector__alpha': [.01, .03, .05, .07, .1, 1]}
     
     estimators = [('some_variace', VarianceThreshold(threshold=0)),
                   ('unit_variance', StandardScaler()),
                     ('selector', SelectFpr(f_classif)),
-                  ('clf', XGBClassifier(random_state=myseed))]
+                  ('clf', XGBClassifier(random_state=myseed,
+                                        nthread=ncpus))]
     pipe = Pipeline(estimators)
     ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2, random_state=myseed)
     my_search = GridSearchCV(pipe, cv=ss, iid=False, param_grid=params,
-                                   refit=True, verbose=1, scoring=scoring, n_jobs=ncpus)
+                                   refit=True, verbose=1, scoring=scoring, n_jobs=1)
 
     X = data[feature_names].values
 
