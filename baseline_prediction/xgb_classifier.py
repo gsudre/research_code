@@ -129,9 +129,9 @@ if __name__ == '__main__':
     phen = phen_fname.split('/')[-1].replace('.csv', '')
     out_fname = '%s_%s_%d' % (phen, target, myseed)
     if make_random:
-        fout = open('%s/classification_results_RND_RF_%s.csv' % (output_dir, phen), 'a')
+        fout = open('%s/classification_results_RND_XGB_%s.csv' % (output_dir, phen), 'a')
     else:
-        fout = open('%s/classification_results_RF_%s.csv' % (output_dir, phen), 'a')
+        fout = open('%s/classification_results_XGB_%s.csv' % (output_dir, phen), 'a')
     fout.write('%s,%f,%f,%f,%f\n' % (out_fname, train_score, val_score,
                                score_majority, score_strat))
     fout.close()
