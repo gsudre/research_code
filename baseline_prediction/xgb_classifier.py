@@ -19,7 +19,7 @@ myseed = int(sys.argv[4])
 # myseed = 42
 
 # 16 if running it locally
-ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '16'))
+ncpus = 1 #int(os.environ.get('SLURM_CPUS_PER_TASK', '16'))
 
 # Utility function to report best scores
 def report(results, n_top=3):
