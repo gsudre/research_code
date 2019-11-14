@@ -70,43 +70,54 @@ if __name__ == '__main__':
     from sklearn.svm import SVC, LinearSVC
     from sklearn.decomposition import PCA
     from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
+    from sklearn.ensemble import RandomForestClassifier
     from scipy.stats import randint as sp_randint
     from sklearn.feature_selection import SelectPercentile, f_classif, VarianceThreshold, SelectFpr
     from sklearn.model_selection import StratifiedShuffleSplit
     from sklearn.preprocessing import StandardScaler
-    from xgboost import XGBClassifier
+    from sklearn.linear_model import LogisticRegression
     
-    params = {#'clf__n_estimators': [100, 200, 500],
-    #           'clf__max_depth': [4,5,6,7,8],
-    #           'clf__learning_rate':[.001, .01, .1, .3, .5, .7, .9],
-              'selector__alpha': [.01, .03, .05, .07, .1, 1]}
+    params = {"clf__l1_ratio": np.arange(.1, 1, .1),
+            'clf__C': [1.00000000e-04, 7.74263683e-04, 5.99484250e-03, 4.64158883e-02,
+       3.59381366e-01, 2.78255940e+00, 2.15443469e+01, 1.66810054e+02,
+       1.29154967e+03, 1.00000000e+04],
+            # 'selector__percentile': [5, 10, 15, 20],
+            # 'selector__alpha': [.01, .05, .1, 1],
+            'selector__alpha': [.05, .1, 1]}
     
     estimators = [('some_variace', VarianceThreshold(threshold=0)),
                   ('unit_variance', StandardScaler()),
+                  ('reduce_dim', PCA()),
+                #   ('selector', SelectPercentile(f_classif)),
                     ('selector', SelectFpr(f_classif)),
-                  ('clf', XGBClassifier(random_state=myseed,
-                                        nthread=ncpus, eval_metric='auc'))]
-    pipe = Pipeline(estimators)
-    ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2, random_state=myseed)
-    my_search = GridSearchCV(pipe, cv=ss, iid=False, param_grid=params,
-                                   refit=True, verbose=1, scoring=scoring, n_jobs=1)
-    my_search = RandomizedSearchCV(pipe, param_distributions=params, random_state=myseed, n_iter=200, cv=3, verbose=1, n_jobs=1, return_train_score=True)
+                #   ('reduce_dim', PCA()),
+                  ('clf', LogisticRegression(penalty='elasticnet',
+                                             solver='saga',
+                                             class_weight='balanced'))]
     
+    pipe = Pipeline(estimators)
+    ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2,
+                                random_state=myseed)
+    my_search = GridSearchCV(pipe, cv=ss, iid=False, param_grid=params,
+                                   refit=True, verbose=1, scoring=scoring, n_jobs=ncpus)
+
     X = data[feature_names].values
 
     # use negative seed to randomize the data
     if make_random:
         X = np.random.uniform(np.min(X), np.max(X), X.shape)
+    
 
     my_search.fit(X[training_indices], y[training_indices])
 
-    report(my_search.cv_results_, n_top=10)
+    report(my_search.cv_results_, n_top=5)
 
     train_score = my_search.score(X[training_indices], y[training_indices])
     val_score = my_search.score(X[testing_indices], y[testing_indices])
 
+    print('Training: %.2f' % train_score)
     print('Testing: %.2f' % val_score)
-
+    # print(my_search.scores_)
     from sklearn.dummy import DummyClassifier
     from sklearn.metrics import roc_auc_score, f1_score
     clf = DummyClassifier(strategy='most_frequent', random_state=myseed)
@@ -130,9 +141,9 @@ if __name__ == '__main__':
     phen = phen_fname.split('/')[-1].replace('.csv', '')
     out_fname = '%s_%s_%d' % (phen, target, myseed)
     if make_random:
-        fout = open('%s/classification_results_RND_XGB_65-35_%s.csv' % (output_dir, phen), 'a')
+        fout = open('%s/classification_results_RND_FPR_65-35_%s.csv' % (output_dir, phen), 'a')
     else:
-        fout = open('%s/classification_results_XGB_65-35_%s.csv' % (output_dir, phen), 'a')
+        fout = open('%s/classification_results_FPR_65-35_%s.csv' % (output_dir, phen), 'a')
     fout.write('%s,%f,%f,%f,%f\n' % (out_fname, train_score, val_score,
                                score_majority, score_strat))
     fout.close()
