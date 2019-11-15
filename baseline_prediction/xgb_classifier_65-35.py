@@ -78,8 +78,7 @@ if __name__ == '__main__':
     from scipy.stats import uniform, randint
     
     estimators = [('clf', XGBClassifier(random_state=myseed,
-                                    nthread=ncpus, eval_metric='auc',
-                                    )]
+                                    nthread=ncpus, eval_metric='auc'))]
     pipe = Pipeline(estimators)
     params = {
         "clf__colsample_bytree": uniform(0.5, 0.45),
