@@ -79,15 +79,19 @@ if __name__ == '__main__':
     
     estimators = [('clf', XGBClassifier(random_state=myseed,
                                     nthread=ncpus, eval_metric='auc',
-                                    scale_pos_weight=(np.sum(y[training_indices]==0) / np.sum(y[training_indices]==1))))]
+                                    )]
     pipe = Pipeline(estimators)
     params = {
-        "clf__colsample_bytree": uniform(0.9, 0.1),
+        "clf__colsample_bytree": uniform(0.5, 0.45),
         "clf__gamma": uniform(0, 0.5),
-        "clf__learning_rate": uniform(0.1, 0.2), # default 0.1 
+        "clf__learning_rate": uniform(0.01, 0.2), # default 0.1 
         "clf__max_depth": randint(3, 6), # default 3
         "clf__n_estimators": randint(100, 150), # default 100
-        "clf__subsample": uniform(0.6, 0.2),
+        "clf__subsample": uniform(0.6, 0.3),
+        'clf__min_child_weight': randint(1,10),
+        'clf__scale_pos_weight': [1, (np.sum(y[training_indices]==0) / np.sum(y[training_indices]==1))],
+        'clf__reg_lamba': [1e-5, 1e-2, 0.1, 1, 100],
+        'clf__reg_alpha': [1e-5, 1e-2, 0.1, 1, 100],
     }
     my_search = RandomizedSearchCV(pipe, param_distributions=params, 
                                    random_state=myseed, n_iter=500, cv=3,
@@ -104,7 +108,9 @@ if __name__ == '__main__':
 
     report(my_search.cv_results_, n_top=5)
 
-    train_score = my_search.score(X[training_indices], y[training_indices])
+    # train_score = my_search.score(X[training_indices], y[training_indices])
+    candidates = np.flatnonzero(my_search.cv_results_['rank_test_score'] == 1)
+    train_score = my_search.cv_results_['mean_test_score'][candidates[0]]
     val_score = my_search.score(X[testing_indices], y[testing_indices])
 
     print('Testing: %.2f' % val_score)
