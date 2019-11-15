@@ -75,22 +75,24 @@ if __name__ == '__main__':
     from sklearn.model_selection import StratifiedShuffleSplit
     from sklearn.preprocessing import StandardScaler
     from xgboost import XGBClassifier
+    from scipy.stats import uniform, randint
     
-    params = {#'clf__n_estimators': [100, 200, 500],
-    #           'clf__max_depth': [4,5,6,7,8],
-    #           'clf__learning_rate':[.001, .01, .1, .3, .5, .7, .9],
-              'selector__alpha': [.01, .03, .05, .07, .1, 1]}
-    
-    estimators = [('some_variace', VarianceThreshold(threshold=0)),
-                  ('unit_variance', StandardScaler()),
-                    ('selector', SelectFpr(f_classif)),
-                  ('clf', XGBClassifier(random_state=myseed,
-                                        nthread=ncpus, eval_metric='auc'))]
+    estimators = [('clf', XGBClassifier(random_state=myseed,
+                                    nthread=ncpus, eval_metric='auc',
+                                    scale_pos_weight=(np.sum(y[training_indices]==0) / np.sum(y[training_indices]==1))))]
     pipe = Pipeline(estimators)
-    ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2, random_state=myseed)
-    my_search = GridSearchCV(pipe, cv=ss, iid=False, param_grid=params,
-                                   refit=True, verbose=1, scoring=scoring, n_jobs=1)
-    my_search = RandomizedSearchCV(pipe, param_distributions=params, random_state=myseed, n_iter=200, cv=3, verbose=1, n_jobs=1, return_train_score=True)
+    params = {
+        "clf__colsample_bytree": uniform(0.9, 0.1),
+        "clf__gamma": uniform(0, 0.5),
+        "clf__learning_rate": uniform(0.1, 0.2), # default 0.1 
+        "clf__max_depth": randint(3, 6), # default 3
+        "clf__n_estimators": randint(100, 150), # default 100
+        "clf__subsample": uniform(0.6, 0.2),
+    }
+    my_search = RandomizedSearchCV(pipe, param_distributions=params, 
+                                   random_state=myseed, n_iter=500, cv=3,
+                                   verbose=1, n_jobs=1,
+                                   return_train_score=True, iid=False)
     
     X = data[feature_names].values
 
@@ -100,7 +102,7 @@ if __name__ == '__main__':
 
     my_search.fit(X[training_indices], y[training_indices])
 
-    report(my_search.cv_results_, n_top=10)
+    report(my_search.cv_results_, n_top=5)
 
     train_score = my_search.score(X[training_indices], y[training_indices])
     val_score = my_search.score(X[testing_indices], y[testing_indices])
