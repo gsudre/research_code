@@ -109,9 +109,12 @@ if __name__ == '__main__':
 
     # train_score = my_search.score(X[training_indices], y[training_indices])
     candidates = np.flatnonzero(my_search.cv_results_['rank_test_score'] == 1)
-    train_score = my_search.cv_results_['mean_test_score'][candidates[0]]
+    idx = candidates[0]
+    train_score = my_search.cv_results_['mean_test_score'][idx]
+    train_sd = my_search.cv_results_['std_test_score'][idx]
     val_score = my_search.score(X[testing_indices], y[testing_indices])
 
+    print('Training: %.2f (%.2f)' % (train_score, train_sd))
     print('Testing: %.2f' % val_score)
 
     from sklearn.dummy import DummyClassifier
