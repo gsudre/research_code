@@ -76,27 +76,18 @@ if __name__ == '__main__':
     from sklearn.model_selection import StratifiedShuffleSplit
     from sklearn.preprocessing import StandardScaler
     
-    # param_dist = {"clf__max_depth": [3, None],
-    #           "clf__max_features": sp_randint(1, 11),
-    #           "clf__min_samples_split": sp_randint(2, 11),
-    #           "clf__bootstrap": [True, False],
-    #           "clf__criterion": ["gini", "entropy"],
-    #           "clf__n_estimators": [10, 100],
-    #           'selector__percentile': [5, 10]}
     params = {"clf__kernel": ['linear', 'rbf'],
             'clf__C': [.001, .01, .1, 1, 10, 100, 1000],
-            # 'selector__percentile': [5, 10, 15, 20],
-            'selector__alpha': np.arange(.01, .11, .02)}
+            'selector__alpha': [.01, .05, .1, 1]}
     
     estimators = [('some_variace', VarianceThreshold(threshold=0)),
                   ('unit_variance', StandardScaler()),
-                #   ('selector', SelectPercentile(f_classif)),
                     ('selector', SelectFpr(f_classif)),
                 #   ('reduce_dim', PCA()),
-                  ('clf', SVC(gamma='scale'))]
+                  ('clf', SVC(gamma='scale', probability=True))]
     pipe = Pipeline(estimators)
-    n_iter_search = 200
-    ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2, random_state=myseed)
+    ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2,
+                                random_state=myseed)
     my_search = GridSearchCV(pipe, cv=ss, iid=False, param_grid=params,
                                    refit=True, verbose=1, scoring=scoring, n_jobs=ncpus)
 
@@ -108,12 +99,29 @@ if __name__ == '__main__':
 
     my_search.fit(X[training_indices], y[training_indices])
 
-    report(my_search.cv_results_, n_top=10)
+    report(my_search.cv_results_, n_top=5)
 
-    train_score = my_search.score(X[training_indices], y[training_indices])
+    candidates = np.flatnonzero(my_search.cv_results_['rank_test_score'] == 1)
+    idx = candidates[0]
+    train_score = my_search.cv_results_['mean_test_score'][idx]
+    train_sd = my_search.cv_results_['std_test_score'][idx]
     val_score = my_search.score(X[testing_indices], y[testing_indices])
 
+    print('Training: %.2f (%.2f)' % (train_score, train_sd))
     print('Testing: %.2f' % val_score)
+
+    alpha = .95
+    from scipy import stats
+    sys.path.append(home + '/research_code/baseline_prediction/') 
+    from proc_ci import delong_roc_variance
+    y_probs = my_search.predict_proba(X[testing_indices])
+    ypos_prob = np.array([i[1] for i in y_probs])
+    auc, auc_cov = delong_roc_variance(y[testing_indices], ypos_prob)
+    auc_std = np.sqrt(auc_cov)
+    lower_upper_q = np.abs(np.array([0, 1]) - (1 - alpha) / 2)
+    ci = stats.norm.ppf(lower_upper_q, loc=auc, scale=auc_std)
+    ci[ci > 1] = 1
+    print('AUC test (95pct CI): %.2f (%.2f, %.2f)' % (auc, ci[0], ci[1]))
 
     from sklearn.dummy import DummyClassifier
     from sklearn.metrics import roc_auc_score, f1_score
@@ -138,9 +146,14 @@ if __name__ == '__main__':
     phen = phen_fname.split('/')[-1].replace('.csv', '')
     out_fname = '%s_%s_%d' % (phen, target, myseed)
     if make_random:
-        fout = open('%s/classification_results_RND_FPR_65-35_%s.csv' % (output_dir, phen), 'a')
+        fout = open('%s/classification_results_RND_FPRSVC_65-35_%s.csv' % (output_dir, phen), 'a')
     else:
-        fout = open('%s/classification_results_FPR_65-35_%s.csv' % (output_dir, phen), 'a')
+        fout = open('%s/classification_results_FPRSVC_65-35_%s.csv' % (output_dir, phen), 'a')
     fout.write('%s,%f,%f,%f,%f\n' % (out_fname, train_score, val_score,
                                score_majority, score_strat))
     fout.close()
+
+    # saving model
+    import joblib
+    model_fname = '%s/FPRSVC_model_65-35_%s.sav' % (output_dir, phen)
+    joblib.dump(my_search, model_fname)
