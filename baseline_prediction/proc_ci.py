@@ -210,22 +210,22 @@ def delong_roc_variance(ground_truth, predictions, sample_weight=None):
     return aucs[0], delongcov
 
 
-alpha = .95
-y_pred = np.array([0.21, 0.32, 0.63, 0.35, 0.92, 0.79, 0.82, 0.99, 0.04])
-y_true = np.array([0,    1,    0,    0,    1,    1,    0,    1,    0   ])
+# alpha = .95
+# y_pred = np.array([0.21, 0.32, 0.63, 0.35, 0.92, 0.79, 0.82, 0.99, 0.04])
+# y_true = np.array([0,    1,    0,    0,    1,    1,    0,    1,    0   ])
 
-auc, auc_cov = delong_roc_variance(y_true, y_pred)
+# auc, auc_cov = delong_roc_variance(y_true, y_pred)
 
-auc_std = np.sqrt(auc_cov)
-lower_upper_q = np.abs(np.array([0, 1]) - (1 - alpha) / 2)
+# auc_std = np.sqrt(auc_cov)
+# lower_upper_q = np.abs(np.array([0, 1]) - (1 - alpha) / 2)
 
-ci = stats.norm.ppf(
-    lower_upper_q,
-    loc=auc,
-    scale=auc_std)
+# ci = stats.norm.ppf(
+#     lower_upper_q,
+#     loc=auc,
+#     scale=auc_std)
 
-ci[ci > 1] = 1
+# ci[ci > 1] = 1
 
-print('AUC:', auc)
-print('AUC COV:', auc_cov)
-print('95% AUC CI:', ci)
+# print('AUC:', auc)
+# print('AUC COV:', auc_cov)
+# print('95% AUC CI:', ci)

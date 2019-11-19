@@ -117,6 +117,10 @@ if __name__ == '__main__':
     print('Training: %.2f (%.2f)' % (train_score, train_sd))
     print('Testing: %.2f' % val_score)
 
+    alpha = .95
+    from scipy import stats
+    sys.path.append(home + '/research_code/baseline_prediction/') 
+    from proc_ci import delong_roc_variance
     y_probs = my_search.predict_proba(X[testing_indices])
     ypos_prob = np.array([i[1] for i in y_probs])
     auc, auc_cov = delong_roc_variance(y[testing_indices], ypos_prob)
