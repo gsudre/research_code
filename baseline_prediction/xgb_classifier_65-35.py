@@ -95,7 +95,8 @@ if __name__ == '__main__':
     my_search = RandomizedSearchCV(pipe, param_distributions=params, 
                                    random_state=myseed, n_iter=500, cv=3,
                                    verbose=1, n_jobs=1,
-                                   return_train_score=True, iid=False)
+                                   return_train_score=True, iid=False,
+                                   scoring=scoring)
     
     X = data[feature_names].values
 
