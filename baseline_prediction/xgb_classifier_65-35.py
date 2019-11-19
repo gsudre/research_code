@@ -117,6 +117,15 @@ if __name__ == '__main__':
     print('Training: %.2f (%.2f)' % (train_score, train_sd))
     print('Testing: %.2f' % val_score)
 
+    y_probs = my_search.predict_proba(X[testing_indices])
+    ypos_prob = np.array([i[1] for i in y_probs])
+    auc, auc_cov = delong_roc_variance(y[testing_indices], ypos_prob)
+    auc_std = np.sqrt(auc_cov)
+    lower_upper_q = np.abs(np.array([0, 1]) - (1 - alpha) / 2)
+    ci = stats.norm.ppf(lower_upper_q, loc=auc, scale=auc_std)
+    ci[ci > 1] = 1
+    print('AUC test (95pct CI): %.2f (%.2f, %.2f)' % (auc, ci[0], ci[1]))
+
     from sklearn.dummy import DummyClassifier
     from sklearn.metrics import roc_auc_score, f1_score
     clf = DummyClassifier(strategy='most_frequent', random_state=myseed)
