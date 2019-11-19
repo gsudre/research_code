@@ -78,7 +78,8 @@ if __name__ == '__main__':
     
     params = {"clf__kernel": ['linear', 'rbf'],
             'clf__C': [.001, .01, .1, 1, 10, 100, 1000],
-            'selector__alpha': [.01, .05, .1, 1]}
+            'selector__alpha': [.01, .05, .1, 1],
+            'clf__class_weight': [None, 'balanced']}
     
     estimators = [('some_variace', VarianceThreshold(threshold=0)),
                   ('unit_variance', StandardScaler()),

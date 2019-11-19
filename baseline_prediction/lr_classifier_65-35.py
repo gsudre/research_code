@@ -81,19 +81,16 @@ if __name__ == '__main__':
             'clf__C': [1.00000000e-04, 7.74263683e-04, 5.99484250e-03, 4.64158883e-02,
        3.59381366e-01, 2.78255940e+00, 2.15443469e+01, 1.66810054e+02,
        1.29154967e+03, 1.00000000e+04],
-            # 'selector__percentile': [5, 10, 15, 20],
-            # 'selector__alpha': [.01, .05, .1, 1],
-            'selector__alpha': [.05, .1, 1]}
+            'selector__alpha': [.01, .05, .1, 1],
+            'clf__class_weight': [None, 'balanced']}
     
     estimators = [('some_variace', VarianceThreshold(threshold=0)),
                   ('unit_variance', StandardScaler()),
-                  ('reduce_dim', PCA()),
-                #   ('selector', SelectPercentile(f_classif)),
+                #   ('reduce_dim', PCA()),
                     ('selector', SelectFpr(f_classif)),
                 #   ('reduce_dim', PCA()),
                   ('clf', LogisticRegression(penalty='elasticnet',
-                                             solver='saga',
-                                             class_weight='balanced'))]
+                                             solver='saga', max_iter=1000))]
     
     pipe = Pipeline(estimators)
     ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2,
@@ -112,12 +109,28 @@ if __name__ == '__main__':
 
     report(my_search.cv_results_, n_top=5)
 
-    train_score = my_search.score(X[training_indices], y[training_indices])
+    candidates = np.flatnonzero(my_search.cv_results_['rank_test_score'] == 1)
+    idx = candidates[0]
+    train_score = my_search.cv_results_['mean_test_score'][idx]
+    train_sd = my_search.cv_results_['std_test_score'][idx]
     val_score = my_search.score(X[testing_indices], y[testing_indices])
 
-    print('Training: %.2f' % train_score)
+    print('Training: %.2f (%.2f)' % (train_score, train_sd))
     print('Testing: %.2f' % val_score)
-    # print(my_search.scores_)
+
+    alpha = .95
+    from scipy import stats
+    sys.path.append(home + '/research_code/baseline_prediction/') 
+    from proc_ci import delong_roc_variance
+    y_probs = my_search.predict_proba(X[testing_indices])
+    ypos_prob = np.array([i[1] for i in y_probs])
+    auc, auc_cov = delong_roc_variance(y[testing_indices], ypos_prob)
+    auc_std = np.sqrt(auc_cov)
+    lower_upper_q = np.abs(np.array([0, 1]) - (1 - alpha) / 2)
+    ci = stats.norm.ppf(lower_upper_q, loc=auc, scale=auc_std)
+    ci[ci > 1] = 1
+    print('AUC test (95pct CI): %.2f (%.2f, %.2f)' % (auc, ci[0], ci[1]))
+
     from sklearn.dummy import DummyClassifier
     from sklearn.metrics import roc_auc_score, f1_score
     clf = DummyClassifier(strategy='most_frequent', random_state=myseed)
@@ -141,9 +154,14 @@ if __name__ == '__main__':
     phen = phen_fname.split('/')[-1].replace('.csv', '')
     out_fname = '%s_%s_%d' % (phen, target, myseed)
     if make_random:
-        fout = open('%s/classification_results_RND_FPR_65-35_%s.csv' % (output_dir, phen), 'a')
+        fout = open('%s/classification_results_RND_LR_65-35_%s.csv' % (output_dir, phen), 'a')
     else:
-        fout = open('%s/classification_results_FPR_65-35_%s.csv' % (output_dir, phen), 'a')
+        fout = open('%s/classification_results_LR_65-35_%s.csv' % (output_dir, phen), 'a')
     fout.write('%s,%f,%f,%f,%f\n' % (out_fname, train_score, val_score,
                                score_majority, score_strat))
     fout.close()
+
+    # saving model
+    import joblib
+    model_fname = '%s/LR_model_65-35_%s.sav' % (output_dir, phen)
+    joblib.dump(my_search, model_fname)
