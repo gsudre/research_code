@@ -90,7 +90,7 @@ if __name__ == '__main__':
                     ('selector', SelectFpr(f_classif)),
                 #   ('reduce_dim', PCA()),
                   ('clf', LogisticRegression(penalty='elasticnet',
-                                             solver='saga', max_iter=1000))]
+                                             solver='saga', max_iter=10000))]
     
     pipe = Pipeline(estimators)
     ss = StratifiedShuffleSplit(n_splits=100, test_size=0.2,
