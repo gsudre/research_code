@@ -146,3 +146,8 @@ if __name__ == '__main__':
     fout.write('%s,%f,%f,%f,%f\n' % (out_fname, train_score, val_score,
                                score_majority, score_strat))
     fout.close()
+
+    # saving model
+    import joblib
+    model_fname = '%s/XGB_model_65-35_%s.sav' % (output_dir, phen)
+    joblib.dump(my_search, model_fname)
