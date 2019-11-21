@@ -11,9 +11,8 @@ home = os.path.expanduser('~')
 
 phen_fname = sys.argv[1]
 target = sys.argv[2]
-features_fname = sys.argv[3]
-output_dir = sys.argv[4]
-myseed = int(sys.argv[5])
+output_dir = sys.argv[3]
+myseed = int(sys.argv[4])
 
 # phen_fname = home + '/data/baseline_prediction/dti_JHUtracts_ADRDonly_OD0.95.csv'
 # target = 'SX_HI_groupStudy'
@@ -21,7 +20,7 @@ myseed = int(sys.argv[5])
 # output_dir = home + '/data/tmp/'
 # myseed = 42
 
-ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '2'))
+ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '16'))
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('forkserver')
@@ -30,14 +29,12 @@ if __name__ == '__main__':
     data['class'] = data['class'].map({'improvers': 1, 'nonimprovers': 0})
     print(data['class'].value_counts())
 
-    fid = open(features_fname, 'r')
-    feature_names = [line.rstrip() for line in fid]
-    fid.close()
+    feature_names = [f for f in data.columns if f.find('v_') == 0]
 
     target_class = data['class'].values
     training_indices, validation_indices = train_test_split(data.index,
-                                                            stratify = target_class, train_size=0.8,
-                                                            test_size=0.2,
+                                                            stratify = target_class, train_size=0.65,
+                                                            test_size=0.35,
                                                             random_state=myseed)
 
     # removing some warnings by hard coding parameters in the dictionary
