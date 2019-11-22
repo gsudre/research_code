@@ -13,6 +13,7 @@ phen_fname = sys.argv[1]
 target = sys.argv[2]
 output_dir = sys.argv[3]
 myseed = int(sys.argv[4])
+template = sys.argv[5]  # Selector-Transformer-Classifier, Transformer-SelectorClassifier or Classifier
 
 # phen_fname = home + '/data/baseline_prediction/dti_JHUtracts_ADRDonly_OD0.95.csv'
 # target = 'SX_HI_groupStudy'
@@ -39,6 +40,7 @@ if __name__ == '__main__':
 
     # removing some warnings by hard coding parameters in the dictionary
     my_config = {     
+        # classifiers
         'sklearn.svm.LinearSVC': {
             'penalty': ["l1", "l2"],
             'loss': ["hinge", "squared_hinge"],
@@ -55,6 +57,45 @@ if __name__ == '__main__':
             'solver': 'bfgs',
             'class_weight': [None, 'balanced']
         },
+
+        # transformers
+        'sklearn.decomposition.FastICA': {
+            'tol': np.arange(0.0, 1.01, 0.05)
+        },
+
+        'sklearn.cluster.FeatureAgglomeration': {
+            'linkage': ['ward', 'complete', 'average'],
+            'affinity': ['euclidean', 'l1', 'l2', 'manhattan', 'cosine']
+        },
+
+        'sklearn.preprocessing.MaxAbsScaler': {
+        },
+
+        'sklearn.preprocessing.MinMaxScaler': {
+        },
+
+        'sklearn.preprocessing.Normalizer': {
+            'norm': ['l1', 'l2', 'max']
+        },
+
+        'sklearn.decomposition.PCA': {
+            'svd_solver': ['randomized'],
+            'iterated_power': range(1, 11)
+        },
+
+        'sklearn.preprocessing.RobustScaler': {
+        },
+
+        'sklearn.preprocessing.StandardScaler': {
+        },
+
+        # selectors
+        'sklearn.feature_selection.SelectPercentile': {
+            'percentile': range(1, 100),
+            'score_func': {
+                'sklearn.feature_selection.f_classif': None
+            }
+        },
     }
 
     X = data[feature_names].values
@@ -63,7 +104,8 @@ if __name__ == '__main__':
     # tpot = TPOTClassifier(verbosity=2, max_time_mins=2, max_eval_time_mins=0.04, population_size=40, n_jobs=ncpus, use_dask=False)
 
     tpot = TPOTClassifier(n_jobs=ncpus, random_state=myseed, verbosity=2,
-    						config_dict=my_config, use_dask=False,  scoring='roc_auc')
+    						config_dict=my_config, use_dask=False,  scoring='roc_auc',
+                            template=template)
 
 
     # perform the fit in this context manager
@@ -71,7 +113,7 @@ if __name__ == '__main__':
 
     ### after
     phen = phen_fname.split('/')[-1].replace('.csv', '')
-    out_fname = '%s_%s_%d' % (phen, target, myseed)
+    out_fname = '%s_%s_%s_%d' % (phen, target, template, myseed)
     tpot.export('%s/%s_tpot_pipeline.py' % (output_dir, out_fname))
 
     train_score = tpot.score(X[training_indices],
