@@ -1,6 +1,6 @@
 qtile = .95
 prop = 's' 
-# prop = 'sz'
+prop = 'sz'
 voxdir = sprintf('~/data/heritability_change/%sdc_weighted/', prop)
 
 min_time = 30*9  # time between assessments in days
@@ -152,10 +152,10 @@ data_base = data_base_full
 data_base[, 'adhdDX'] = NA
 data_base[, 'threeWay'] = NA
 for (r in 1:nrow(data_base)) {
-    subj = data_base[r,]$Medical.Record...MRN...Subjects
+    subj = data_base[r,]$Medical.Record...MRN
     subj_clin = adhd_clin[which(adhd_clin$MRN==subj), ]
     clin_dates = as.Date(as.character(subj_clin$DOA), format="%m/%d/%y")
-    dob = as.Date(as.character(data_base[r, 'Date.of.Birth...Subjects']),
+    dob = as.Date(as.character(data_base[r, 'Date.of.Birth']),
                   format="%m/%d/%Y")
     age_clinical = as.numeric((clin_dates - dob)/365.25)
 
@@ -185,7 +185,7 @@ for (r in 1:nrow(data_base)) {
 if (with_qc) {
     # change the names of QC variables, sex, and age to be included in
     # prediction
-    for (v in c(qc_vars, 'age_at_scan...Scan...Subjects')) {
+    for (v in c(qc_vars, 'age_at_scan')) {
         cidx = which(colnames(data_base) == v)
         colnames(data_base)[cidx] = sprintf('v_%s', v)
     }
