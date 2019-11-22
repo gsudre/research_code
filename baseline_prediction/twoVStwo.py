@@ -125,6 +125,7 @@ if __name__ == '__main__':
             # the second test sample (true l1), we're good
             if preds[0][0] > preds[1][0]:
                 correct += 1
-            cnt += 1
 
             print('Accuracy: %.2f' % (float(correct)/cnt*100))
+
+            cnt += 1
