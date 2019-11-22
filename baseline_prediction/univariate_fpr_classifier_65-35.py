@@ -13,10 +13,10 @@ target = sys.argv[2]
 output_dir = sys.argv[3]
 myseed = int(sys.argv[4])
 
-# phen_fname = home + '/data/baseline_prediction/dti_rd_OD0.95_11052019.csv'
-# target = 'SX_HI_groupStudy'
-# output_dir = home + '/data/tmp/'
-# myseed = 42
+phen_fname = home + '/data/baseline_prediction/dti_rd_OD0.95_11052019.csv'
+target = 'SX_HI_groupStudy'
+output_dir = home + '/data/tmp/'
+myseed = 42
 
 # 16 if running it locally
 ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '16'))

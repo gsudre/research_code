@@ -125,10 +125,10 @@ data_base = data_base_full
 data_base[, 'adhdDX'] = NA
 data_base[, 'threeWay'] = NA
 for (r in 1:nrow(data_base)) {
-    subj = data_base[r,]$Medical.Record...MRN...Subjects
+    subj = data_base[r,]$Medical.Record...MRN
     subj_clin = adhd_clin[which(adhd_clin$MRN==subj), ]
     clin_dates = as.Date(as.character(subj_clin$DOA), format="%m/%d/%y")
-    dob = as.Date(as.character(data_base[r, 'Date.of.Birth...Subjects']),
+    dob = as.Date(as.character(data_base[r, 'Date.of.Birth']),
                   format="%m/%d/%Y")
     age_clinical = as.numeric((clin_dates - dob)/365.25)
 
