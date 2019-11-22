@@ -11,7 +11,7 @@ home = os.path.expanduser('~')
 phen_fname = sys.argv[1]
 target = sys.argv[2]
 output_dir = sys.argv[3]
-mask_fname = int(sys.argv[4])
+mask_fname = sys.argv[4]
 
 # phen_fname = home + '/data/baseline_prediction/dti_rd_OD0.95_11052019.csv'
 # target = 'SX_HI_groupStudy'
