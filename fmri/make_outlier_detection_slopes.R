@@ -1,4 +1,5 @@
-qtile = .9
+args <- commandArgs(trailingOnly = TRUE)
+qtile = as.numeric(args[1])
 
 demo = read.csv('~/data/heritability_change/resting_demo_07032019.csv')
 cat(sprintf('Starting from %d scans\n', nrow(demo)))
@@ -82,10 +83,12 @@ for (i in 1:nnets) {
     for (j in i:nnets) {
         cat(sprintf('Evaluating connections from %s to %s\n',
                     net_names[i], net_names[j]))
-        idx = (conn_map[,2]==net_names[i] | conn_map[,2]==net_names[j] |
-            conn_map[,3]==net_names[i] | conn_map[,3]==net_names[j])
-        # res = apply(fcP[, var_names[idx]], 1, mean, na.rm=T)
-        res = apply(fcP[, var_names[idx]], 1, median, na.rm=T)
+        # idx = (conn_map[,2]==net_names[i] | conn_map[,2]==net_names[j] |
+        #     conn_map[,3]==net_names[i] | conn_map[,3]==net_names[j])
+        idx = (conn_map[,2]==net_names[i] & conn_map[,3]==net_names[j]) |
+            (conn_map[,3]==net_names[i] & conn_map[,2]==net_names[j])
+        res = apply(fcP[, var_names[idx]], 1, mean, na.rm=T)
+        # res = apply(fcP[, var_names[idx]], 1, median, na.rm=T)
         net_dataP = cbind(net_dataP, res)
         header = c(header, sprintf('conn_%sTO%s', net_names[i],
                                                 net_names[j]))
@@ -94,8 +97,8 @@ for (i in 1:nnets) {
 colnames(net_dataP) = header
 rownames(net_dataP) = qc_data_clean$id0
 
-# out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_OD%.2f_posOnly_median', qtile)
-out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_5nets_OD%.2f_median', qtile)
+today = format(Sys.time(), "%m%d%Y")
+out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_5nets_OD%.2f_mean_%s', qtile, today)
 
 var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
               "conn_DorsAttnTOCont", "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn", "conn_SalVentAttnTOCont",

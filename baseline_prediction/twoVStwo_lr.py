@@ -76,7 +76,7 @@ if __name__ == '__main__':
                 'clf__C': [1e-5, 1e-4, 1e-3, 1e-2],
               'clf__class_weight': [None, 'balanced'],
             #   'selector__alpha': [.01, .05, .1, 1],
-            'selector__alpha': [.001, .005, .01, .05],
+            'selector__alpha': [.005, .01, .05],
               }
     
     cnt = 1
