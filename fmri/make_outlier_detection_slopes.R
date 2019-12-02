@@ -75,7 +75,7 @@ fc = t(fc)
 var_names = sapply(1:ncol(fc), function(x) sprintf('conn%d', x))
 colnames(fc) = var_names
 fcP = fc
-fcP[fc<0] = NA
+# fcP[fc<0] = NA
 
 net_dataP = c()
 header = c()
@@ -98,14 +98,23 @@ colnames(net_dataP) = header
 rownames(net_dataP) = qc_data_clean$id0
 
 today = format(Sys.time(), "%m%d%Y")
-out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_5nets_OD%.2f_mean_%s', qtile, today)
+out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_3nets_OD%.2f_meanAll_%s', qtile, today)
 
+# var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
+#               "conn_DorsAttnTOCont", "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn", "conn_SalVentAttnTOCont",
+#               "conn_SalVentAttnTODefault", "conn_ContTOCont",
+#               "conn_ContTODefault", "conn_DefaultTODefault",
+#               "conn_DorsAttnTOLimbic", "conn_SalVentAttnTOLimbic",
+#               "conn_LimbicTOLimbic", "conn_LimbicTOCont", "conn_LimbicTODefault")
+
+# var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
+#               "conn_DorsAttnTOCont", "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn", "conn_SalVentAttnTOCont",
+#               "conn_SalVentAttnTODefault", "conn_ContTOCont",
+#               "conn_ContTODefault", "conn_DefaultTODefault")
+              
 var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
-              "conn_DorsAttnTOCont", "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn", "conn_SalVentAttnTOCont",
-              "conn_SalVentAttnTODefault", "conn_ContTOCont",
-              "conn_ContTODefault", "conn_DefaultTODefault",
-              "conn_DorsAttnTOLimbic", "conn_SalVentAttnTOLimbic",
-              "conn_LimbicTOLimbic", "conn_LimbicTOCont", "conn_LimbicTODefault")
+              "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn",
+              "conn_SalVentAttnTODefault", "conn_DefaultTODefault")
 
 iso <- isolationForest$new()
 iso$fit(as.data.frame(net_dataP[, var_names]))
