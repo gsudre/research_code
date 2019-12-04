@@ -75,13 +75,13 @@ fc = t(fc)
 var_names = sapply(1:ncol(fc), function(x) sprintf('conn%d', x))
 colnames(fc) = var_names
 fcP = fc
-# fcP[fc<0] = NA
+fcP[fc<0] = NA
 
 net_dataP = fcP
 rownames(net_dataP) = qc_data_clean$id0
 
 today = format(Sys.time(), "%m%d%Y")
-out_fname = sprintf('~/data/heritability_change/rsfmri_100x100_OD%.2f_%s',
+out_fname = sprintf('~/data/heritability_change/rsfmri_100x100_posOnly_OD%.2f_%s',
                     qtile, today)
 
 iso <- isolationForest$new()
