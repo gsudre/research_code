@@ -74,41 +74,56 @@ for (s in qc_data_clean$id0) {
 fc = t(fc)
 var_names = sapply(1:ncol(fc), function(x) sprintf('conn%d', x))
 colnames(fc) = var_names
-fcP = fc
-net_dataP = fcP
 
-# impute connections where any scan has NA for a connection (negative). I can;t
-# simply remove them because the number of connections with all positive scans
-# is veery small
-fcP[fc<0] = NA
-library(Hmisc)
-for (conn in 1:ncol(fcP)) {
-    net_dataP[, conn] = impute(fcP[, conn], median)
-}
+# mark which connections are significant. I got from
+# https://www.socscistatistics.com/pvalues/pearsondistribution.aspx that r=.21
+# is significant at p<.05 for n=90 (126-36). So, let's go with that:
+fc[abs(fc) > .21] = 1
+fc[fc < 1] = 0
 
-rownames(net_dataP) = qc_data_clean$id0
-today = format(Sys.time(), "%m%d%Y")
-out_fname = sprintf('~/data/heritability_change/rsfmri_100x100_posOnly_OD%.2f_%s',
-                    qtile, today)
-
+# run second round of QC on the entire connectivity matrix, before collapsing it
 iso <- isolationForest$new()
-iso$fit(as.data.frame(net_dataP[, var_names]))
+iso$fit(as.data.frame(fc))
 scores_if = as.matrix(iso$scores)[,3]
-scores_lof = lof(net_dataP[, var_names], k = round(.5 * nrow(net_dataP)))
+scores_lof = lof(fc, k = round(.5 * nrow(fc)))
 
 thresh_lof = quantile(scores_lof, qtile)
 thresh_if = quantile(scores_if, qtile)
 
-idx = scores_lof < thresh_lof & scores_if < thresh_if
-data = cbind(qc_data_clean[, c('id0', qc_vars)], net_dataP)
-data = data[idx, ]
+idx_clean = scores_lof < thresh_lof & scores_if < thresh_if
+
+fcP = fc[idx_clean, ]
+
+net_dataP = c()
+header = c()
+for (i in 1:nnets) {
+    for (j in i:nnets) {
+        cat(sprintf('Evaluating connections from %s to %s\n',
+                    net_names[i], net_names[j]))
+        idx = (conn_map[,2]==net_names[i] & conn_map[,3]==net_names[j]) |
+            (conn_map[,3]==net_names[i] & conn_map[,2]==net_names[j])
+        res = apply(fcP[, var_names[idx]], 1, sum, na.rm=T)
+        net_dataP = cbind(net_dataP, res)
+        header = c(header, sprintf('conn_%sTO%s', net_names[i],
+                                                net_names[j]))
+    }
+}
+colnames(net_dataP) = header
+rownames(net_dataP) = qc_data_clean$id0[idx_clean]
+
+data = cbind(qc_data_clean[idx_clean, c('id0', qc_vars)], net_dataP)
+
+today = format(Sys.time(), "%m%d%Y")
+out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_sigSum_OD%.2f_%s', qtile, today)
+
+var_names = header
 
 data$mask.id = as.numeric(gsub(data$id0, pattern='sub-', replacement=''))
 
 df = merge(data, demo, by.x='mask.id', by.y='Mask.ID', all.x=T, all.y=F)
 
 num_scans = 2  # number of scans to select
-df$scores = scores_lof[idx]
+df$scores = scores_lof[idx_clean]
 
 # removing people with less than num_scans scans
 idx = which(table(df$Medical.Record...MRN)>=num_scans)
@@ -174,7 +189,7 @@ df = mergeOnClosestDate(filtered_data, clin,
 mres = df
 mres$SX_HI = as.numeric(as.character(mres$SX_hi))
 mres$SX_inatt = as.numeric(as.character(mres$SX_inatt))
-tract_names = var_names
+tract_names = header
 
 write.csv(df, file=sprintf('%s_twoTimePoints.csv', out_fname), row.names=F, na='', quote=F)
 

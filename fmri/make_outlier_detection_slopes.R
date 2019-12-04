@@ -98,7 +98,7 @@ colnames(net_dataP) = header
 rownames(net_dataP) = qc_data_clean$id0
 
 today = format(Sys.time(), "%m%d%Y")
-out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_3nets_OD%.2f_meanAll_%s', qtile, today)
+out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_3netsCog_OD%.2f_meanAll_%s', qtile, today)
 
 # var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
 #               "conn_DorsAttnTOCont", "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn", "conn_SalVentAttnTOCont",
@@ -112,9 +112,15 @@ out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_3nets_OD%.2f_
 #               "conn_SalVentAttnTODefault", "conn_ContTOCont",
 #               "conn_ContTODefault", "conn_DefaultTODefault")
               
-var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
-              "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn",
-              "conn_SalVentAttnTODefault", "conn_DefaultTODefault")
+#var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
+#              "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn",
+#              "conn_SalVentAttnTODefault", "conn_DefaultTODefault")
+
+# var_names = header
+
+var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOCont",
+              "conn_DorsAttnTODefault", "conn_ContTOCont",
+              "conn_ContTODefault", "conn_DefaultTODefault")
 
 iso <- isolationForest$new()
 iso$fit(as.data.frame(net_dataP[, var_names]))
