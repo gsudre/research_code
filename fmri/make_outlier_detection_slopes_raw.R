@@ -167,7 +167,7 @@ df = mergeOnClosestDate(filtered_data, clin,
 mres = df
 mres$SX_HI = as.numeric(as.character(mres$SX_hi))
 mres$SX_inatt = as.numeric(as.character(mres$SX_inatt))
-tract_names = header
+tract_names = var_names
 
 write.csv(df, file=sprintf('%s_twoTimePoints.csv', out_fname), row.names=F, na='', quote=F)
 
