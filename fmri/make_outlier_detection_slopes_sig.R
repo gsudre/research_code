@@ -80,8 +80,8 @@ colnames(fc) = var_names
 # is significant at p<.05 for n=90 (126-36). And .275 for p<.01. So, let's go
 # with that:
 
-# fc[abs(fc) > .21] = 1
-fc[abs(fc) > .275] = 1
+fc[abs(fc) > .21] = 1
+# fc[abs(fc) > .275] = 1
 fc[fc < 1] = 0
 
 net_dataP = c()
@@ -102,29 +102,29 @@ colnames(net_dataP) = header
 rownames(net_dataP) = qc_data_clean$id0
 
 today = format(Sys.time(), "%m%d%Y")
-out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_5nets_p01SigSum_OD%.2f_%s', qtile, today)
+out_fname = sprintf('~/data/heritability_change/rsfmri_7by7from100_DANContDMN_p05SigSum_OD%.2f_%s', qtile, today)
 
-var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
-              "conn_DorsAttnTOCont", "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn", "conn_SalVentAttnTOCont",
-              "conn_SalVentAttnTODefault", "conn_ContTOCont",
-              "conn_ContTODefault", "conn_DefaultTODefault",
-              "conn_DorsAttnTOLimbic", "conn_SalVentAttnTOLimbic",
-              "conn_LimbicTOLimbic", "conn_LimbicTOCont", "conn_LimbicTODefault")
+# var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
+#               "conn_DorsAttnTOCont", "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn", "conn_SalVentAttnTOCont",
+#               "conn_SalVentAttnTODefault", "conn_ContTOCont",
+#               "conn_ContTODefault", "conn_DefaultTODefault",
+#               "conn_DorsAttnTOLimbic", "conn_SalVentAttnTOLimbic",
+#               "conn_LimbicTOLimbic", "conn_LimbicTOCont", "conn_LimbicTODefault")
 
 # var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
 #               "conn_DorsAttnTOCont", "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn", "conn_SalVentAttnTOCont",
 #               "conn_SalVentAttnTODefault", "conn_ContTOCont",
 #               "conn_ContTODefault", "conn_DefaultTODefault")
               
-#var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
+# var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOSalVentAttn",
 #              "conn_DorsAttnTODefault", "conn_SalVentAttnTOSalVentAttn",
 #              "conn_SalVentAttnTODefault", "conn_DefaultTODefault")
 
 # var_names = header
 
-# var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOCont",
-#               "conn_DorsAttnTODefault", "conn_ContTOCont",
-#               "conn_ContTODefault", "conn_DefaultTODefault")
+var_names = c("conn_DorsAttnTODorsAttn", "conn_DorsAttnTOCont",
+              "conn_DorsAttnTODefault", "conn_ContTOCont",
+              "conn_ContTODefault", "conn_DefaultTODefault")
 
 iso <- isolationForest$new()
 iso$fit(as.data.frame(net_dataP[, var_names]))
