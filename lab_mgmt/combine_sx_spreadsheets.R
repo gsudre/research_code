@@ -7,13 +7,13 @@
 library(gdata)
 
 dir_name = '/Volumes/Shaw/Clinical_Interviews/'
-caadid_fname = sprintf('%s/CAADID data 8-19-19.xlsx', dir_name)
-nv_fname = sprintf('%s/nv_interviews_20190409.xlsx', dir_name)
-dica_fname = sprintf('%s/DICA 09-17-2019.xlsx', dir_name)
+caadid_fname = sprintf('%s/CAADID data 10-11-19.xlsx', dir_name)
+nv_fname = sprintf('%s/nv_interviews_20191011.xlsx', dir_name)
+dica_fname = sprintf('%s/DICA 12-13-2019.xlsx', dir_name)
 caadidS_fname = sprintf('%s/Simplex/CAADID data simplex.xlsx', dir_name)
 nvS_fname = sprintf('%s/Simplex/nv_interviews_simplex.xlsx', dir_name)
 dicaS_fname = sprintf('%s/Simplex/DICA simplex.xlsx', dir_name)
-family_fname = '/Volumes/Shaw/Family Study List/Family Study List 7-12-19.xlsx'
+family_fname = NA # '/Volumes/Shaw/Family_Study_List/Family Study List 7-12-19.xlsx'
 papers_fname = sprintf('%s/sx_from_papers.xlsx', dir_name)
 
 # cleaning up CAADID
@@ -115,18 +115,20 @@ colnames(dicaS_clean) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi', 'other_dx', 'source
 sx = rbind(sx, dicaS_clean)
 
 # cleaning up Family Study list
-print(family_fname)
-df = read.xls(family_fname, sheet = 1, header = TRUE, colClasses='character')  # bypassing some weird error in conversion
-print(sprintf('Found %d records.', nrow(df)))
-family = df[, c('MRN', 'Date.of.Assessment', 'Inatt.sx.adult', 'HI.sx.adult')]
-colnames(family) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi')
-family$source = 'FamilyStudyList'
-other_dx = c("Other.Dx.1", "Other.Dx.2", "Other.Dx.3")
-family$other_dx = do.call(paste, df[, other_dx])
-# this spreadsheet is special because many entries don't have clinical interviews
-idx = family$DOA=='' | family$SX_inatt=='' | family$SX_hi==''
-family = family[!idx, ]
-sx = rbind(sx, family)
+if (!is.na(family_fname)) {
+  print(family_fname)
+  df = read.xls(family_fname, sheet = 1, header = TRUE, colClasses='character')  # bypassing some weird error in conversion
+  print(sprintf('Found %d records.', nrow(df)))
+  family = df[, c('MRN', 'Date.of.Assessment', 'Inatt.sx.adult', 'HI.sx.adult')]
+  colnames(family) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi')
+  family$source = 'FamilyStudyList'
+  other_dx = c("Other.Dx.1", "Other.Dx.2", "Other.Dx.3")
+  family$other_dx = do.call(paste, df[, other_dx])
+  # this spreadsheet is special because many entries don't have clinical interviews
+  idx = family$DOA=='' | family$SX_inatt=='' | family$SX_hi==''
+  family = family[!idx, ]
+  sx = rbind(sx, family)
+}
 
 # cleaning up data from papers
 print(papers_fname)
@@ -164,4 +166,5 @@ print(sprintf('%d out of %d with wrong or missing DOA.', length(idx), nrow(sx)))
 idx = which(sx$SX_inatt=='' | sx$SX_hi=='')
 print(sprintf('%d out of %d with blank SX.', length(idx), nrow(sx)))
 
-write.csv(sx, file='~/tmp/clinical_09182019.csv', row.names=F)
+today = format(Sys.time(), "%m%d%Y")
+write.csv(sx, file=sprintf('~/tmp/clinical_%s.csv', today), row.names=F)
