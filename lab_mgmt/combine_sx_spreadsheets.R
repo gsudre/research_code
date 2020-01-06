@@ -47,7 +47,8 @@ dica = df[, c('MRN', 'Date', 'X..of.inatten', 'X..H.I', 'Meds')]
 other_dx = c("Medication.name", "Dose.in.mg", "Weight.in.kg", "Age.Onset", "Comments")
 dica$other_dx = do.call(paste, df[, other_dx])
 # keep all entries off medication
-dica_off = dica[grepl('off', dica$Meds, ignore.case=T), ]
+idx = grepl('off', dica$Meds, ignore.case=T) | grepl('none', dica$Meds, ignore.case=T) | dica$Meds==''
+dica_off = dica[idx, ]
 dica_off$source = 'DICA_off'
 # for the on meds, just keep them if there isn't an off meds entry yet
 dica_on = dica[grepl('on', dica$Meds, ignore.case=T), ]
