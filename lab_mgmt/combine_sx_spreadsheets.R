@@ -7,13 +7,13 @@
 library(gdata)
 
 dir_name = '/Volumes/Shaw/Clinical_Interviews/'
-caadid_fname = sprintf('%s/CAADID data 10-11-19.xlsx', dir_name)
-nv_fname = sprintf('%s/nv_interviews_20191011.xlsx', dir_name)
-dica_fname = sprintf('%s/DICA 12-13-2019.xlsx', dir_name)
-caadidS_fname = sprintf('%s/Simplex/CAADID data simplex.xlsx', dir_name)
-nvS_fname = sprintf('%s/Simplex/nv_interviews_simplex.xlsx', dir_name)
-dicaS_fname = sprintf('%s/Simplex/DICA simplex.xlsx', dir_name)
-family_fname = NA # '/Volumes/Shaw/Family_Study_List/Family Study List 7-12-19.xlsx'
+caadid_fname = sprintf('%s/DSM Adult interview data 2-10-20.xlsx', dir_name)
+nv_fname = sprintf('%s/nv_interviews_20200207.xlsx', dir_name)
+dica_fname = sprintf('%s/DICA 02-07-20.xlsx', dir_name)
+caadidS_fname = sprintf('%s/Nuclear Families/DSM Adult Interview data nuclear families 2_10_20.xlsx', dir_name)
+nvS_fname = NA #sprintf('%s/Nuclear Families/nv_interviews_simplex.xlsx', dir_name)
+dicaS_fname = sprintf('%s/Nuclear Families/DICA nuclear families 2_10_20.xlsx', dir_name)
+family_fname = '/Volumes/Shaw/Family_Study_List/Family Study List 02102020.xlsx'
 papers_fname = sprintf('%s/sx_from_papers.xlsx', dir_name)
 
 # cleaning up CAADID
@@ -80,17 +80,19 @@ other_dx = c("SCID.dx1", "SCID.dx2", "SCID.dx3")
 caadidS$other_dx = do.call(paste, df[, other_dx])
 sx = rbind(sx, caadidS)
 
-# cleaning up NV interviews simplex
-print(nvS_fname)
-df = read.xls(nvS_fname, sheet = 1, header = TRUE, colClasses='character')
-print(sprintf('Found %d records.', nrow(df)))
-nvS = df[, c('Medical.Record...MRN...Subjects', 'record.date.collected...NV.Interview',
-            'inattention.symptoms', 'HI.symptoms')]
-colnames(nvS) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi')
-nvS$source = 'NV_interview_simplex'
-other_dx = c("DX1...NV.Interview", "DX2...NV.Interview", "DX3...NV.Interview")
-nvS$other_dx = do.call(paste, df[, other_dx])
-sx = rbind(sx, nvS)
+if (!is.na(nvS_fname)) {
+    # cleaning up NV interviews simplex
+    print(nvS_fname)
+    df = read.xls(nvS_fname, sheet = 1, header = TRUE, colClasses='character')
+    print(sprintf('Found %d records.', nrow(df)))
+    nvS = df[, c('Medical.Record...MRN...Subjects', 'record.date.collected...NV.Interview',
+                'inattention.symptoms', 'HI.symptoms')]
+    colnames(nvS) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi')
+    nvS$source = 'NV_interview_simplex'
+    other_dx = c("DX1...NV.Interview", "DX2...NV.Interview", "DX3...NV.Interview")
+    nvS$other_dx = do.call(paste, df[, other_dx])
+    sx = rbind(sx, nvS)
+}
 
 # cleaning up DICA interviews simplex
 print(dicaS_fname)

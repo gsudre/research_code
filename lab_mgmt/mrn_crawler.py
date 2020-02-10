@@ -12,7 +12,7 @@ dataDir = sys.argv[2]
 mrns = []
 fid = open(mrnListFile, 'r')
 for line in fid:
-    mrns.append(int(line.rstrip()))
+    mrns.append(line.rstrip())
 fid.close()
 
 import os
@@ -29,8 +29,12 @@ for dirName, subdirList, fileList in os.walk(dataDir):
             else:
                 fid = open(fullName, 'r')
                 for line in fid:
+                    if fname.lower().find('.csv') > 0:
+                        entries = line.split(',')
+                    else:
+                        entries = line.split(' ')
                     for mrn in mrns:
-                        if line.find(str(mrn)) >= 0 and mrn not in foundMRNs:
+                        if str(mrn) in entries and mrn not in foundMRNs:
                             print('\tFound', mrn)
                             foundMRNs.append(mrn)
                 fid.close()
@@ -46,7 +50,7 @@ for dirName, subdirList, fileList in os.walk(dataDir):
                     for row in ws.iter_rows():
                         for cell in row:
                             try:
-                                thisMRN = int(cell.internal_value)
+                                thisMRN = str(cell.internal_value)
                             except:
                                 thisMRN = None
                             for mrn in mrns:
@@ -64,7 +68,7 @@ for dirName, subdirList, fileList in os.walk(dataDir):
                     for row_index in range(sheet.nrows):
                         for cell in sheet.row(row_index):
                             try:
-                                thisMRN = int(cell.value)
+                                thisMRN = str(cell.value)
                             except:
                                 thisMRN = None
                             for mrn in mrns:
