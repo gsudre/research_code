@@ -1,11 +1,11 @@
-# args <- commandArgs(trailingOnly = TRUE)
-# my_sx = args[1]
-# clf_model = args[2]
-# ens_model = args[3]
+args <- commandArgs(trailingOnly = TRUE)
+my_sx = args[1]
+clf_model = args[2]
+ens_model = args[3]
 
-my_sx = 'inatt'
-clf_model = 'LogitBoost'
-ens_model = 'C5.0Tree'
+# my_sx = 'inatt'
+# clf_model = 'LogitBoost'
+# ens_model = 'gbm'
 
 library(caret)
 library(pROC)
@@ -56,8 +56,8 @@ domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
                )
 set.seed(42)
 fitControl <- trainControl(method = "repeatedcv",
-                           number = 3,
-                           repeats = 50,
+                           number = 10,
+                           repeats = 10,
                            classProbs=T,
                            summaryFunction=twoClassSummary
                            )
@@ -101,6 +101,15 @@ cbind_str = paste('prob_data = cbind(', paste(preds_str, collapse=','), ')',
                   sep="")
 eval(parse(text=cbind_str))
 colnames(prob_data) = names(domains)
+
+# prob_data[is.na(prob_data)] = .5
+
+# class1_ratio = table(training[, phen])[1]/nrow(training)
+# prob_data[is.na(prob_data)] = class1_ratio
+
+ipt = preProcess(prob_data, method = "bagImpute")
+prob_data = predict(ipt, prob_data)
+
 ens_fit <- train(x = prob_data, y=training[, phen],
                  method = ens_model, trControl = fitControl, tuneLength = 10,
                  metric='ROC')
@@ -134,8 +143,15 @@ cbind_str = paste('prob_test_data = cbind(', paste(preds_str, collapse=','), ')'
                   sep="")
 eval(parse(text=cbind_str))
 colnames(prob_test_data) = names(domains)
+
+# prob_test_data[is.na(prob_test_data)] = .5
+# prob_test_data[is.na(prob_test_data)] = class1_ratio
+prob_test_data = predict(ipt, prob_test_data)
+
 preds_class = predict(ens_fit, newdata=prob_test_data)
 preds_probs = predict(ens_fit, newdata=prob_test_data, type='prob')
 dat = cbind(data.frame(obs = testing[, phen],
                  pred = preds_class), preds_probs)
 print(twoClassSummary(dat, lev=colnames(preds_probs)))
+
+print(varImp(ens_fit))

@@ -55,9 +55,9 @@ domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
                anat = colnames(data)[96:106]
                )
 set.seed(42)
-fitControl <- trainControl(method = "repeatedcv",
-                           number = 3,
-                           repeats = 50,
+fitControl <- trainControl(method = "boot_all",
+                           number = 10,
+                           repeats = 10,
                            classProbs=T,
                            summaryFunction=twoClassSummary
                            )
@@ -96,14 +96,24 @@ for (dom in names(domains)) {
     eval(parse(text=sprintf('%s_preds[keep_me, ] = preds', dom)))
 }
 # ensemble training
-preds_str = sapply(names(domains), function(d) sprintf('%s_preds[, 1]', d))
+preds_str = sapply(names(domains), function(d) sprintf('%s_preds', d))
 cbind_str = paste('prob_data = cbind(', paste(preds_str, collapse=','), ')',
                   sep="")
 eval(parse(text=cbind_str))
-colnames(prob_data) = names(domains)
+prob_header = c()
+for (dom in names(domains)) {
+    for (g in colnames(preds)) {
+        prob_header = c(prob_header, sprintf('%s_%s', dom, g))
+    }
+}
+colnames(prob_data) = prob_header
+ensFitControl <- trainControl(method = "boot_all",
+                           classProbs=T,
+                           summaryFunction=twoClassSummary
+                           )
 ens_fit <- train(x = prob_data, y=training[, phen],
-                 method = ens_model, trControl = fitControl, tuneLength = 10,
-                 metric='ROC')
+                 method = ens_model, trControl = ensFitControl, tuneLength = 10,
+                 metric='AUC')
 print(ens_fit)
 
 # testing
@@ -129,11 +139,11 @@ for (dom in names(domains)) {
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob", newdata=this_data)', dom)))
     eval(parse(text=sprintf('%s_test_preds[keep_me, ] = preds', dom)))
 }
-preds_str = sapply(names(domains), function(d) sprintf('%s_test_preds[, 1]', d))
+preds_str = sapply(names(domains), function(d) sprintf('%s_test_preds', d))
 cbind_str = paste('prob_test_data = cbind(', paste(preds_str, collapse=','), ')',
                   sep="")
 eval(parse(text=cbind_str))
-colnames(prob_test_data) = names(domains)
+colnames(prob_test_data) = prob_header
 preds_class = predict(ens_fit, newdata=prob_test_data)
 preds_probs = predict(ens_fit, newdata=prob_test_data, type='prob')
 dat = cbind(data.frame(obs = testing[, phen],
