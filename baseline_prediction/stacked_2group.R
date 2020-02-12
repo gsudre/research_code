@@ -56,8 +56,8 @@ domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
                )
 set.seed(42)
 fitControl <- trainControl(method = "repeatedcv",
-                           number = 3,
-                           repeats = 50,
+                           number = 10,
+                           repeats = 10,
                            classProbs=T,
                            summaryFunction=twoClassSummary
                            )
