@@ -139,3 +139,4 @@ preds_probs = predict(ens_fit, newdata=prob_test_data, type='prob')
 dat = cbind(data.frame(obs = testing[, phen],
                  pred = preds_class), preds_probs)
 print(twoClassSummary(dat, lev=colnames(preds_probs)))
+print(varImp(ens_fit))
