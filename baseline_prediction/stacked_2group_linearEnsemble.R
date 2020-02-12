@@ -83,6 +83,7 @@ for (dom in names(domains)) {
         }
     }
     this_data[, scale_me] = scale(this_data[, scale_me])
+    set.seed(42)
     eval(parse(text=sprintf('%s_fit <- train(x = this_data,
                                              y=training[keep_me, phen],
                                              method = clf_model,
@@ -109,7 +110,7 @@ colnames(prob_data) = names(domains)
 
 ipt = preProcess(prob_data, method = "bagImpute")
 prob_data = predict(ipt, prob_data)
-
+set.seed(42)
 ens_fit <- train(x = prob_data, y=training[, phen],
                  method = ens_model, trControl = fitControl, tuneLength = 10,
                  metric='ROC')

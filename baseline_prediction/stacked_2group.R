@@ -83,6 +83,7 @@ for (dom in names(domains)) {
         }
     }
     this_data[, scale_me] = scale(this_data[, scale_me])
+    set.seed(42)
     eval(parse(text=sprintf('%s_fit <- train(x = this_data,
                                              y=training[keep_me, phen],
                                              method = clf_model,
@@ -101,6 +102,7 @@ cbind_str = paste('prob_data = cbind(', paste(preds_str, collapse=','), ')',
                   sep="")
 eval(parse(text=cbind_str))
 colnames(prob_data) = names(domains)
+set.seed(42)
 ens_fit <- train(x = prob_data, y=training[, phen],
                  method = ens_model, trControl = fitControl, tuneLength = 10,
                  metric='ROC')
