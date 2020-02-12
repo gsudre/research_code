@@ -1,11 +1,11 @@
-# args <- commandArgs(trailingOnly = TRUE)
-# my_sx = args[1]
-# clf_model = args[2]
-# ens_model = args[3]
+args <- commandArgs(trailingOnly = TRUE)
+my_sx = args[1]
+clf_model = args[2]
+ens_model = args[3]
 
-my_sx = 'inatt'
-clf_model = 'LogitBoost'
-ens_model = 'C5.0Tree'
+# my_sx = 'inatt'
+# clf_model = 'LogitBoost'
+# ens_model = 'C5.0Tree'
 
 library(caret)
 library(pROC)
