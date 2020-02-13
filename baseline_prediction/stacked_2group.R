@@ -2,6 +2,7 @@ args <- commandArgs(trailingOnly = TRUE)
 my_sx = args[1]
 clf_model = args[2]
 ens_model = args[3]
+out_file = args[4]
 
 # my_sx = 'inatt'
 # clf_model = 'LogitBoost'
@@ -106,7 +107,11 @@ set.seed(42)
 ens_fit <- train(x = prob_data, y=training[, phen],
                  method = ens_model, trControl = fitControl, tuneLength = 10,
                  metric='ROC')
-print(ens_fit)
+preds_class = predict(ens_fit)
+preds_probs = predict(ens_fit, type='prob')
+dat = cbind(data.frame(obs = training[, phen],
+                 pred = preds_class), preds_probs)
+res_train = twoClassSummary(dat, lev=colnames(preds_probs))
 
 # testing
 for (dom in names(domains)) {
@@ -140,5 +145,10 @@ preds_class = predict(ens_fit, newdata=prob_test_data)
 preds_probs = predict(ens_fit, newdata=prob_test_data, type='prob')
 dat = cbind(data.frame(obs = testing[, phen],
                  pred = preds_class), preds_probs)
-print(twoClassSummary(dat, lev=colnames(preds_probs)))
+res = twoClassSummary(dat, lev=colnames(preds_probs))
+print(res)
 print(varImp(ens_fit))
+
+line=sprintf("%s,%s,%s,%f,%f", my_sx, clf_model, ens_model, res_train['ROC'],
+             res['ROC'])
+write(line, file=out_file, append=TRUE)
