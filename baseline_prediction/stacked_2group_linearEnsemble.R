@@ -10,7 +10,7 @@ out_file = args[4]
 
 library(caret)
 library(pROC)
-data0 = readRDS('~/data/baseline_prediction/prs_start/complete_massaged_data_02032020.rds')
+data0 = readRDS('~/data/baseline_prediction/prs_start/complete_massagedResids_02052020.rds')
 meds = read.csv('~/data/baseline_prediction/prs_start/med_at_base.csv')
 data = merge(data0, meds, by='MRN')
 data$externalizing = as.factor(data$externalizing)
@@ -44,6 +44,7 @@ if (my_sx == 'inatt') {
     phen = 'thresh0.50_hi_GE6_wp05'
 }
 
+# this is for the residualized data
 domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
                wisc = c("SSB.wisc", "SSF.wisc", 'DSF.wisc', 'DSB.wisc'),
                wj = c("DS.wj", "VM.wj"),
@@ -51,10 +52,23 @@ domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
                clin = c('internalizing', 'externalizing',
                         'medication_status_at_observation',
                         sprintf('base_%s', my_sx)),
-               gen = c(colnames(data)[38:49], colnames(data)[86:95]),
-               dti = colnames(data)[107:121],
-               anat = colnames(data)[96:106]
+               gen = colnames(data)[42:53],
+               dti = colnames(data)[74:81],
+               anat = colnames(data)[66:73]
                )
+
+# this is for the non-residualized data
+# domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
+#                wisc = c("SSB.wisc", "SSF.wisc", 'DSF.wisc', 'DSB.wisc'),
+#                wj = c("DS.wj", "VM.wj"),
+#                demo = c('base_age', 'sex', 'SES'),
+#                clin = c('internalizing', 'externalizing',
+#                         'medication_status_at_observation',
+#                         sprintf('base_%s', my_sx)),
+#                gen = c(colnames(data)[38:49], colnames(data)[86:95]),
+#                dti = colnames(data)[107:121],
+#                anat = colnames(data)[96:106]
+#                )
 set.seed(42)
 fitControl <- trainControl(method = "repeatedcv",
                            number = 10,
