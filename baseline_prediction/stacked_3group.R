@@ -1,16 +1,16 @@
-# args <- commandArgs(trailingOnly = TRUE)
-# my_sx = args[1]
-# clf_model = args[2]
-# ens_model = args[3]
-# out_file = args[4]
+args <- commandArgs(trailingOnly = TRUE)
+my_sx = args[1]
+clf_model = args[2]
+ens_model = args[3]
+out_file = args[4]
 
-my_sx = 'inatt'
-clf_model = 'lda'
-ens_model = 'C5.0Tree'
+# my_sx = 'inatt'
+# clf_model = 'lda'
+# ens_model = 'C5.0Tree'
 
 library(caret)
 library(pROC)
-data0 = readRDS('~/data/baseline_prediction/prs_start/complete_massaged_data_02032020.rds')
+data0 = readRDS('~/data/baseline_prediction/prs_start/complete_massagedResids_02052020.rds')
 meds = read.csv('~/data/baseline_prediction/prs_start/med_at_base.csv')
 data = merge(data0, meds, by='MRN')
 data$externalizing = as.factor(data$externalizing)
@@ -44,14 +44,26 @@ if (my_sx == 'inatt') {
     phen = 'thresh0.50_hi_GE6_wp05'
 }
 
+# this is for the residualized data
 domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
                wisc = c("SSB.wisc", "SSF.wisc", 'DSF.wisc', 'DSB.wisc'),
                wj = c("DS.wj", "VM.wj"),
                demo = c('base_age', 'sex', 'SES'),
-               gen = c(colnames(data)[38:49], colnames(data)[86:95]),
-               dti = colnames(data)[107:121],
-               anat = colnames(data)[96:106]
+               gen = colnames(data)[42:53],
+               dti = colnames(data)[74:81],
+               anat = colnames(data)[66:73]
                )
+
+# this is for the non-residualized data
+# domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
+#                wisc = c("SSB.wisc", "SSF.wisc", 'DSF.wisc', 'DSB.wisc'),
+#                wj = c("DS.wj", "VM.wj"),
+#                demo = c('base_age', 'sex', 'SES'),
+#                gen = c(colnames(data)[38:49], colnames(data)[86:95]),
+#                dti = colnames(data)[107:121],
+#                anat = colnames(data)[96:106]
+#                )
+
 set.seed(42)
 fitControl <- trainControl(method = "repeatedcv",
                            number = 10,
@@ -88,8 +100,7 @@ for (dom in names(domains)) {
                                              trControl = fitControl,
                                              tuneLength = 10, metric="AUC")',
                             dom)))
-    eval(parse(text=sprintf('%s_preds = data.frame(nv012=rep(NA, nrow(training)),
-                                                   imp=rep(NA, nrow(training)),
+    eval(parse(text=sprintf('%s_preds = data.frame(imp=rep(NA, nrow(training)),
                                                    nonimp=rep(NA, nrow(training)),
                                                    notGE6adhd=rep(NA, nrow(training)))',
                             dom)))
@@ -137,8 +148,7 @@ for (dom in names(domains)) {
         }
     }
     this_data[, scale_me] = scale(this_data[, scale_me])
-    eval(parse(text=sprintf('%s_test_preds = data.frame(nv012=rep(NA, nrow(testing)),
-                                                   imp=rep(NA, nrow(testing)),
+    eval(parse(text=sprintf('%s_test_preds = data.frame(imp=rep(NA, nrow(testing)),
                                                    nonimp=rep(NA, nrow(testing)),
                                                    notGE6adhd=rep(NA, nrow(testing)))', dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob", newdata=this_data)', dom)))
