@@ -119,6 +119,16 @@ for (dom in names(domains)) {
     }
 }
 colnames(prob_data) = prob_header
+
+# replacing by class probabilities in training data
+class1_ratio = table(training[, phen])[1]/nrow(training)
+cl1 = prob_data[, seq(1, ncol(prob_data), 2)]
+cl1[is.na(cl1)] = class1_ratio
+class2_ratio = table(training[, phen])[2]/nrow(training)
+cl2 = prob_data[, seq(2, ncol(prob_data), 2)]
+cl2[is.na(cl2)] = class2_ratio
+prob_data = cbind(cl1, cl2)
+
 ens_fit <- train(x = prob_data, y=training[, phen],
                  method = ens_model, trControl = fitControl, tuneLength = 10,
                  metric='AUC')
@@ -159,6 +169,14 @@ cbind_str = paste('prob_test_data = cbind(', paste(preds_str, collapse=','), ')'
                   sep="")
 eval(parse(text=cbind_str))
 colnames(prob_test_data) = prob_header
+
+# replacing by class probabilities in training data
+cl1 = prob_test_data[, seq(1, ncol(prob_test_data), 2)]
+cl1[is.na(cl1)] = class1_ratio
+cl2 = prob_test_data[, seq(2, ncol(prob_test_data), 2)]
+cl2[is.na(cl2)] = class2_ratio
+prob_test_data = cbind(cl1, cl2)
+
 preds_class = predict(ens_fit, newdata=prob_test_data)
 preds_probs = predict(ens_fit, newdata=prob_test_data, type='prob')
 dat = cbind(data.frame(obs = testing[, phen],
