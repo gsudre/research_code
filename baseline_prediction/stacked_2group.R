@@ -10,10 +10,7 @@ out_file = args[4]
 
 library(caret)
 library(pROC)
-data0 = readRDS('~/data/baseline_prediction/prs_start/complete_massagedResids_02052020.rds')
-meds = read.csv('~/data/baseline_prediction/prs_start/med_at_base.csv')
-data = merge(data0, meds, by='MRN')
-data$externalizing = as.factor(data$externalizing)
+data = readRDS('~/data/baseline_prediction/prs_start/complete_massagedResids_clinDiffGE1_02202020.rds')
 
 min_sx = 6
 for (sx in c('inatt', 'hi')) {
