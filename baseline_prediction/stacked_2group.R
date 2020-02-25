@@ -1,12 +1,12 @@
-args <- commandArgs(trailingOnly = TRUE)
-my_sx = args[1]
-clf_model = args[2]
-ens_model = args[3]
-out_file = args[4]
+# args <- commandArgs(trailingOnly = TRUE)
+# my_sx = args[1]
+# clf_model = args[2]
+# ens_model = args[3]
+# out_file = args[4]
 
-# my_sx = 'hi'
-# clf_model = 'kernelpls'
-# ens_model = 'C5.0Tree'
+my_sx = 'inatt'
+clf_model = 'kernelpls'
+ens_model = 'C5.0Tree'
 
 library(caret)
 library(pROC)
@@ -94,6 +94,7 @@ for (dom in names(domains)) {
         }
     }
     this_data[, scale_me] = scale(this_data[, scale_me])
+    print(sprintf('Training on %d participants', nrow(this_data)))
     set.seed(42)
     eval(parse(text=sprintf('%s_fit <- train(x = this_data,
                                              y=training[keep_me, phen],
@@ -141,6 +142,7 @@ for (dom in names(domains)) {
         }
     }
     this_data[, scale_me] = scale(this_data[, scale_me])
+    print(sprintf('Testing on %d participants', nrow(this_data)))
     eval(parse(text=sprintf('%s_test_preds = data.frame(imp=rep(NA, nrow(testing)),
                                                    nonimp=rep(NA, nrow(testing)))', dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob", newdata=this_data)', dom)))
