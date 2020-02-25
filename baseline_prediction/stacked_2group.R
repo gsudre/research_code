@@ -5,7 +5,7 @@ ens_model = args[3]
 out_file = args[4]
 
 # my_sx = 'hi'
-# clf_model = 'lda'
+# clf_model = 'kernelpls'
 # ens_model = 'C5.0Tree'
 
 library(caret)
@@ -47,8 +47,7 @@ domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
                wj = c("DS.wj", "VM.wj"),
                demo = c('base_age', 'sex', 'SES'),
                clin = c('internalizing', 'externalizing',
-                        'medication_status_at_observation',
-                        sprintf('base_%s', my_sx)),
+                        'medication_status_at_observation', 'base_inatt', 'base_hi'),
                gen = colnames(data)[42:53],
                dti = colnames(data)[74:81],
                anat = colnames(data)[66:73]
