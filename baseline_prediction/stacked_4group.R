@@ -50,12 +50,8 @@ fitControl <- trainControl(method = "repeatedcv",
                            summaryFunction=multiClassSummary
                            )
 
-adhd = data[, phen] != 'nv012'
-data2 = data[adhd, ]
-data2[, phen] = factor(data2[, phen], ordered=F)
-data2[, phen] = relevel(data2[, phen], ref='notGE6adhd')
-training = data2[data2$bestInFamily, ]
-testing = data2[!data2$bestInFamily, ]
+training = data[data$bestInFamily, ]
+testing = data[!data$bestInFamily, ]
 
 for (dom in names(domains)) {
     print(sprintf('Training %s on %s (sx=%s, model=%s)', dom, phen, my_sx, clf_model))
@@ -82,19 +78,20 @@ for (dom in names(domains)) {
                             dom)))
     eval(parse(text=sprintf('%s_preds = data.frame(imp=rep(NA, nrow(training)),
                                                    nonimp=rep(NA, nrow(training)),
-                                                   notGE6adhd=rep(NA, nrow(training)))',
+                                                   notGE6adhd=rep(NA, nrow(training)),
+                                                   nv012=rep(NA, nrow(training)))',
                             dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob")', dom)))
     eval(parse(text=sprintf('%s_preds[keep_me, ] = preds', dom)))
 }
 # ensemble training
-preds_str = sapply(names(domains), function(d) sprintf('%s_preds[, 1:2]', d))
+preds_str = sapply(names(domains), function(d) sprintf('%s_preds[, 1:3]', d))
 cbind_str = paste('prob_data = cbind(', paste(preds_str, collapse=','), ')',
                   sep="")
 eval(parse(text=cbind_str))
 prob_header = c()
 for (dom in names(domains)) {
-    for (g in colnames(preds)[1:2]) {
+    for (g in colnames(preds)[1:3]) {
         prob_header = c(prob_header, sprintf('%s_%s', dom, g))
     }
 }
@@ -103,12 +100,15 @@ colnames(prob_data) = prob_header
 if (use_impute) {
     # replacing by class probabilities in training data
     class1_ratio = table(training[, phen])[1]/nrow(training)
-    cl1 = prob_data[, seq(1, ncol(prob_data), 2)]
+    cl1 = prob_data[, seq(1, ncol(prob_data), 3)]
     cl1[is.na(cl1)] = class1_ratio
     class2_ratio = table(training[, phen])[2]/nrow(training)
-    cl2 = prob_data[, seq(2, ncol(prob_data), 2)]
+    cl2 = prob_data[, seq(2, ncol(prob_data), 3)]
     cl2[is.na(cl2)] = class2_ratio
-    prob_data = cbind(cl1, cl2)
+    class3_ratio = table(training[, phen])[3]/nrow(training)
+    cl3 = prob_data[, seq(3, ncol(prob_data), 3)]
+    cl3[is.na(cl3)] = class3_ratio
+    prob_data = cbind(cl1, cl2, cl3)
 }
 
 ens_fit <- train(x = prob_data, y=training[, phen],
@@ -142,11 +142,12 @@ for (dom in names(domains)) {
     this_data[, scale_me] = scale(this_data[, scale_me])
     eval(parse(text=sprintf('%s_test_preds = data.frame(imp=rep(NA, nrow(testing)),
                                                    nonimp=rep(NA, nrow(testing)),
-                                                   notGE6adhd=rep(NA, nrow(testing)))', dom)))
+                                                   notGE6adhd=rep(NA, nrow(testing)),
+                                                   nv012=rep(NA, nrow(testing)))', dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob", newdata=this_data)', dom)))
     eval(parse(text=sprintf('%s_test_preds[keep_me, ] = preds', dom)))
 }
-preds_str = sapply(names(domains), function(d) sprintf('%s_test_preds[, 1:2]', d))
+preds_str = sapply(names(domains), function(d) sprintf('%s_test_preds[, 1:3]', d))
 cbind_str = paste('prob_test_data = cbind(', paste(preds_str, collapse=','), ')',
                   sep="")
 eval(parse(text=cbind_str))
@@ -154,11 +155,13 @@ colnames(prob_test_data) = prob_header
 
 if (use_impute) {
     # replacing by class probabilities in training data
-    cl1 = prob_test_data[, seq(1, ncol(prob_test_data), 2)]
+    cl1 = prob_test_data[, seq(1, ncol(prob_test_data), 3)]
     cl1[is.na(cl1)] = class1_ratio
-    cl2 = prob_test_data[, seq(2, ncol(prob_test_data), 2)]
+    cl2 = prob_test_data[, seq(2, ncol(prob_test_data), 3)]
     cl2[is.na(cl2)] = class2_ratio
-    prob_test_data = cbind(cl1, cl2)
+    cl3 = prob_test_data[, seq(3, ncol(prob_test_data), 3)]
+    cl3[is.na(cl3)] = class3_ratio
+    prob_test_data = cbind(cl1, cl2, cl3)
 }
 
 preds_class = predict(ens_fit, newdata=prob_test_data)

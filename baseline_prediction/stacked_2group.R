@@ -1,40 +1,26 @@
-# args <- commandArgs(trailingOnly = TRUE)
-# my_sx = args[1]
-# clf_model = args[2]
-# ens_model = args[3]
-# out_file = args[4]
+args <- commandArgs(trailingOnly = TRUE)
+my_sx = args[1]
+clf_model = args[2]
+ens_model = args[3]
+clin_diff = as.numeric(args[4])
+use_clin = as.logical(args[5])
+use_meds = as.logical(args[6])
+use_impute = as.logical(args[7])
+out_file = args[8]
 
-my_sx = 'hi'
-my_sx = 'inatt'
-clf_model = 'hdda'
-ens_model = 'C5.0Tree'
+# my_sx = 'hi'
+# clf_model = 'hdda'
+# ens_model = 'C5.0Tree'
+# clin_diff = 1
+# use_clin = F
+# use_meds = T
+# out_file = '/dev/null'
+g1 = 'nonimp'
+g2 = 'imp'
 
 library(caret)
 library(pROC)
-data = readRDS('~/data/baseline_prediction/prs_start/complete_massagedResids_clinDiffGE1_02202020.rds')
-
-min_sx = 6
-for (sx in c('inatt', 'hi')) {
-    if (sx == 'inatt') {
-        thresh = 0
-    } else if (sx == 'hi') {
-        thresh = -.5
-    }
-    phen_slope = sprintf('slope_%s_GE%d_wp05', sx, min_sx)
-    phen = sprintf('thresh%.2f_%s_GE%d_wp05', abs(thresh), sx, min_sx)
-    data[, phen] = 'notGE6adhd'
-    my_nvs = which(is.na(data[, phen_slope]))
-    idx = data[my_nvs, 'base_inatt'] <= 2 & data[my_nvs, 'base_hi'] <= 2
-    data[my_nvs[idx], phen] = 'nv012'
-    data[which(data[, phen_slope] < thresh), phen] = 'imp'
-    data[which(data[, phen_slope] >= thresh), phen] = 'nonimp'
-    data[, phen] = factor(data[, phen], ordered=F)
-    data[, phen] = relevel(data[, phen], ref='nv012')
-    ophen = sprintf('ORDthresh%.2f_%s_GE%d_wp05', abs(thresh), sx, min_sx)
-    data[, ophen] = factor(data[, phen],
-                         levels=c('nv012', 'notGE6adhd', 'imp', 'nonimp'),
-                         ordered=T)
-}
+data = readRDS(sprintf('~/data/baseline_prediction/prs_start/complete_massagedResids_clinDiffGE%d_02202020.rds', clin_diff))
 
 if (my_sx == 'inatt') {
     phen = 'thresh0.00_inatt_GE6_wp05'
@@ -42,30 +28,22 @@ if (my_sx == 'inatt') {
     phen = 'thresh0.50_hi_GE6_wp05'
 }
 
-# this is for the residualized data
 domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
                wisc = c("SSB.wisc", "SSF.wisc", 'DSF.wisc', 'DSB.wisc'),
                wj = c("DS.wj", "VM.wj"),
                demo = c('base_age', 'sex', 'SES'),
-               clin = c('internalizing', 'externalizing',
-                        'medication_status_at_observation', 'base_inatt', 'base_hi'),
                gen = colnames(data)[42:53],
                dti = colnames(data)[74:81],
                anat = colnames(data)[66:73]
                )
+if (use_clin) {
+    domains[['clin']] = c('base_inatt', 'base_hi')
+    if (use_meds) {
+        domains[['clin']] = c(domains[['clin']], c('internalizing', 'externalizing',
+                                                'medication_status_at_observation'))
+    }
+}
 
-# this is for the non-residualized data
-# domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
-#                wisc = c("SSB.wisc", "SSF.wisc", 'DSF.wisc', 'DSB.wisc'),
-#                wj = c("DS.wj", "VM.wj"),
-#                demo = c('base_age', 'sex', 'SES'),
-#                clin = c('internalizing', 'externalizing',
-#                         'medication_status_at_observation',
-#                         sprintf('base_%s', my_sx)),
-#                gen = c(colnames(data)[38:49], colnames(data)[86:95]),
-#                dti = colnames(data)[107:121],
-#                anat = colnames(data)[96:106]
-#                )
 set.seed(42)
 fitControl <- trainControl(method = "repeatedcv",
                            number = 10,
@@ -74,10 +52,10 @@ fitControl <- trainControl(method = "repeatedcv",
                            summaryFunction=twoClassSummary
                            )
 
-adhd = data[, phen] == 'nonimp' | data[, phen] == 'imp'
+adhd = data[, phen] == g2 | data[, phen] == g1
 data2 = data[adhd, ]
 data2[, phen] = factor(data2[, phen], ordered=F)
-data2[, phen] = relevel(data2[, phen], ref='imp')
+data2[, phen] = relevel(data2[, phen], ref=g1)
 training = data2[data2$bestInFamily, ]
 testing = data2[!data2$bestInFamily, ]
 for (dom in names(domains)) {
@@ -103,8 +81,8 @@ for (dom in names(domains)) {
                                              trControl = fitControl,
                                              tuneLength = 10, metric="ROC")',
                             dom)))
-    eval(parse(text=sprintf('%s_preds = data.frame(imp=rep(NA, nrow(training)),
-                                                   nonimp=rep(NA, nrow(training)))',
+    eval(parse(text=sprintf('%s_preds = data.frame(g1=rep(NA, nrow(training)),
+                                                   g2=rep(NA, nrow(training)))',
                             dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob")', dom)))
     eval(parse(text=sprintf('%s_preds[keep_me, ] = preds', dom)))
@@ -115,6 +93,12 @@ cbind_str = paste('prob_data = cbind(', paste(preds_str, collapse=','), ')',
                   sep="")
 eval(parse(text=cbind_str))
 colnames(prob_data) = names(domains)
+
+if (use_impute) {
+    class1_ratio = table(training[, phen])[1]/nrow(training)
+    prob_data[is.na(prob_data)] = class1_ratio
+}
+
 set.seed(42)
 ens_fit <- train(x = prob_data, y=training[, phen],
                  method = ens_model, trControl = fitControl, tuneLength = 10,
@@ -144,8 +128,8 @@ for (dom in names(domains)) {
     }
     this_data[, scale_me] = scale(this_data[, scale_me])
     print(sprintf('Testing on %d participants', nrow(this_data)))
-    eval(parse(text=sprintf('%s_test_preds = data.frame(imp=rep(NA, nrow(testing)),
-                                                   nonimp=rep(NA, nrow(testing)))', dom)))
+    eval(parse(text=sprintf('%s_test_preds = data.frame(g1=rep(NA, nrow(testing)),
+                                                   g2=rep(NA, nrow(testing)))', dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob", newdata=this_data)', dom)))
     eval(parse(text=sprintf('print(varImp(%s_fit))', dom)))
     eval(parse(text=sprintf('%s_test_preds[keep_me, ] = preds', dom)))
@@ -155,6 +139,11 @@ cbind_str = paste('prob_test_data = cbind(', paste(preds_str, collapse=','), ')'
                   sep="")
 eval(parse(text=cbind_str))
 colnames(prob_test_data) = names(domains)
+
+if (use_impute) {
+    prob_test_data[is.na(prob_test_data)] = class1_ratio
+}
+
 preds_class = predict(ens_fit, newdata=prob_test_data)
 preds_probs = predict(ens_fit, newdata=prob_test_data, type='prob')
 dat = cbind(data.frame(obs = testing[, phen],
@@ -163,7 +152,8 @@ res = twoClassSummary(dat, lev=colnames(preds_probs))
 print(res)
 print(varImp(ens_fit))
 
-line=sprintf("%s,%s,%s,%f,%f", my_sx, clf_model, ens_model, res_train['ROC'],
-             res['ROC'])
+line=sprintf("%s,%s,%s,%s,%d,%s,%s,%d,%f,%f", my_sx, clf_model, ens_model,
+             use_impute, clin_diff, use_clin, use_meds,
+             length(levels(training[,phen])), res_train['ROC'], res['ROC'])
 print(line)
 write(line, file=out_file, append=TRUE)
