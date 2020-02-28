@@ -4,8 +4,9 @@
 # ens_model = args[3]
 # out_file = args[4]
 
+my_sx = 'hi'
 my_sx = 'inatt'
-clf_model = 'kernelpls'
+clf_model = 'hdda'
 ens_model = 'C5.0Tree'
 
 library(caret)
@@ -146,6 +147,7 @@ for (dom in names(domains)) {
     eval(parse(text=sprintf('%s_test_preds = data.frame(imp=rep(NA, nrow(testing)),
                                                    nonimp=rep(NA, nrow(testing)))', dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob", newdata=this_data)', dom)))
+    eval(parse(text=sprintf('print(varImp(%s_fit))', dom)))
     eval(parse(text=sprintf('%s_test_preds[keep_me, ] = preds', dom)))
 }
 preds_str = sapply(names(domains), function(d) sprintf('%s_test_preds[, 1]', d))
@@ -163,4 +165,5 @@ print(varImp(ens_fit))
 
 line=sprintf("%s,%s,%s,%f,%f", my_sx, clf_model, ens_model, res_train['ROC'],
              res['ROC'])
+print(line)
 write(line, file=out_file, append=TRUE)

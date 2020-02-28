@@ -1,12 +1,13 @@
-args <- commandArgs(trailingOnly = TRUE)
-my_sx = args[1]
-clf_model = args[2]
-ens_model = args[3]
-out_file = args[4]
+#args <- commandArgs(trailingOnly = TRUE)
+#my_sx = args[1]
+#clf_model = args[2]
+#ens_model = args[3]
+#out_file = args[4]
 
-# my_sx = 'inatt'
-# clf_model = 'LogitBoost'
-# ens_model = 'gbm'
+my_sx = 'hi'
+#my_sx = 'inatt'
+clf_model = 'hdda'
+ens_model = 'rpart2'
 
 library(caret)
 library(pROC)
@@ -154,6 +155,7 @@ for (dom in names(domains)) {
     eval(parse(text=sprintf('%s_test_preds = data.frame(imp=rep(NA, nrow(testing)),
                                                    nonimp=rep(NA, nrow(testing)))', dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob", newdata=this_data)', dom)))
+    eval(parse(text=sprintf('print(varImp(%s_fit))', dom)))
     eval(parse(text=sprintf('%s_test_preds[keep_me, ] = preds', dom)))
 }
 preds_str = sapply(names(domains), function(d) sprintf('%s_test_preds[, 1]', d))
@@ -175,4 +177,5 @@ print(varImp(ens_fit))
 
 line=sprintf("%s,%s,%s,%f,%f", my_sx, clf_model, ens_model, res_train['ROC'],
              res['ROC'])
+print(line)
 write(line, file=out_file, append=TRUE)
