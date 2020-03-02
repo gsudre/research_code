@@ -1,17 +1,20 @@
-# args <- commandArgs(trailingOnly = TRUE)
-# my_sx = args[1]
-# clf_model = args[2]
-# clin_diff = as.numeric(args[4])
-# use_clin = as.logical(args[5])
-# use_meds = as.logical(args[6])
-# out_file = args[7]
+args <- commandArgs(trailingOnly = TRUE)
 
-my_sx = 'hi'
-clf_model = 'hdda'
-clin_diff = 1
-use_clin = T
-use_meds = T
-out_file = '/dev/null'
+if (length(args) > 0) {
+    my_sx = args[1]
+    clf_model = args[2]
+    clin_diff = as.numeric(args[3])
+    use_clin = as.logical(args[4])
+    use_meds = as.logical(args[5])
+    out_file = args[6]
+} else {
+    my_sx = 'hi'
+    clf_model = 'hdda'
+    clin_diff = 1
+    use_clin = T
+    use_meds = T
+    out_file = '/dev/null'
+}
 
 g1 = 'nonimp'
 g2 = 'imp'
