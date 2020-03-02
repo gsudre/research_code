@@ -1,21 +1,22 @@
-# args <- commandArgs(trailingOnly = TRUE)
-# my_sx = args[1]
-# clf_model = args[2]
-# ens_model = args[3]
-# clin_diff = as.numeric(args[4])
-# use_clin = as.logical(args[5])
-# use_meds = as.logical(args[6])
-# use_impute = as.logical(args[7])
-# out_file = args[8]
+args <- commandArgs(trailingOnly = TRUE)
 
-my_sx = 'hi'
-clf_model = 'hdda'
-ens_model = 'C5.0Tree'
-clin_diff = 1
-use_clin = T
-use_meds = T
-use_impute = T
-out_file = '/dev/null'
+if (length(args) > 0) {
+    my_sx = args[1]
+    clf_model = args[2]
+    ens_model = args[3]
+    clin_diff = as.numeric(args[4])
+    use_clin = as.logical(args[5])
+    use_meds = as.logical(args[6])
+    out_file = args[7]
+} else {
+    my_sx = 'hi'
+    clf_model = 'hdda'
+    ens_model = 'C5.0Tree'
+    clin_diff = 1
+    use_clin = T
+    use_meds = T
+    out_file = '/dev/null'
+}
 
 g1 = 'nonimp'
 g2 = 'imp'
@@ -116,11 +117,6 @@ cbind_str = paste('prob_data = cbind(', paste(preds_str, collapse=','), ')',
 eval(parse(text=cbind_str))
 colnames(prob_data) = names(domains)
 
-if (use_impute) {
-    class1_ratio = table(training[, phen])[1]/nrow(training)
-    prob_data[is.na(prob_data)] = class1_ratio
-}
-
 set.seed(42)
 ens_fit <- train(x = prob_data, y=training[, phen],
                  method = ens_model, trControl = fitControl, tuneLength = 10,
@@ -162,10 +158,6 @@ cbind_str = paste('prob_test_data = cbind(', paste(preds_str, collapse=','), ')'
 eval(parse(text=cbind_str))
 colnames(prob_test_data) = names(domains)
 
-if (use_impute) {
-    prob_test_data[is.na(prob_test_data)] = class1_ratio
-}
-
 preds_class = predict(ens_fit, newdata=prob_test_data)
 preds_probs = predict(ens_fit, newdata=prob_test_data, type='prob')
 dat = cbind(data.frame(obs = testing[, phen],
@@ -174,8 +166,8 @@ res = twoClassSummary(dat, lev=colnames(preds_probs))
 print(res)
 print(varImp(ens_fit))
 
-line=sprintf("%s,%s,%s,%s,%d,%s,%s,%d,%f,%f", my_sx, clf_model, ens_model,
-             use_impute, clin_diff, use_clin, use_meds,
+line=sprintf("%s,%s,%s,%d,%s,%s,%d,%f,%f", my_sx, clf_model, ens_model,
+             clin_diff, use_clin, use_meds,
              length(levels(training[,phen])), res_train['ROC'], res['ROC'])
 print(line)
 write(line, file=out_file, append=TRUE)
