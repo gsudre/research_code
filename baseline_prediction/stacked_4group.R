@@ -1,20 +1,24 @@
 args <- commandArgs(trailingOnly = TRUE)
-my_sx = args[1]
-clf_model = args[2]
-ens_model = args[3]
-clin_diff = as.numeric(args[4])
-use_clin = as.logical(args[5])
-use_meds = as.logical(args[6])
-use_impute = as.logical(args[7])
-out_file = args[8]
 
-# my_sx = 'hi'
-# clf_model = 'hdda'
-# ens_model = 'C5.0Tree'
-# clin_diff = 1
-# use_clin = F
-# use_meds = T
-# out_file = '/dev/null'
+if (length(args) > 0) {
+    my_sx = args[1]
+    clf_model = args[2]
+    ens_model = args[3]
+    clin_diff = as.numeric(args[4])
+    use_clin = as.logical(args[5])
+    use_meds = as.logical(args[6])
+    use_impute = as.logical(args[7])
+    out_file = args[8]
+} else {
+    my_sx = 'inatt'
+    clf_model = 'kernelpls'
+    ens_model = 'C5.0Tree'
+    clin_diff = 1
+    use_clin = T
+    use_meds = T
+    use_impute = T
+    out_file = '/dev/null'
+}
 
 library(caret)
 library(pROC)
@@ -24,6 +28,48 @@ if (my_sx == 'inatt') {
     phen = 'thresh0.00_inatt_GE6_wp05'
 } else {
     phen = 'thresh0.50_hi_GE6_wp05'
+}
+
+# had to hack the varImp in
+# https://github.com/topepo/caret/blob/master/models/files/kernelpls.R because
+# it was breaking with more than 2 classes
+myVarImp = function(train_object) {
+    library(pls)
+    object = train_object$finalModel
+    modelCoef <- coef(object, intercept = FALSE, comps = 1:object$ncomp)
+    perf <- MSEP(object)$val
+
+    nms <- dimnames(perf)
+    if(length(nms$estimate) > 1) {
+        pIndex <- if(is.null(estimate)) 1 else which(nms$estimate == estimate)
+        perf <- perf[pIndex,,,drop = FALSE]
+    }
+    numResp <- dim(modelCoef)[2]
+
+    if(numResp <= 2) {
+        modelCoef <- modelCoef[,1,,drop = FALSE]
+        perf <- perf[,1,]
+        delta <- -diff(perf)
+        delta <- delta/sum(delta)
+        out <- data.frame(Overall = apply(abs(modelCoef), 1,
+                                        weighted.mean, w = delta))
+    } else {
+        perf <- -t(apply(perf[1,,], 1, diff))
+        perf <- t(apply(perf, 1, function(u) u/sum(u)))
+        out <- matrix(NA, ncol = numResp, nrow = dim(modelCoef)[1])
+
+        for(i in 1:numResp) {
+            tmp <- abs(modelCoef[,i,, drop = FALSE])
+            if (object$ncomp == 1) {
+                out[,i] <- apply(tmp, 1,  weighted.mean, w = perf[, i])
+            } else {
+                out[,i] <- apply(tmp, 1,  weighted.mean, w = perf[i,])
+            }
+        }
+        colnames(out) <- dimnames(modelCoef)[[2]]
+        rownames(out) <- dimnames(modelCoef)[[1]]
+    }
+    as.data.frame(out)
 }
 
 domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
@@ -145,6 +191,7 @@ for (dom in names(domains)) {
                                                    notGE6adhd=rep(NA, nrow(testing)),
                                                    nv012=rep(NA, nrow(testing)))', dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob", newdata=this_data)', dom)))
+    eval(parse(text=sprintf('print(myVarImp(%s_fit))', dom)))
     eval(parse(text=sprintf('%s_test_preds[keep_me, ] = preds', dom)))
 }
 preds_str = sapply(names(domains), function(d) sprintf('%s_test_preds[, 1:3]', d))

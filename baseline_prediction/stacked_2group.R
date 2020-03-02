@@ -1,20 +1,25 @@
 args <- commandArgs(trailingOnly = TRUE)
-my_sx = args[1]
-clf_model = args[2]
-ens_model = args[3]
-clin_diff = as.numeric(args[4])
-use_clin = as.logical(args[5])
-use_meds = as.logical(args[6])
-use_impute = as.logical(args[7])
-out_file = args[8]
 
-# my_sx = 'hi'
-# clf_model = 'hdda'
-# ens_model = 'C5.0Tree'
-# clin_diff = 1
-# use_clin = F
-# use_meds = T
-# out_file = '/dev/null'
+if (length(args) > 0) {
+    my_sx = args[1]
+    clf_model = args[2]
+    ens_model = args[3]
+    clin_diff = as.numeric(args[4])
+    use_clin = as.logical(args[5])
+    use_meds = as.logical(args[6])
+    use_impute = as.logical(args[7])
+    out_file = args[8]
+} else {
+    my_sx = 'inatt'
+    clf_model = 'kernelpls'
+    ens_model = 'C5.0Tree'
+    clin_diff = 1
+    use_clin = T
+    use_meds = T
+    use_impute = T
+    out_file = '/dev/null'
+}
+
 g1 = 'nonimp'
 g2 = 'imp'
 
@@ -39,8 +44,9 @@ domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
 if (use_clin) {
     domains[['clin']] = c('base_inatt', 'base_hi')
     if (use_meds) {
-        domains[['clin']] = c(domains[['clin']], c('internalizing', 'externalizing',
-                                                'medication_status_at_observation'))
+        domains[['clin']] = c(domains[['clin']],
+                              c('internalizing', 'externalizing',
+                                'medication_status_at_observation'))
     }
 }
 
