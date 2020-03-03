@@ -18,8 +18,47 @@ if (length(args) > 0) {
     out_file = '/dev/null'
 }
 
-g1 = 'nonimp'
-g2 = 'imp'
+# had to hack the varImp in
+# https://github.com/topepo/caret/blob/master/models/files/kernelpls.R because
+# it was breaking with more than 2 classes
+myVarImp = function(train_object) {
+    library(pls)
+    object = train_object$finalModel
+    modelCoef <- coef(object, intercept = FALSE, comps = 1:object$ncomp)
+    perf <- MSEP(object)$val
+
+    nms <- dimnames(perf)
+    if(length(nms$estimate) > 1) {
+        pIndex <- if(is.null(estimate)) 1 else which(nms$estimate == estimate)
+        perf <- perf[pIndex,,,drop = FALSE]
+    }
+    numResp <- dim(modelCoef)[2]
+
+    if(numResp <= 2) {
+        modelCoef <- modelCoef[,1,,drop = FALSE]
+        perf <- perf[,1,]
+        delta <- -diff(perf)
+        delta <- delta/sum(delta)
+        out <- data.frame(Overall = apply(abs(modelCoef), 1,
+                                        weighted.mean, w = delta))
+    } else {
+        perf <- -t(apply(perf[1,,], 1, diff))
+        perf <- t(apply(perf, 1, function(u) u/sum(u)))
+        out <- matrix(NA, ncol = numResp, nrow = dim(modelCoef)[1])
+
+        for(i in 1:numResp) {
+            tmp <- abs(modelCoef[,i,, drop = FALSE])
+            if (object$ncomp == 1) {
+                out[,i] <- apply(tmp, 1,  weighted.mean, w = perf[, i])
+            } else {
+                out[,i] <- apply(tmp, 1,  weighted.mean, w = perf[i,])
+            }
+        }
+        colnames(out) <- dimnames(modelCoef)[[2]]
+        rownames(out) <- dimnames(modelCoef)[[1]]
+    }
+    as.data.frame(out)
+}
 
 library(caret)
 library(pROC)
@@ -42,9 +81,8 @@ domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
 if (use_clin) {
     domains[['clin']] = c('base_inatt', 'base_hi')
     if (use_meds) {
-        domains[['clin']] = c(domains[['clin']],
-                              c('internalizing', 'externalizing',
-                                'medication_status_at_observation'))
+        domains[['clin']] = c(domains[['clin']], c('internalizing', 'externalizing',
+                                                'medication_status_at_observation'))
     }
 }
 
@@ -53,15 +91,16 @@ fitControl <- trainControl(method = "repeatedcv",
                            number = 10,
                            repeats = 10,
                            classProbs=T,
-                           summaryFunction=twoClassSummary
+                           summaryFunction=multiClassSummary
                            )
 
-adhd = data[, phen] == g2 | data[, phen] == g1
+adhd = data[, phen] != 'nv012'
 data2 = data[adhd, ]
 data2[, phen] = factor(data2[, phen], ordered=F)
-data2[, phen] = relevel(data2[, phen], ref=g1)
+data2[, phen] = relevel(data2[, phen], ref='notGE6adhd')
 training = data2[data2$bestInFamily, ]
 testing = data2[!data2$bestInFamily, ]
+
 for (dom in names(domains)) {
     print(sprintf('Training %s on %s (sx=%s, model=%s)', dom, phen, my_sx, clf_model))
     var_names = domains[[dom]]
@@ -83,30 +122,49 @@ for (dom in names(domains)) {
                                              y=training[keep_me, phen],
                                              method = clf_model,
                                              trControl = fitControl,
-                                             tuneLength = 10, metric="ROC")',
+                                             tuneLength = 10, metric="AUC")',
                             dom)))
-    eval(parse(text=sprintf('%s_preds = data.frame(g1=rep(NA, nrow(training)),
-                                                   g2=rep(NA, nrow(training)))',
+    eval(parse(text=sprintf('%s_preds = data.frame(imp=rep(NA, nrow(training)),
+                                                   nonimp=rep(NA, nrow(training)),
+                                                   notGE6adhd=rep(NA, nrow(training)))',
                             dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob")', dom)))
     eval(parse(text=sprintf('%s_preds[keep_me, ] = preds', dom)))
 }
 # ensemble training
-preds_str = sapply(names(domains), function(d) sprintf('%s_preds[, 1]', d))
+preds_str = sapply(names(domains), function(d) sprintf('%s_preds[, 1:2]', d))
 cbind_str = paste('prob_data = cbind(', paste(preds_str, collapse=','), ')',
                   sep="")
 eval(parse(text=cbind_str))
-colnames(prob_data) = names(domains)
+prob_header = c()
+for (dom in names(domains)) {
+    for (g in colnames(preds)[1:2]) {
+        prob_header = c(prob_header, sprintf('%s_%s', dom, g))
+    }
+}
+colnames(prob_data) = prob_header
 
-set.seed(42)
+if (use_impute) {
+    # replacing by class probabilities in training data
+    class1_ratio = table(training[, phen])[1]/nrow(training)
+    cl1 = prob_data[, seq(1, ncol(prob_data), 2)]
+    cl1[is.na(cl1)] = class1_ratio
+    class2_ratio = table(training[, phen])[2]/nrow(training)
+    cl2 = prob_data[, seq(2, ncol(prob_data), 2)]
+    cl2[is.na(cl2)] = class2_ratio
+    prob_data = cbind(cl1, cl2)
+}
+
 ens_fit <- train(x = prob_data, y=training[, phen],
                  method = ens_model, trControl = fitControl, tuneLength = 10,
-                 metric='ROC')
+                 metric='AUC')
 preds_class = predict(ens_fit)
 preds_probs = predict(ens_fit, type='prob')
 dat = cbind(data.frame(obs = training[, phen],
                  pred = preds_class), preds_probs)
-res_train = twoClassSummary(dat, lev=colnames(preds_probs))
+res_train = multiClassSummary(dat, lev=colnames(preds_probs))
+
+print(res_train)
 
 # testing
 for (dom in names(domains)) {
@@ -126,29 +184,38 @@ for (dom in names(domains)) {
         }
     }
     this_data[, scale_me] = scale(this_data[, scale_me])
-    print(sprintf('Testing on %d participants', nrow(this_data)))
-    eval(parse(text=sprintf('%s_test_preds = data.frame(g1=rep(NA, nrow(testing)),
-                                                   g2=rep(NA, nrow(testing)))', dom)))
+    eval(parse(text=sprintf('%s_test_preds = data.frame(imp=rep(NA, nrow(testing)),
+                                                   nonimp=rep(NA, nrow(testing)),
+                                                   notGE6adhd=rep(NA, nrow(testing)))', dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob", newdata=this_data)', dom)))
-    eval(parse(text=sprintf('print(varImp(%s_fit))', dom)))
+    eval(parse(text=sprintf('print(myVarImp(%s_fit))', dom)))
     eval(parse(text=sprintf('%s_test_preds[keep_me, ] = preds', dom)))
 }
-preds_str = sapply(names(domains), function(d) sprintf('%s_test_preds[, 1]', d))
+preds_str = sapply(names(domains), function(d) sprintf('%s_test_preds[, 1:2]', d))
 cbind_str = paste('prob_test_data = cbind(', paste(preds_str, collapse=','), ')',
                   sep="")
 eval(parse(text=cbind_str))
-colnames(prob_test_data) = names(domains)
+colnames(prob_test_data) = prob_header
+
+if (use_impute) {
+    # replacing by class probabilities in training data
+    cl1 = prob_test_data[, seq(1, ncol(prob_test_data), 2)]
+    cl1[is.na(cl1)] = class1_ratio
+    cl2 = prob_test_data[, seq(2, ncol(prob_test_data), 2)]
+    cl2[is.na(cl2)] = class2_ratio
+    prob_test_data = cbind(cl1, cl2)
+}
 
 preds_class = predict(ens_fit, newdata=prob_test_data)
 preds_probs = predict(ens_fit, newdata=prob_test_data, type='prob')
 dat = cbind(data.frame(obs = testing[, phen],
                  pred = preds_class), preds_probs)
-res = twoClassSummary(dat, lev=colnames(preds_probs))
+res = multiClassSummary(dat, lev=colnames(preds_probs))
 print(res)
 print(varImp(ens_fit))
 
-line=sprintf("%s,%s,%s,%d,%s,%s,%d,%f,%f", my_sx, clf_model, ens_model,
-             clin_diff, use_clin, use_meds,
-             length(levels(training[,phen])), res_train['ROC'], res['ROC'])
-print(line)
+line=sprintf("%s,%s,%s,%s,%d,%s,%s,%d,%f,%f", my_sx, clf_model, ens_model,
+             use_impute, clin_diff, use_clin, use_meds,
+             length(levels(training[,phen])), res_train['AUC'], res['AUC'])
+print(line) 
 write(line, file=out_file, append=TRUE)

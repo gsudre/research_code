@@ -21,7 +21,7 @@ g2 = 'imp'
 
 library(caret)
 library(pROC)
-data = readRDS(sprintf('~/data/baseline_prediction/prs_start/complete_massagedResidsImputedOnPRSDTI_clinDiffGE%d_03032020.rds', clin_diff))
+data = readRDS(sprintf('~/data/baseline_prediction/prs_start/complete_massagedResidsIRMI_clinDiffGE%d_03032020.rds', clin_diff))
 
 if (my_sx == 'inatt') {
     phen = 'thresh0.00_inatt_GE6_wp05'
