@@ -192,7 +192,7 @@ dat = cbind(data.frame(obs = testing[, phen],
                  pred = preds_class), preds_probs)
 res = multiClassSummary(dat, lev=colnames(preds_probs))
 print(res)
-print(varImp(ens_fit))
+# print(varImp(ens_fit))
 
 line=sprintf("%s,%s,%s,%d,%s,%s,%d,%f,%f", my_sx, clf_model, ens_model,
              clin_diff, use_clin, use_meds,

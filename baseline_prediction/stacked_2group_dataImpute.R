@@ -130,7 +130,7 @@ for (dom in names(domains)) {
     eval(parse(text=sprintf('%s_test_preds = data.frame(g1=rep(NA, nrow(testing)),
                                                    g2=rep(NA, nrow(testing)))', dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob", newdata=this_data)', dom)))
-    eval(parse(text=sprintf('print(varImp(%s_fit))', dom)))
+    # eval(parse(text=sprintf('print(varImp(%s_fit))', dom)))
     eval(parse(text=sprintf('%s_test_preds[keep_me, ] = preds', dom)))
 }
 preds_str = sapply(names(domains), function(d) sprintf('%s_test_preds[, 1]', d))
@@ -145,7 +145,7 @@ dat = cbind(data.frame(obs = testing[, phen],
                  pred = preds_class), preds_probs)
 res = twoClassSummary(dat, lev=colnames(preds_probs))
 print(res)
-print(varImp(ens_fit))
+# print(varImp(ens_fit))
 
 line=sprintf("%s,%s,%s,%d,%s,%s,%d,%f,%f", my_sx, clf_model, ens_model,
              clin_diff, use_clin, use_meds,
