@@ -21,27 +21,7 @@ g2 = 'imp'
 
 library(caret)
 library(pROC)
-data = readRDS(sprintf('~/data/baseline_prediction/prs_start/complete_massagedResids_clinDiffGE%d_02202020.rds', clin_diff))
-
-print('Imputing all missing data...')
-set.seed(42)
-base_vars = c(colnames(data)[42:53], colnames(data)[74:81])
-# anatomical
-imp_vars = colnames(data)[66:73]
-test = preProcess(data[, c(base_vars, imp_vars)], method = "bagImpute")
-data[, c(base_vars, imp_vars)] <- predict(test, data[, c(base_vars, imp_vars)])
-# beery, FSIQ, SES
-imp_vars = c(colnames(data)[82], 'FSIQ', 'SES')
-test = preProcess(data[, c(base_vars, imp_vars)], method = "bagImpute")
-data[, c(base_vars, imp_vars)] <- predict(test, data[, c(base_vars, imp_vars)])
-# wj
-imp_vars = colnames(data)[87:88]
-test = preProcess(data[, c(base_vars, imp_vars)], method = "bagImpute")
-data[, c(base_vars, imp_vars)] <- predict(test, data[, c(base_vars, imp_vars)])
-# wisc
-imp_vars = colnames(data)[83:86]
-test = preProcess(data[, c(base_vars, imp_vars)], method = "bagImpute")
-data[, c(base_vars, imp_vars)] <- predict(test, data[, c(base_vars, imp_vars)])
+data = readRDS(sprintf('~/data/baseline_prediction/prs_start/complete_massagedResidsImputedOnPRSDTI_clinDiffGE%d_03032020.rds', clin_diff))
 
 if (my_sx == 'inatt') {
     phen = 'thresh0.00_inatt_GE6_wp05'
@@ -60,8 +40,9 @@ domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
 if (use_clin) {
     domains[['clin']] = c('base_inatt', 'base_hi')
     if (use_meds) {
-        domains[['clin']] = c(domains[['clin']], c('internalizing', 'externalizing',
-                                                'medication_status_at_observation'))
+        domains[['clin']] = c(domains[['clin']],
+                              c('internalizing', 'externalizing',
+                                'medication_status_at_observation'))
     }
 }
 
