@@ -175,7 +175,7 @@ for (dom in names(domains)) {
                                                    notGE6adhd=rep(NA, nrow(testing)),
                                                    nv012=rep(NA, nrow(testing)))', dom)))
     eval(parse(text=sprintf('preds = predict(%s_fit, type="prob", newdata=this_data)', dom)))
-    eval(parse(text=sprintf('print(myVarImp(%s_fit))', dom)))
+    # eval(parse(text=sprintf('print(myVarImp(%s_fit))', dom)))
     eval(parse(text=sprintf('%s_test_preds[keep_me, ] = preds', dom)))
 }
 preds_str = sapply(names(domains), function(d) sprintf('%s_test_preds[, 1:3]', d))
