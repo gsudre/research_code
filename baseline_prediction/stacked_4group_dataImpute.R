@@ -141,20 +141,6 @@ for (dom in names(domains)) {
 }
 colnames(prob_data) = prob_header
 
-if (use_impute) {
-    # replacing by class probabilities in training data
-    class1_ratio = table(training[, phen])[1]/nrow(training)
-    cl1 = prob_data[, seq(1, ncol(prob_data), 3)]
-    cl1[is.na(cl1)] = class1_ratio
-    class2_ratio = table(training[, phen])[2]/nrow(training)
-    cl2 = prob_data[, seq(2, ncol(prob_data), 3)]
-    cl2[is.na(cl2)] = class2_ratio
-    class3_ratio = table(training[, phen])[3]/nrow(training)
-    cl3 = prob_data[, seq(3, ncol(prob_data), 3)]
-    cl3[is.na(cl3)] = class3_ratio
-    prob_data = cbind(cl1, cl2, cl3)
-}
-
 ens_fit <- train(x = prob_data, y=training[, phen],
                  method = ens_model, trControl = fitControl, tuneLength = 10,
                  metric='AUC')
@@ -198,17 +184,6 @@ cbind_str = paste('prob_test_data = cbind(', paste(preds_str, collapse=','), ')'
 eval(parse(text=cbind_str))
 colnames(prob_test_data) = prob_header
 
-if (use_impute) {
-    # replacing by class probabilities in training data
-    cl1 = prob_test_data[, seq(1, ncol(prob_test_data), 3)]
-    cl1[is.na(cl1)] = class1_ratio
-    cl2 = prob_test_data[, seq(2, ncol(prob_test_data), 3)]
-    cl2[is.na(cl2)] = class2_ratio
-    cl3 = prob_test_data[, seq(3, ncol(prob_test_data), 3)]
-    cl3[is.na(cl3)] = class3_ratio
-    prob_test_data = cbind(cl1, cl2, cl3)
-}
-
 preds_class = predict(ens_fit, newdata=prob_test_data)
 preds_probs = predict(ens_fit, newdata=prob_test_data, type='prob')
 dat = cbind(data.frame(obs = testing[, phen],
@@ -217,8 +192,8 @@ res = multiClassSummary(dat, lev=colnames(preds_probs))
 print(res)
 print(varImp(ens_fit))
 
-line=sprintf("%s,%s,%s,%s,%d,%s,%s,%d,%f,%f", my_sx, clf_model, ens_model,
-             use_impute, clin_diff, use_clin, use_meds,
+line=sprintf("%s,%s,%s,%d,%s,%s,%d,%f,%f", my_sx, clf_model, ens_model,
+             clin_diff, use_clin, use_meds,
              length(levels(training[,phen])), res_train['AUC'], res['AUC'])
 print(line) 
 write(line, file=out_file, append=TRUE)
