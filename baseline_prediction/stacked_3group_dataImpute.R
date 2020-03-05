@@ -11,10 +11,10 @@ if (length(args) > 0) {
 } else {
     my_sx = 'hi'
     clf_model = 'hdda'
-    ens_model = 'C5.0Tree'
-    clin_diff = 1
+    ens_model = 'glm'
+    clin_diff = 3
     use_clin = T
-    use_meds = T
+    use_meds = F
     out_file = '/dev/null'
 }
 

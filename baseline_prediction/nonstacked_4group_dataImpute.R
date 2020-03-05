@@ -9,10 +9,10 @@ if (length(args) > 0) {
     out_file = args[6]
 } else {
     my_sx = 'hi'
-    clf_model = 'hdda'
+    clf_model = 'cforest'
     clin_diff = 1
     use_clin = T
-    use_meds = T
+    use_meds = F
     out_file = '/dev/null'
 }
 
@@ -98,7 +98,9 @@ dat = cbind(data.frame(obs = testing[, phen],
                  pred = preds_class), preds_probs)
 res = multiClassSummary(dat, lev=colnames(preds_probs))
 print(res)
-# print(varImp(fit))
+print(varImp(fit))
+
+print(sprintf('Testing on %d participants', nrow(this_data)))
 
 line=sprintf("%s,%s,%s,%d,%s,%d,%f,%f", my_sx, clf_model,
              clin_diff, use_clin, use_meds,
