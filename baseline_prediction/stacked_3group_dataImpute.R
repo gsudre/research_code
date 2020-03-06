@@ -11,8 +11,8 @@ if (length(args) > 0) {
 } else {
     my_sx = 'hi'
     clf_model = 'hdda'
-    ens_model = 'glm'
-    clin_diff = 3
+    ens_model = 'C5.0Tree'
+    clin_diff = 1
     use_clin = T
     use_meds = F
     out_file = '/dev/null'
@@ -62,27 +62,23 @@ myVarImp = function(train_object) {
 
 library(caret)
 library(pROC)
-data = readRDS(sprintf('~/data/baseline_prediction/prs_start/complete_massagedResidsIRMI_clinDiffGE%d_03032020.rds', clin_diff))
+data = readRDS(sprintf('~/data/baseline_prediction/prs_start/complete_massagedRawNeuropsychResidsNoComorbiditiesIRMI_clinDiffGE%d_03062020.rds', clin_diff))
 
-if (my_sx == 'inatt') {
-    phen = 'thresh0.00_inatt_GE6_wp05'
-} else {
-    phen = 'thresh0.50_hi_GE6_wp05'
-}
+phen = sprintf('threshMED_%s_GE6_wp05', my_sx)
 
 domains = list(iq_vmi = c('FSIQ', "VMI.beery"),
                wisc = c("SSB.wisc", "SSF.wisc", 'DSF.wisc', 'DSB.wisc'),
                wj = c("DS.wj", "VM.wj"),
                demo = c('base_age', 'sex', 'SES'),
-               gen = colnames(data)[42:53],
-               dti = colnames(data)[74:81],
-               anat = colnames(data)[66:73]
+               gen = colnames(data)[51:62],
+               dti = colnames(data)[83:90],
+               anat = colnames(data)[75:82]
                )
 if (use_clin) {
     domains[['clin']] = c('base_inatt', 'base_hi')
     if (use_meds) {
-        domains[['clin']] = c(domains[['clin']], c('internalizing', 'externalizing',
-                                                'medication_status_at_observation'))
+        domains[['clin']] = c(domains[['clin']],
+                              'medication_status_at_observation')
     }
 }
 
