@@ -80,7 +80,7 @@ ctl = createMultiFolds(training[, phen], k=nfolds, times=nreps)
 results = list()
 for (rep in 1:nreps) {
     for (fold in 1:nfolds) {
-        fold_name = sprintf('Fold%d.Rep%d', fold, rep)
+        fold_name = sprintf('Fold%02d.Rep%02d', fold, rep)
         fold_rows = ctl[[fold_name]]
         ftrain = training[fold_rows,]
         ftest = training[-fold_rows,]
