@@ -70,8 +70,8 @@ for (v in var_names) {
 data2[, scale_me] = scale(data2[, scale_me])
 
 set.seed(42)
-nreps = 5
-nfolds = 5
+nreps = 10
+nfolds = 10
 # training = data2[data2$bestInFamily, ]
 # testing = data2[!data2$bestInFamily, ]
 training = data2
