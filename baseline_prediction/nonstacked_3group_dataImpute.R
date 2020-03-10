@@ -9,9 +9,9 @@ if (length(args) > 0) {
     out_file = args[6]
 } else {
     my_sx = 'hi'
-    clf_model = 'cforest'
+    clf_model = 'glmnet'
     clin_diff = 1
-    use_clin = T
+    use_clin = F
     use_meds = F
     out_file = '/dev/null'
 }

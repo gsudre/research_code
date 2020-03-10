@@ -11,7 +11,7 @@ if (length(args) > 0) {
 } else {
     my_sx = 'hi'
     clf_model = 'hdda'
-    ens_model = 'glm'
+    ens_model = 'C5.0Tree'
     clin_diff = 1
     use_clin = T
     use_meds = F
