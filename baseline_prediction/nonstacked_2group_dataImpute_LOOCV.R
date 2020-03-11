@@ -93,7 +93,7 @@ for (rep in 1:nreps) {
             fold_name = sprintf('Fold%d', fold)
         }
         if (nreps >= 10) {
-            rep_name = sprintf('Rep02%d', rep)
+            rep_name = sprintf('Rep%02d', rep)
         } else {
             rep_name = sprintf('Rep%d', rep)
         }
