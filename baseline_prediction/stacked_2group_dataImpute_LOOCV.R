@@ -10,7 +10,7 @@ if (length(args) > 0) {
     out_file = args[7]
 } else {
     my_sx = 'hi'
-    clf_model = 'kernelpls'
+    clf_model = 'slda'
     ens_model = 'plr'
     clin_diff = 1
     use_clin = T
@@ -78,6 +78,7 @@ training = data2
 ctl = createMultiFolds(training[, phen], k=nfolds, times=nreps)
 
 results = list()
+importances = list()
 for (rep in 1:nreps) {
     for (fold in 1:nfolds) {
         fold_name = sprintf('Fold%d.Rep%d', fold, rep)
@@ -159,6 +160,7 @@ for (rep in 1:nreps) {
                         pred = preds_class), preds_probs)
         res = twoClassSummary(dat, lev=colnames(preds_probs))
         results[[fold_name]] = res
+        importances[[fold_name]] = varImp(ens_fit)
     }
 }
 
