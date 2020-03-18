@@ -23,12 +23,14 @@ if (grepl(x=fname, pattern='anat')) {
     data$sex_numeric = as.factor(data$sex_numeric)
     data$SES_group3 = as.factor(data$SES_group3)
     var_names = colnames(data)[c(10:17, 18:29, 30:34, 4:6)]
+    phen = sprintf("slope_%s_res_trim.x", my_sx)
 } else {
     data$sex_numeric = as.factor(data$sex_numeric)
     data$SES_group3_165 = as.factor(data$SES_group3_165)
     var_names = colnames(data)[c(21:28, 29:40, 41:45, 5:6, 95, 97:110)]
+    phen = sprintf("slope_%s_res_trim.1", my_sx)
 }
-phen = sprintf("slope_%s_res_trim.x", my_sx)
+
 
 set.seed(42)
 fitControl <- trainControl(method = "repeatedcv",
