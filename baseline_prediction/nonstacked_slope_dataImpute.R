@@ -27,8 +27,8 @@ if (grepl(x=fname, pattern='anat')) {
 } else {
     data$sex_numeric = as.factor(data$sex_numeric)
     data$SES_group3_165 = as.factor(data$SES_group3_165)
-    var_names = colnames(data)[c(21:28, 29:40, 41:45, 5:6, 95, 97:110)]
-    phen = sprintf("slope_%s_res_trim.1", my_sx)
+    var_names = colnames(data)[c(21:28, 29:40, 41:45, 5:6, 95, 9:20)]
+    phen = sprintf("slope_%s_res_trim", my_sx)
 }
 
 
