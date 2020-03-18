@@ -55,7 +55,7 @@ fit <- train(x=data[, var_names],
              trControl = fitControl,
              tuneLength = 10)
 
-line=sprintf("%s,%s,%f,%f", my_sx, reg_model,
-             mean(fit$results$RMSE), sd(fit$results$RMSE))
+line=sprintf("%s,%s,%s,%d,%d,%f,%f", my_sx, reg_model, fname,
+             nfolds, nreps, mean(fit$results$RMSE), sd(fit$results$RMSE))
 print(line)
 write(line, file=out_file, append=TRUE)
