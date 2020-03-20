@@ -8,11 +8,11 @@ if (length(args) > 0) {
     nreps = as.numeric(args[5])
     out_file = args[6]
 } else {
-    fname = '~/Downloads/gf_impute_based_anatomy_272.csv'
-    my_sx = 'hi'
-    reg_model = 'lasso'
-    nfolds = 5
-    nreps = 5
+    fname = '~/Downloads/gf_impute_based_dti_165.csv'
+    my_sx = 'inatt'
+    reg_model = 'blackboost'
+    nfolds = 10
+    nreps = 10
     out_file = '/dev/null'
 }
 

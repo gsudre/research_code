@@ -10,9 +10,9 @@ if (length(args) > 0) {
 } else {
     fname = '~/Downloads/gf_impute_based_anatomy_272.csv'
     my_sx = 'hi'
-    reg_model = 'lasso'
-    nfolds = 5
-    nreps = 5
+    reg_model = 'bagEarth'
+    nfolds = 10
+    nreps = 10
     out_file = '/dev/null'
 }
 
@@ -55,6 +55,8 @@ fit <- train(x=data[, var_names],
              trControl = fitControl,
              metric = 'Rsquared',
              tuneLength = 10)
+
+print(varImp(fit))
 
 line=sprintf("%s,%s,%s,%d,%d,%f,%f", my_sx, reg_model, fname,
              nfolds, nreps, mean(fit$results$Rsquared), sd(fit$results$Rsquared))
