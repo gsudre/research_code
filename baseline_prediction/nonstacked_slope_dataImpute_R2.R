@@ -56,6 +56,7 @@ fit <- train(x=data[, var_names],
              metric = 'Rsquared',
              tuneLength = 10)
 
+print(varImp(fit)
 print(fit)
 
 line=sprintf("%s,%s,%s,%d,%d,%f,%f", my_sx, reg_model, fname,
