@@ -2,11 +2,11 @@ fname = '~/Downloads/gf_impute_based_anatomy_272.csv'
 my_sx = 'hi'
 reg_model = 'dummy'
 nfolds = 10
-nreps = 500
+nreps = 999
 out_file = '/dev/null'
 # metrics to evaluate
-r2_eval = 0.093050
-rmse_eval = 0.575755
+r2_eval = 0.094364
+rmse_eval = 0.460291
 
 library(caret)
 data = read.csv(fname)
@@ -65,8 +65,8 @@ print(line)
 print(sprintf('R2 = %f, p = %f',
               r2_eval, sum(results[,'Rsquared'] > r2_eval)/nreps))
 print(sprintf('RMSE = %f, p = %f',
-              rmse_eval, sum(results[,'RMSE'] > rmse_eval)/nreps))
+              rmse_eval, sum(results[,'RMSE'] < rmse_eval)/nreps))
 
 par(mfrow=c(1, 2))
-hist(results[,'Rsquared'], breaks=50)
-hist(results[,'RMSE'], breaks=50)
+hist(results[,'Rsquared'], breaks=50, main=sprintf('R2_%s_%d', my_sx, nrow(data)))
+hist(results[,'RMSE'], breaks=50, main=sprintf('RMSE_%s_%d', my_sx, nrow(data)))

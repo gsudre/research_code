@@ -9,7 +9,7 @@ if (length(args) > 0) {
     out_file = args[6]
 } else {
     fname = '~/Downloads/gf_impute_based_dti_165.csv'
-    my_sx = 'inatt'
+    my_sx = 'hi'
     reg_model = 'blackboost'
     nfolds = 10
     nreps = 10
@@ -56,6 +56,8 @@ fit <- train(x=data[, var_names],
              tuneLength = 10)
 
 print(varImp(fit))
+
+print(summary(fit))
 
 line=sprintf("%s,%s,%s,%d,%d,%f,%f", my_sx, reg_model, fname,
              nfolds, nreps, mean(fit$results$RMSE), sd(fit$results$RMSE))
