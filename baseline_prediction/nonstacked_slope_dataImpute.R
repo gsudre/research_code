@@ -57,7 +57,7 @@ fit <- train(x=data[, var_names],
 
 print(varImp(fit))
 
-print(summary(fit))
+print(fit)
 
 line=sprintf("%s,%s,%s,%d,%d,%f,%f", my_sx, reg_model, fname,
              nfolds, nreps, mean(fit$results$RMSE), sd(fit$results$RMSE))
