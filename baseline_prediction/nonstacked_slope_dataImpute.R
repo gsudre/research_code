@@ -72,3 +72,8 @@ b = varImp(fit, useModel=F)
 fname = sprintf('~/data/baseline_prediction/prs_start/%s_%s_%s.csv', reg_model,
                 mymod, my_sx)
 write.csv(cbind(a$importance, b$importance), file=fname)
+
+# export variable importance
+fname = sprintf('~/data/baseline_prediction/prs_start/fit_%s_%s_%s.Rdata', reg_model,
+                mymod, my_sx)
+save(fit, file=fname)
