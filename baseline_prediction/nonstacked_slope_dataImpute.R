@@ -67,7 +67,8 @@ print(line)
 write(line, file=out_file, append=TRUE)
 
 # export variable importance
-a = varImp(fit)
+a = varImp(fit, useModel=T)
+b = varImp(fit, useModel=F)
 fname = sprintf('~/data/baseline_prediction/prs_start/%s_%s_%s.csv', reg_model,
                 mymod, my_sx)
-write.csv(a$importance, file=fname)
+write.csv(cbind(a$importance, b$importance), file=fname)
