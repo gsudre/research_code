@@ -63,3 +63,9 @@ line=sprintf("%s,%s,%s,%d,%d,%f,%f", my_sx, reg_model, fname,
              nfolds, nreps, mean(fit$results$RMSE), sd(fit$results$RMSE))
 print(line)
 write(line, file=out_file, append=TRUE)
+
+# export variable importance
+a = varImp(fit)
+fname = sprintf('~/data/baseline_prediction/prs_start/%s_%s_%s', reg_model,
+                my_sx, fname)
+write.csv(a$importance, file=fname)
