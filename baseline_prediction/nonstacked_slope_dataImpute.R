@@ -8,9 +8,9 @@ if (length(args) > 0) {
     nreps = as.numeric(args[5])
     out_file = args[6]
 } else {
-    fname = '~/Downloads/gf_impute_based_dti_165.csv'
+    fname = '~/data/baseline_prediction/prs_start/gf_impute_based_dti_165.csv'
     my_sx = 'hi'
-    reg_model = 'blackboost'
+    reg_model = 'blassoAveraged'
     nfolds = 10
     nreps = 10
     out_file = '/dev/null'
