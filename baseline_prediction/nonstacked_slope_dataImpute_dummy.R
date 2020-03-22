@@ -5,8 +5,8 @@ nfolds = 10
 nreps = 999
 out_file = '/dev/null'
 # metrics to evaluate
-r2_eval = 0.094364
-rmse_eval = 0.460291
+r2_eval = 0.074217
+rmse_eval = 0.527534
 
 library(caret)
 data = read.csv(fname)
