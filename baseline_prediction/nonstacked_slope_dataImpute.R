@@ -20,11 +20,13 @@ library(caret)
 data = read.csv(fname)
 # so they don't get rescaled
 if (grepl(x=fname, pattern='anat')) {
+    mymod = 'anat'
     data$sex_numeric = as.factor(data$sex_numeric)
     data$SES_group3 = as.factor(data$SES_group3)
     var_names = colnames(data)[c(10:17, 18:29, 30:34, 4:6)]
     phen = sprintf("slope_%s_res_trim.x", my_sx)
 } else {
+    mymod = 'dti'
     data$sex_numeric = as.factor(data$sex_numeric)
     data$SES_group3_165 = as.factor(data$SES_group3_165)
     var_names = colnames(data)[c(21:28, 29:40, 41:45, 5:6, 95, 9:20)]
@@ -59,13 +61,13 @@ print(varImp(fit))
 
 print(fit)
 
-line=sprintf("%s,%s,%s,%d,%d,%f,%f", my_sx, reg_model, fname,
+line=sprintf("%s,%s,%s,%d,%d,%f,%f", my_sx, reg_model, mymod,
              nfolds, nreps, mean(fit$results$RMSE), sd(fit$results$RMSE))
 print(line)
 write(line, file=out_file, append=TRUE)
 
 # export variable importance
 a = varImp(fit)
-fname = sprintf('~/data/baseline_prediction/prs_start/%s_%s_%s', reg_model,
-                my_sx, fname)
+fname = sprintf('~/data/baseline_prediction/prs_start/%s_%s_%s.csv', reg_model,
+                mymod, my_sx)
 write.csv(a$importance, file=fname)
