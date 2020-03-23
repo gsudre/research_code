@@ -1,12 +1,12 @@
-fname = '~/Downloads/gf_impute_based_anatomy_272.csv'
-my_sx = 'hi'
+fname = '~/Downloads/gf_impute_based_dti_165.csv'
+my_sx = 'inatt'
 reg_model = 'dummy'
 nfolds = 10
 nreps = 999
 out_file = '/dev/null'
 # metrics to evaluate
 r2_eval = 0.074217
-rmse_eval = 0.527534
+rmse_eval = 0.575755
 
 library(caret)
 data = read.csv(fname)

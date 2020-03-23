@@ -10,7 +10,7 @@ if (length(args) > 0) {
 } else {
     fname = '~/data/baseline_prediction/prs_start/gf_impute_based_dti_165.csv'
     my_sx = 'hi'
-    reg_model = 'blassoAveraged'
+    reg_model = 'kernelpls'
     nfolds = 10
     nreps = 10
     out_file = '/dev/null'
@@ -61,19 +61,20 @@ print(varImp(fit))
 
 print(fit)
 
-line=sprintf("%s,%s,%s,%d,%d,%f,%f", my_sx, reg_model, mymod,
-             nfolds, nreps, mean(fit$results$RMSE), sd(fit$results$RMSE))
+line=sprintf("%s,%s,%s,%d,%d,%f,%f,%f,%f", my_sx, reg_model, mymod,
+             nfolds, nreps, mean(fit$results$RMSE), sd(fit$results$RMSE),
+             mean(fit$results$Rsquared), sd(fit$results$Rsquared))
 print(line)
 write(line, file=out_file, append=TRUE)
 
 # export variable importance
 a = varImp(fit, useModel=T)
 b = varImp(fit, useModel=F)
-fname = sprintf('~/data/baseline_prediction/prs_start/%s_%s_%s.csv', reg_model,
-                mymod, my_sx)
+fname = sprintf('~/data/baseline_prediction/prs_start/varimp_RMSE_%s_%s_%s.csv',
+                reg_model, mymod, my_sx)
 write.csv(cbind(a$importance, b$importance), file=fname)
 
 # export variable importance
-fname = sprintf('~/data/baseline_prediction/prs_start/fit_%s_%s_%s.Rdata', reg_model,
-                mymod, my_sx)
+fname = sprintf('~/data/baseline_prediction/prs_start/fit_RMSE_%s_%s_%s.Rdata',
+                reg_model, mymod, my_sx)
 save(fit, file=fname)
