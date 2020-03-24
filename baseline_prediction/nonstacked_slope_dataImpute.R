@@ -70,11 +70,11 @@ write(line, file=out_file, append=TRUE)
 # export variable importance
 a = varImp(fit, useModel=T)
 b = varImp(fit, useModel=F)
-fname = sprintf('~/data/baseline_prediction/prs_start/varimp_RMSE_%s_%s_%s.csv',
-                reg_model, mymod, my_sx)
+fname = sprintf('~/data/baseline_prediction/prs_start/varimp_RMSE_%s_%s_%s_%d_%d.csv',
+                reg_model, mymod, my_sx, nfolds, nreps)
 write.csv(cbind(a$importance, b$importance), file=fname)
 
 # export variable importance
-fname = sprintf('~/data/baseline_prediction/prs_start/fit_RMSE_%s_%s_%s.Rdata',
-                reg_model, mymod, my_sx)
+fname = sprintf('~/data/baseline_prediction/prs_start/fit_RMSE_%s_%s_%s_%d_%d.Rdata',
+                reg_model, mymod, my_sx, nfolds, nreps)
 save(fit, file=fname)

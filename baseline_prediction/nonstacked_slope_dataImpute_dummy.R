@@ -1,8 +1,8 @@
 fname = '~/Downloads/gf_impute_based_dti_165.csv'
 my_sx = 'inatt'
 reg_model = 'dummy'
-nfolds = 10
-nreps = 999
+nfolds = 5
+nreps = 9999
 out_file = '/dev/null'
 # metrics to evaluate
 r2_eval = 0.074217
@@ -31,7 +31,9 @@ results = c()
 for (rep in 1:nreps) {
     preds = c()
     actual = c()
-    if (nreps >= 100) {
+    if (nreps >= 1000) {
+        rep_name = sprintf('Rep%04d', rep)
+    } else if (nreps >= 100) {
         rep_name = sprintf('Rep%03d', rep)
     } else if (nreps >= 10) {
         rep_name = sprintf('Rep%02d', rep)
@@ -70,3 +72,4 @@ print(sprintf('RMSE = %f, p = %f',
 par(mfrow=c(1, 2))
 hist(results[,'Rsquared'], breaks=50, main=sprintf('R2_%s_%d', my_sx, nrow(data)))
 hist(results[,'RMSE'], breaks=50, main=sprintf('RMSE_%s_%d', my_sx, nrow(data)))
+
