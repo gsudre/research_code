@@ -1,7 +1,7 @@
-fname = '~/Downloads/gf_impute_based_dti_165.csv'
-my_sx = 'inatt'
+fname = '~/Downloads/gf_impute_based_anatomy_272.csv'
+my_sx = 'inatt  '
 reg_model = 'dummy'
-nfolds = 5
+nfolds = 3
 nreps = 9999
 out_file = '/dev/null'
 # metrics to evaluate
