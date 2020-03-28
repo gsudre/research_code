@@ -154,14 +154,15 @@ print(line)
 write(line, file=out_file, append=TRUE)
 
 # export variable importance
-a = varImp(model_list[[clf_model]], useModel=T)
-b = varImp(model_list[[clf_model]], useModel=F)
+fit = model_list[[clf_model]]
+a = varImp(fit, useModel=T)
+b = varImp(fit, useModel=F)
 out_dir = '~/data/baseline_prediction/prs_start/multiClass/'
 fname = sprintf('%s/varimp_%s_%s_%s_%d_%d.csv',
-                clf_model, phen, impute, nfolds, nreps)
+                out_dir, clf_model, phen, impute, nfolds, nreps)
 write.csv(cbind(a$importance, b$importance), file=fname)
 
 # export fit
-fname = sprintf('%s/fit_%s_%s_%s_%d_%d.csv',
-                clf_model, phen, impute, nfolds, nreps)
-save(model_list[[clf_model], file=fname)
+fname = sprintf('%s/fit_%s_%s_%s_%d_%d.RData',
+                out_dir, clf_model, phen, impute, nfolds, nreps)
+save(fit, file=fname)
