@@ -87,7 +87,9 @@ if (impute == 'dti') {
     print('No imputation needed')
 }
 
-data2$phen = as.factor(data[use_me, phen])
+# will need this later so training rows match data2
+data = data[use_me, ]
+data2$phen = as.factor(data[, phen])
 dummies = dummyVars(phen ~ ., data = data2)
 data3 = predict(dummies, newdata = data2)
 
