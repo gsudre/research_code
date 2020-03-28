@@ -68,13 +68,11 @@ if (use_covs) {
 
 if (impute == 'dti') {
     use_me = !is.na(data2$slf_fa)
-    data = data[use_me, ]
     data2 = data2[use_me, ]
     print(sprintf('Using %d observations, %d predictors.', nrow(data2),
                   ncol(data2))) 
 } else if (impute == 'anat') {
     use_me = !is.na(data2$thalamus)
-    data = data[use_me, ]
     data2 = data2[use_me, ]
     dti_cols = which(grepl(colnames(data2), pattern='_fa$'))
     data2 = data2[, -dti_cols]
