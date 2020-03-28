@@ -12,7 +12,8 @@ if (length(args) > 0) {
     nfolds = as.numeric(args[5])
     nreps = as.numeric(args[6])
     ncores = as.numeric(args[7])
-    out_file = args[7]
+    use_covs = as.logical(args[8])
+    out_file = args[9]
 } else {
     fname = '~/data/baseline_prediction/prs_start/gf_philip_03272020.csv'
     phen = 'categ_inatt3'
@@ -21,6 +22,7 @@ if (length(args) > 0) {
     nfolds = 10
     nreps = 10
     ncores = 2
+    use_covs = FALSE
     out_file = '/dev/null'
 }
 
@@ -58,7 +60,11 @@ covar_names = c(# DTI
                 # just base_age (as gender one was of the targets)
                 )
 
-data2 = data[, c(var_names, covar_names)]
+if (use_covs) {
+    data2 = data[, c(var_names, covar_names)]
+} else {
+    data2 = data[, var_names]
+}
 
 if (impute == 'dti') {
     use_me = !is.na(data2$slf_fa)
@@ -72,8 +78,10 @@ if (impute == 'dti') {
     data2 = data2[use_me, ]
     dti_cols = which(grepl(colnames(data2), pattern='_fa$'))
     data2 = data2[, -dti_cols]
-    dti_cols = which(grepl(colnames(data2), pattern='^norm'))
-    data2 = data2[, -dti_cols]
+    if (use_covs) {
+        dti_cols = which(grepl(colnames(data2), pattern='^norm'))
+        data2 = data2[, -dti_cols]
+    }
     print(sprintf('Using %d observations, %d predictors.', nrow(data2),
                   ncol(data2)))
 } else {
@@ -145,8 +153,8 @@ for (m in names(model_list)) {
 names(train_results) = names(model_list)
 names(test_results) = names(model_list)
 
-line=sprintf("%s,%s,%s,%d,%d,%f,%f,%f,%f,%f", phen, clf_model, impute,
-             nfolds, nreps, train_results[clf_model],
+line=sprintf("%s,%s,%s,%s,%d,%d,%f,%f,%f,%f,%f", phen, clf_model, impute,
+             use_covs, nfolds, nreps, train_results[clf_model],
              sd(model_list[[clf_model]]$results$AUC),
              train_results['null'], test_results[clf_model],
              test_results['null'])
@@ -158,11 +166,11 @@ fit = model_list[[clf_model]]
 a = varImp(fit, useModel=T)
 b = varImp(fit, useModel=F)
 out_dir = '~/data/baseline_prediction/prs_start/multiClass/'
-fname = sprintf('%s/varimp_%s_%s_%s_%d_%d.csv',
-                out_dir, clf_model, phen, impute, nfolds, nreps)
+fname = sprintf('%s/varimp_%s_%s_%s_%s_%d_%d.csv',
+                out_dir, clf_model, phen, impute, use_covs, nfolds, nreps)
 write.csv(cbind(a$importance, b$importance), file=fname)
 
 # export fit
-fname = sprintf('%s/fit_%s_%s_%s_%d_%d.RData',
-                out_dir, clf_model, phen, impute, nfolds, nreps)
+fname = sprintf('%s/fit_%s_%s_%s_%s_%d_%d.RData',
+                out_dir, clf_model, phen, impute, use_covs, nfolds, nreps)
 save(fit, file=fname)
