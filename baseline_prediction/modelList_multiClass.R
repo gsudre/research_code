@@ -15,9 +15,9 @@ if (length(args) > 0) {
     use_covs = as.logical(args[8])
     out_file = args[9]
 } else {
-    fname = '~/data/baseline_prediction/prs_start/gf_philip_03272020.csv'
+    fname = '~/data/baseline_prediction/prs_start/gf_philip_03282020.csv'
     phen = 'categ_inatt3'
-    clf_model = 'C5.0'
+    clf_model = 'kernelpls'
     impute = 'dti'
     nfolds = 10
     nreps = 10
@@ -102,7 +102,7 @@ for (fam in unique(data$FAMID)) {
     } else {
         # choose the youngest kid in the family for training
         train_rows = c(train_rows,
-                       fam_rows[which.min(data[fam_rows, 'base_age'])])
+                       fam_rows[which.max(data[fam_rows, 'base_age'])])
     }
 }
 # data3 doesn't have the target column!
