@@ -142,7 +142,7 @@ train_results = c(model_list$null$results$AUC)
 test_results = c()
 for (m in names(model_list)) {
     if (m != 'null') {
-        train_results = c(mean(model_list[[m]]$results$AUC), train_results)
+        train_results = c(max(model_list[[m]]$results$AUC), train_results)
     }
     preds_class = predict.train(model_list[[m]], newdata=X_test)
     preds_probs = predict.train(model_list[[m]], newdata=X_test, type='prob')
@@ -153,9 +153,8 @@ for (m in names(model_list)) {
 names(train_results) = names(model_list)
 names(test_results) = names(model_list)
 
-line=sprintf("%s,%s,%s,%s,%d,%d,%f,%f,%f,%f,%f", phen, clf_model, impute,
+line=sprintf("%s,%s,%s,%s,%d,%d,%f,%f,%f,%f", phen, clf_model, impute,
              use_covs, nfolds, nreps, train_results[clf_model],
-             sd(model_list[[clf_model]]$results$AUC),
              train_results['null'], test_results[clf_model],
              test_results['null'])
 print(line)
