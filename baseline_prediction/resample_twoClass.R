@@ -147,7 +147,7 @@ preds_class = predict.train(fit, newdata=X_test)
 preds_probs = predict.train(fit, newdata=X_test, type='prob')
 dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
 mcs = twoClassSummary(dat, lev=colnames(preds_probs))
-test_results = c(mcs['ROC'], mcs['Mean_Sensitivity'], mcs['Mean_Specificity'])
+test_results = c(mcs['ROC'], mcs['Sens'], mcs['Spec'])
 names(test_results) = c('test_AUC', 'test_Sens', 'test_Spec')
 
 res = c(phen, clf_model, c1, c2, impute, use_covs, nfolds, nreps,
