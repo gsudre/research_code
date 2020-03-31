@@ -127,6 +127,11 @@ pp = preProcess(X_train, method = pp_order)
 X_train = predict(pp, X_train)
 X_test = predict(pp, X_test)
 
+# remove linear combination variables
+comboInfo <- findLinearCombos(X_train)
+X_train = X_train[, -comboInfo$remove]
+X_test = X_test[, -comboInfo$remove]
+
 registerDoParallel(ncores)
 getDoParWorkers()
 set.seed(42)
