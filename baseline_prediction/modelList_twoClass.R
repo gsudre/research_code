@@ -122,6 +122,7 @@ y_train <- factor(data2[train_rows,]$phen)
 y_test <- factor(data2[-train_rows,]$phen)
 
 # imputation and feature engineering
+set.seed(42)
 pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'bagImpute')
 pp = preProcess(X_train, method = pp_order)
 X_train = predict(pp, X_train)
