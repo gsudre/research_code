@@ -17,11 +17,11 @@ if (length(args) > 0) {
     use_covs = as.logical(args[10])
     out_file = args[11]
 } else {
-    fname = '~/data/baseline_prediction/prs_start/gf_philip_03282020.csv'
-    phen = 'categ_inatt3'
-    c1 = 'emerge_stable'
-    c2 = 'group_0_0'
-    clf_model = 'kernelpls'
+    fname = '~/data/baseline_prediction/prs_start/gf_philip_03292020.csv'
+    phen = 'categ_all.4'
+    c1 = 'emergent'
+    c2 = 'never_affected'
+    clf_model = 'svmLinear'
     impute = 'dti'
     nfolds = 10
     nreps = 10
@@ -152,32 +152,34 @@ model_list <- caretList(X_train,
                         continue_on_fail = TRUE,
                         metric='ROC')
 
-options(digits = 3)
-train_results = c(model_list$null$results$ROC)
-test_results = c()
-for (m in names(model_list)) {
-    if (m != 'null') {
-        # this is the max over parameters!
-        train_results = c(max(model_list[[m]]$results$ROC), train_results)
-    }
-    preds_class = predict.train(model_list[[m]], newdata=X_test)
-    preds_probs = predict.train(model_list[[m]], newdata=X_test, type='prob')
-    dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
-    test_results = c(test_results,
-                     twoClassSummary(dat, lev=colnames(preds_probs))['ROC'])
-}
-names(train_results) = names(model_list)
-names(test_results) = names(model_list)
+fit = model_list[[clf_model]]
 
-line=sprintf("%s,%s,%s,%s,%s,%s,%d,%d,%f,%f,%f,%f", phen, c1, c2, clf_model,
-             impute, use_covs, nfolds, nreps, train_results[clf_model],
-             train_results['null'], test_results[clf_model],
-             test_results['null'])
-print(line)
-write(line, file=out_file, append=TRUE)
+resamps = resamples(list(fit=fit, tmp=fit))
+auc_stats = summary(resamps)$statistics$ROC['fit',]
+cnames = sapply(names(auc_stats), function(x) sprintf('AUC_%s', x))
+names(auc_stats) = cnames
+sens_stats = summary(resamps)$statistics$Sens['fit',]
+cnames = sapply(names(sens_stats), function(x) sprintf('Sens_%s', x))
+names(sens_stats) = cnames
+spec_stats = summary(resamps)$statistics$Spec['fit',]
+cnames = sapply(names(spec_stats), function(x) sprintf('Spec_%s', x))
+names(spec_stats) = cnames
+
+preds_class = predict.train(fit, newdata=X_test)
+preds_probs = predict.train(fit, newdata=X_test, type='prob')
+dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
+mcs = twoClassSummary(dat, lev=colnames(preds_probs))
+test_results = c(mcs['ROC'], mcs['Sens'], mcs['Spec'])
+names(test_results) = c('test_AUC', 'test_Sens', 'test_Spec')
+
+res = c(phen, clf_model, c1, c2, impute, use_covs, nfolds, nreps,
+        auc_stats, sens_stats, spec_stats, test_results)
+line_res = paste(res,collapse=',')
+
+write(line_res, file=out_file, append=TRUE)
+print(line_res)
 
 # export variable importance
-fit = model_list[[clf_model]]
 a = varImp(fit, useModel=T)
 b = varImp(fit, useModel=F)
 out_dir = '~/data/baseline_prediction/prs_start/twoClass/'
