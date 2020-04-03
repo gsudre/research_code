@@ -41,7 +41,6 @@ ORFpls
 ORFridge
 ORFsvm
 parRF
-PenalizedLDA
 ordinalNet
 rFerns
 ordinalRF
