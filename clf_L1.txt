@@ -2,7 +2,6 @@ deepboost
 glmnet_h20
 glmnet
 msaenet
-PenalizedLDA
 ordinalNet
 regLogistic
 sdwd

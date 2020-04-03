@@ -14,8 +14,8 @@ if (length(args) > 0) {
 } else {
     fname = '~/data/rnaseq_derek/X_ACCnoPH_zv_nzv_center_scale.rds'
     myregion = 'ACC'
-    clf_model = 'PenalizedLDA'
-    ncores = 32
+    clf_model = 'sparseLDA'
+    ncores = 2
     nfolds = 10
     nreps = 10
     out_file = '/dev/null'
@@ -48,7 +48,7 @@ fitControl <- trainControl(method = "repeatedcv",
 # to later compute the overall result.
 varimps = matrix(nrow=ncol(X), ncol=nrow(X))
 test_preds = c()
-for (test_rows in 1:5) {#length(y)) {
+for (test_rows in 1:length(y)) {
     print(sprintf('Hold out %d / %d', test_rows, length(y)))
     X_train <- X[-test_rows, ]
     X_test <- X[test_rows, ]
