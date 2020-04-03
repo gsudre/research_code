@@ -196,6 +196,8 @@ b = varImp(fit, useModel=F)
 out_dir = '~/data/baseline_prediction/prs_start/twoClassBA/'
 fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%d_%d.csv',
                 out_dir, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
+# careful here because for non-linear models the rows of the importance matrix
+# are not aligned!!!
 write.csv(cbind(a$importance, b$importance), file=fname)
 
 # export fit
