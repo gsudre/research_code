@@ -30,7 +30,6 @@ ORFlog
 ORFpls
 ORFridge
 ORFsvm
-parRF
 ordinalNet
 rFerns
 ordinalRF
@@ -54,7 +53,6 @@ smda
 gbm
 evtree
 nodeHarvest
-wsrf
 svmLinear
 svmLinear2
 svmRadial

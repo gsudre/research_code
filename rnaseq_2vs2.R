@@ -14,7 +14,7 @@ if (length(args) > 0) {
 } else {
     fname = '~/data/rnaseq_derek/X_ACCnoPH_zv_nzv_center_scale.rds'
     myregion = 'ACC'
-    clf_model = 'sparseLDA'
+    clf_model = 'spls'
     ncores = 2
     nfolds = 10
     nreps = 10
@@ -41,37 +41,44 @@ fitControl <- trainControl(method = "repeatedcv",
                            repeats = nreps,
                            savePredictions = 'final',
                            allowParallel = TRUE,
-                           classProbs = FALSE,
+                           classProbs = TRUE,
                            summaryFunction=my_summary)
+
+ypos = which(y == levels(y)[1])
+yneg = which(y == levels(y)[2])
+test_rows = c()
+for (p in ypos) {
+    for (n in yneg) {
+        test_rows = rbind(test_rows, c(p, n))
+    }
+}
 
 # let's then do a repeated 10 fold CV within LOOCV. We save the test predictions
 # to later compute the overall result.
-varimps = matrix(nrow=ncol(X), ncol=nrow(X))
-test_preds = c()
-for (test_rows in 1:length(y)) {
-    print(sprintf('Hold out %d / %d', test_rows, length(y)))
-    X_train <- X[-test_rows, ]
-    X_test <- X[test_rows, ]
-    y_train <- factor(y[-test_rows])
-    y_test <- factor(y[test_rows])
+varimps = matrix(nrow=ncol(X), ncol=nrow(test_rows))
+acc = 0
+for (trow in 1:nrow(test_rows)) {
+    print(sprintf('Hold out %d / %d', trow, nrow(test_rows)))
+    X_train <- X[-test_rows[trow,], ]
+    X_test <- X[test_rows[trow,], ]
+    y_train <- factor(y[-test_rows[trow,]])
 
     set.seed(42)
     fit <- train(X_train, y_train, trControl = fitControl, method = clf_model,
                  metric='BalancedAccuracy')
 
-    preds_class = predict.train(fit, newdata=X_test)
-    dat = data.frame(obs = y_test, pred = preds_class)
-    test_preds = rbind(test_preds, dat)
+    preds_probs = predict.train(fit, newdata=X_test, type='prob')
+    # first observation in test is always Case and second is Control
+    if ((preds_probs[1, 'Case'] > preds_probs[2, 'Case']) ||
+        (preds_probs[1, 'Control'] < preds_probs[2, 'Control'])) {
+            acc = acc + 1
+    }
 
     tmp = varImp(fit, useModel=T)$importance
-    varimps[, test_rows] = tmp[,1]
+    varimps[, trow] = tmp[,1]
 }
 
-mcs = my_summary(test_preds, lev=levels(y))
-test_results = c(mcs['BalancedAccuracy'], mcs['Sens'], mcs['Spec'])
-names(test_results) = c('test_BalancedAccuracy', 'test_Sens', 'test_Spec')
-
-res = c(myregion, clf_model, nfolds, nreps, test_results)
+res = c(myregion, clf_model, nfolds, nreps, acc/nrow(test_rows))
 line_res = paste(res,collapse=',')
 write(line_res, file=out_file, append=TRUE)
 print(line_res)
@@ -79,7 +86,7 @@ print(line_res)
 # export variable importance
 a = rowMeans(varimps, na.rm=T)
 names(a) = rownames(tmp)
-out_dir = '~/data/rnaseq_derek/LOOCV_noProbs/'
+out_dir = '~/data/rnaseq_derek/twoVtwo/'
 fname = sprintf('%s/varimp_%s_%s_%d_%d.csv',
                 out_dir, myregion, clf_model, nfolds, nreps)
 write.csv(a, file=fname)
