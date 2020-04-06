@@ -41,7 +41,6 @@ ORFpls
 ORFridge
 ORFsvm
 parRF
-ordinalNet
 rFerns
 ordinalRF
 ranger

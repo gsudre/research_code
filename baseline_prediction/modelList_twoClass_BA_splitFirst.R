@@ -19,7 +19,7 @@ if (length(args) > 0) {
 } else {
     fname = '~/data/baseline_prediction/prs_start/gf_philip_03292020.csv'
     phen = 'categ_all.4'
-    c1 = 'improvers'
+    c1 = 'never_affected'
     c2 = 'stable_symptomatic'
     clf_model = 'kernelpls'
     impute = 'dti'
@@ -97,12 +97,6 @@ data2$phen = as.factor(data[, phen])
 dummies = dummyVars(phen ~ ., data = data2)
 data3 = predict(dummies, newdata = data2)
 
-# selecting only kids in the 2 specified groups
-keep_me = data2$phen==c1 | data2$phen==c2
-data3 = data3[keep_me, ]
-data2 = data2[keep_me, ]
-data = data[keep_me, ]
-
 # split traing and test between members of the same family
 train_rows = c()
 for (fam in unique(data$FAMID)) {
@@ -118,8 +112,8 @@ for (fam in unique(data$FAMID)) {
 # data3 doesn't have the target column!
 X_train <- data3[train_rows, ]
 X_test <- data3[-train_rows, ]
-y_train <- factor(data2[train_rows,]$phen)
-y_test <- factor(data2[-train_rows,]$phen)
+y_train <- data2[train_rows,]$phen
+y_test <- data2[-train_rows,]$phen
 
 # imputation and feature engineering
 set.seed(42)
@@ -132,6 +126,14 @@ X_test = predict(pp, X_test)
 comboInfo <- findLinearCombos(X_train)
 X_train = X_train[, -comboInfo$remove]
 X_test = X_test[, -comboInfo$remove]
+
+# selecting only kids in the 2 specified groups
+keep_me = y_train==c1 | y_train==c2
+X_train = X_train[keep_me, ]
+y_train = factor(y_train[keep_me])
+keep_me = y_test==c1 | y_test==c2
+X_test = X_test[keep_me, ]
+y_test = factor(y_test[keep_me])
 
 registerDoParallel(ncores)
 getDoParWorkers()
