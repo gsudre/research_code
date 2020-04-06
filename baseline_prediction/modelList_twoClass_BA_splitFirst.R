@@ -195,7 +195,7 @@ print(line_res)
 # export variable importance
 a = varImp(fit, useModel=T)
 b = varImp(fit, useModel=F)
-out_dir = '~/data/baseline_prediction/prs_start/twoClassBA/'
+out_dir = '~/data/baseline_prediction/prs_start/splitFirstTwoClassBA/'
 fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%d_%d.csv',
                 out_dir, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
 # careful here because for non-linear models the rows of the importance matrix
