@@ -151,7 +151,7 @@ fitControl <- trainControl(method = "repeatedcv",
                            repeats = nreps,
                            savePredictions = 'final',
                            allowParallel = TRUE,
-                           classProbs = TRUE,
+                           classProbs = FALSE,
                            summaryFunction=my_summary)
 
 set.seed(42)
@@ -168,9 +168,6 @@ resamps = resamples(list(fit=fit, tmp=fit))
 bacc_stats = summary(resamps)$statistics$BalancedAccuracy['fit',]
 cnames = sapply(names(bacc_stats), function(x) sprintf('BalancedAccuracy_%s', x))
 names(bacc_stats) = cnames
-auc_stats = summary(resamps)$statistics$ROC['fit',]
-cnames = sapply(names(auc_stats), function(x) sprintf('AUC_%s', x))
-names(auc_stats) = cnames
 sens_stats = summary(resamps)$statistics$Sens['fit',]
 cnames = sapply(names(sens_stats), function(x) sprintf('Sens_%s', x))
 names(sens_stats) = cnames
@@ -179,15 +176,14 @@ cnames = sapply(names(spec_stats), function(x) sprintf('Spec_%s', x))
 names(spec_stats) = cnames
 
 preds_class = predict.train(fit, newdata=X_test)
-preds_probs = predict.train(fit, newdata=X_test, type='prob')
-dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
-mcs = my_summary(dat, lev=colnames(preds_probs))
-test_results = c(mcs['BalancedAccuracy'], mcs['ROC'], mcs['Sens'], mcs['Spec'])
-names(test_results) = c('test_BalancedAccuracy', 'test_AUC', 'test_Sens',
+dat = data.frame(obs = y_test, pred = preds_class)
+mcs = my_summary(dat, lev=levels(y_train))
+test_results = c(mcs['BalancedAccuracy'], mcs['Sens'], mcs['Spec'])
+names(test_results) = c('test_BalancedAccuracy', 'test_Sens',
                         'test_Spec')
 
 res = c(phen, clf_model, c1, c2, impute, use_covs, nfolds, nreps,
-        auc_stats, sens_stats, spec_stats, bacc_stats, test_results)
+        sens_stats, spec_stats, bacc_stats, test_results)
 line_res = paste(res,collapse=',')
 write(line_res, file=out_file, append=TRUE)
 print(line_res)

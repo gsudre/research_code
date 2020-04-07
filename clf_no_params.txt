@@ -1,0 +1,17 @@
+glm
+bayesglm
+C5.0Rules
+C5.0Tree
+Mlda
+slda
+treebag
+gaussprLinear
+glmStepAIC
+lda
+qda
+rpart1SE
+Linda
+QdaCov
+CSimca
+RSimca
+OneR
