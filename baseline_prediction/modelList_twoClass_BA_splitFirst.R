@@ -115,6 +115,14 @@ X_test <- data3[-train_rows, ]
 y_train <- data2[train_rows,]$phen
 y_test <- data2[-train_rows,]$phen
 
+# selecting only kids in the 2 specified groups
+keep_me = y_train==c1 | y_train==c2
+X_train = X_train[keep_me, ]
+y_train = factor(y_train[keep_me])
+keep_me = y_test==c1 | y_test==c2
+X_test = X_test[keep_me, ]
+y_test = factor(y_test[keep_me])
+
 # imputation and feature engineering
 set.seed(42)
 pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'bagImpute')
@@ -126,14 +134,6 @@ X_test = predict(pp, X_test)
 comboInfo <- findLinearCombos(X_train)
 X_train = X_train[, -comboInfo$remove]
 X_test = X_test[, -comboInfo$remove]
-
-# selecting only kids in the 2 specified groups
-keep_me = y_train==c1 | y_train==c2
-X_train = X_train[keep_me, ]
-y_train = factor(y_train[keep_me])
-keep_me = y_test==c1 | y_test==c2
-X_test = X_test[keep_me, ]
-y_test = factor(y_test[keep_me])
 
 registerDoParallel(ncores)
 getDoParWorkers()
