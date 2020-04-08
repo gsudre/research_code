@@ -144,37 +144,23 @@ my_summary = function(data, lev = NULL, model = NULL) {
     return(a)
 }
 
-fitControl <- trainControl(method = "repeatedcv",
-                           number = nfolds,
-                           repeats = nreps,
-                           savePredictions = 'final',
+fitControl <- trainControl(method = "none",
                            allowParallel = TRUE,
                            classProbs = TRUE,
                            summaryFunction=my_summary)
 
-mygrid = data.frame(ncomp=1)
+if (clf_model == 'kernelpls') {
+    mygrid = data.frame(ncomp=1)
+} else {
+    mygrid = NULL
+}
 
 set.seed(42)
 fit <- train(X_train,
-                        y_train,
-                        trControl = fitControl,
-                        method = clf_model,
-                        tuneGrid = mygrid,
-                        metric='BalancedAccuracy')
-
-resamps = resamples(list(fit=fit, tmp=fit))
-bacc_stats = summary(resamps)$statistics$BalancedAccuracy['fit',]
-cnames = sapply(names(bacc_stats), function(x) sprintf('BalancedAccuracy_%s', x))
-names(bacc_stats) = cnames
-auc_stats = summary(resamps)$statistics$ROC['fit',]
-cnames = sapply(names(auc_stats), function(x) sprintf('AUC_%s', x))
-names(auc_stats) = cnames
-sens_stats = summary(resamps)$statistics$Sens['fit',]
-cnames = sapply(names(sens_stats), function(x) sprintf('Sens_%s', x))
-names(sens_stats) = cnames
-spec_stats = summary(resamps)$statistics$Spec['fit',]
-cnames = sapply(names(spec_stats), function(x) sprintf('Spec_%s', x))
-names(spec_stats) = cnames
+             y_train,
+             trControl = fitControl,
+             method = clf_model,
+             tuneGrid = mygrid)
 
 preds_class = predict.train(fit, newdata=X_test)
 preds_probs = predict.train(fit, newdata=X_test, type='prob')
@@ -184,8 +170,7 @@ test_results = c(mcs['BalancedAccuracy'], mcs['ROC'], mcs['Sens'], mcs['Spec'])
 names(test_results) = c('test_BalancedAccuracy', 'test_AUC', 'test_Sens',
                         'test_Spec')
 
-res = c(phen, clf_model, c1, c2, impute, use_covs, nfolds, nreps,
-        auc_stats, sens_stats, spec_stats, bacc_stats, test_results)
+res = c(phen, clf_model, c1, c2, impute, use_covs, nfolds, nreps, test_results)
 line_res = paste(res,collapse=',')
 write(line_res, file=out_file, append=TRUE)
 print(line_res)

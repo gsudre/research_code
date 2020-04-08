@@ -21,7 +21,7 @@ if (length(args) > 0) {
     phen = 'categ_all.4'
     c1 = 'improvers'
     c2 = 'stable_symptomatic'
-    clf_model = 'slda'
+    clf_model = 'kernelpls'
     impute = 'dti'
     nfolds = 10
     nreps = 10
@@ -161,17 +161,17 @@ fit <- train(X_train,
              tuneGrid = mygrid)
 
 preds_class = predict.train(fit, newdata=X_test)
-dat = data.frame(obs = y_test, pred = preds_class)
-mcs = my_summary(dat, lev=levels(y_train))
-test_results = c(mcs['BalancedAccuracy'], mcs['Sens'], mcs['Spec'])
-names(test_results) = c('test_BalancedAccuracy', 'test_Sens',
+preds_probs = predict.train(fit, newdata=X_test, type='prob')
+dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
+mcs = my_summary(dat, lev=colnames(preds_probs))
+test_results = c(mcs['BalancedAccuracy'], mcs['ROC'], mcs['Sens'], mcs['Spec'])
+names(test_results) = c('test_BalancedAccuracy', 'test_AUC', 'test_Sens',
                         'test_Spec')
 
 res = c(phen, clf_model, c1, c2, impute, use_covs, nfolds, nreps, test_results)
 line_res = paste(res,collapse=',')
 write(line_res, file=out_file, append=TRUE)
 print(line_res)
-print(test_results)
 
 # export variable importance
 a = varImp(fit, useModel=T)
