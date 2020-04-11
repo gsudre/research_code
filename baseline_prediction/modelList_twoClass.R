@@ -20,7 +20,7 @@ if (length(args) > 0) {
     fname = '~/data/baseline_prediction/prs_start/gf_philip_03292020.csv'
     phen = 'categ_all.4'
     c1 = 'emergent'
-    c2 = 'never_affected'
+    c2 = 'improvers'
     clf_model = 'svmLinear'
     impute = 'dti'
     nfolds = 10
@@ -192,3 +192,7 @@ write.csv(cbind(a$importance, b$importance), file=fname)
 fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%d_%d.RData',
                 out_dir, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
 save(fit, file=fname)
+
+print(summary(y_train))
+print(summary(y_test))
+print(test_results)

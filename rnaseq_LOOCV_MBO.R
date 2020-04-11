@@ -116,9 +116,27 @@ for (test_row in 1:nrow(X)) {
               control = control,
               show.info = TRUE)
 
+    # another CV to determine nrounds
     set.seed(myseed)
-    xg_mod <- xgboost(data = dtrain, params = run$x, nround = nrounds,
+    full_params = append(run$x, list(booster = "gbtree",
+                                     objective = 'binary:logistic',
+                                     eval_metric = metric))
+    cv <- xgb.cv(params = full_params,
+                data = dtrain,
+                nround = nrounds,
+                folds=  cv_folds,
+                prediction = FALSE,
+                showsd = TRUE,
+                early_stopping_rounds = nstop,
+                verbose = 0,
+                nthread=ncores)
+
+    # train final model for this hold out
+    set.seed(myseed)
+    xg_mod <- xgboost(data = dtrain, params = full_params,
+                      nround = cv$best_iteration,
                       verbose = F, nthread=ncores)
+
     y_probs = c(y_probs, predict(xg_mod, dtest))
     tmp = data.frame(run$x, y=run$y)
     best_params = rbind(best_params, tmp)

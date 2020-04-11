@@ -19,9 +19,9 @@ if (length(args) > 0) {
 } else {
     fname = '~/data/baseline_prediction/prs_start/gf_philip_03292020.csv'
     phen = 'categ_all.4'
-    c1 = 'improvers'
-    c2 = 'stable_symptomatic'
-    clf_model = 'kernelpls'
+    c1 = 'stable_symptomatic'
+    c2 = 'never_affected'
+    clf_model = 'slda'
     impute = 'dti'
     nfolds = 10
     nreps = 10
@@ -118,8 +118,8 @@ for (fam in unique(data$FAMID)) {
 # data3 doesn't have the target column!
 X_train <- data3[train_rows, ]
 X_test <- data3[-train_rows, ]
-y_train <- factor(data2[train_rows,]$phen)
-y_test <- factor(data2[-train_rows,]$phen)
+y_train <- factor(data2[train_rows,]$phen, levels=c(c1, c2))
+y_test <- factor(data2[-train_rows,]$phen, levels=c(c1, c2))
 
 # imputation and feature engineering
 set.seed(42)
