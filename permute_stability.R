@@ -38,6 +38,7 @@ data3 = predict(dummies, newdata = data2)
 comboInfo <- findLinearCombos(data3)
 data3 = data3[, -comboInfo$remove]
 
+print('Removing weird variables...')
 # remove weird variables
 grex_names = colnames(data)[grepl(colnames(data), pattern='^grex')]
 pp = preProcess(data[, grex_names], method=c('zv', 'nzv', 'range'),
@@ -49,8 +50,7 @@ good_grex = grex_names[!(grex_names %in% imbad)]
 
 data4 = cbind(data[, good_grex], data3)
 
-# I'll go ahead and do the pre-processing here because it'll be very costly to
-# to it inside LOOCV
+print('Data preprocessing...')
 set.seed(myseed)
 # data4 doesn't even have Diagnosis, and no NAs
 pp_order = c('zv', 'nzv', 'center', 'scale')
@@ -58,13 +58,11 @@ pp = preProcess(data4, method = pp_order)
 X = predict(pp, data4)
 y = data2$Diagnosis
 
+print('Data normalizing...')
 grex_only = colnames(X)[grepl(colnames(X), pattern='^grex')]
 library(bestNormalize)
 Xgrex = X[, grex_only]
 for (v in 1:ncol(Xgrex)) {
-    if ((v %% 100)==0) {
-        print(sprintf('%d / %d', v, ncol(Xgrex)))
-    }
     bn = orderNorm(Xgrex[, v])
     Xgrex[, v] = bn$x.t
 }
@@ -76,11 +74,13 @@ library(doParallel)
 ncores = jobid=Sys.getenv('SLURM_CPUS_PER_TASK')
 cl = makeCluster(ncores)
 
+print('Creating Xrand...')
 set.seed(myseed)
 Xrand = Xgrex
 for (v in 1:ncol(Xrand)) {
     Xrand[, v] = rnorm(nrow(Xrand))
 }
+print('Starting bootstrap...')
 fscores = matrix(nrow=nboot, ncol=ncol(Xrand))
 set.seed(myseed)
 for (b in 1:nboot) {
@@ -104,7 +104,7 @@ for (b in 1:nboot) {
     }
     fscores[b, ] = ps
 }
-fout = sprintf('~/data/rnaseq_derek/perms/rnd_%s_%s_1000boot_p%04d.rds',
+fout = sprintf('~/data/rnaseq_derek/perms/rnd_%s_%s_1000boot_p%06d.rds',
                mytest, WNH, myseed)
 saveRDS(fscores, file=fout, compress=T)
 
