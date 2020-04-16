@@ -12,6 +12,10 @@ if (length(args) > 0) {
     mytest = 'ttest'
 }
 
+library(doParallel)
+ncores = Sys.getenv('SLURM_CPUS_PER_TASK')
+cl = makeCluster(ncores)
+
 data = readRDS('~/data/rnaseq_derek/data_from_philip_POP_and_PCs.rds')
 data = data[data$Region=='ACC',]
 if (WNH) {
@@ -69,10 +73,6 @@ for (v in 1:ncol(Xgrex)) {
 pp_order = c('center', 'scale')
 pp = preProcess(Xgrex, method = pp_order)
 Xgrex = predict(pp, Xgrex)
-
-library(doParallel)
-ncores = jobid=Sys.getenv('SLURM_CPUS_PER_TASK')
-cl = makeCluster(ncores)
 
 print('Creating Xrand...')
 set.seed(myseed)
