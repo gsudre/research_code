@@ -13,7 +13,7 @@ if (length(args) > 0) {
 }
 
 library(doParallel)
-ncores = Sys.getenv('SLURM_CPUS_PER_TASK')
+ncores = as.numeric(Sys.getenv('SLURM_CPUS_PER_TASK'))
 cl = makeCluster(ncores)
 
 data = readRDS('~/data/rnaseq_derek/data_from_philip_POP_and_PCs.rds')
