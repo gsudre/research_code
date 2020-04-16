@@ -35,21 +35,21 @@ distancePointSegment <- function(px, py, x1, y1, x2, y2) {
  ans
 }
 
-# for example
-svd = eigen(cc)
-absev = abs(svd$values)
-plot(absev)
+# # for example
+# svd = eigen(cc)
+# absev = abs(svd$values)
+# plot(absev)
 
 
-x=1:length(absev)
-dists = vector()
-for (i in x) {
-    dists = c(dists, distancePointSegment(i, absev[i], x[1], absev[1], max(x), min(absev)))
-}
-pos = which.max(dists)
-pct = sum(absev[1:pos])/sum(absev)
-# Using M(eff) from SimpleM, as in http://www.ncbi.nlm.nih.gov/pubmed/19434714
-cat(sprintf('Elbow = %d, %.2f of variance\n', pos, pct))
-# Using M(eff) from Galwey 2009
-meff = (sum(sqrt(absev))^2)/sum(absev)
-cat(sprintf('Galwey Meff = %.2f\n', meff))
+# x=1:length(absev)
+# dists = vector()
+# for (i in x) {
+#     dists = c(dists, distancePointSegment(i, absev[i], x[1], absev[1], max(x), min(absev)))
+# }
+# pos = which.max(dists)
+# pct = sum(absev[1:pos])/sum(absev)
+# # Using M(eff) from SimpleM, as in http://www.ncbi.nlm.nih.gov/pubmed/19434714
+# cat(sprintf('Elbow = %d, %.2f of variance\n', pos, pct))
+# # Using M(eff) from Galwey 2009
+# meff = (sum(sqrt(absev))^2)/sum(absev)
+# cat(sprintf('Galwey Meff = %.2f\n', meff))
