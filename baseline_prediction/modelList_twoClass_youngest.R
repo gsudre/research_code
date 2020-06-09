@@ -110,9 +110,9 @@ for (fam in unique(data$FAMID)) {
     if (length(fam_rows) == 1) {
         train_rows = c(train_rows, fam_rows[1])
     } else {
-        # choose the eldest kid in the family for training
+        # choose the youngest kid in the family for training
         train_rows = c(train_rows,
-                       fam_rows[which.max(data[fam_rows, 'base_age'])])
+                       fam_rows[which.min(data[fam_rows, 'base_age'])])
     }
 }
 # data3 doesn't have the target column!
