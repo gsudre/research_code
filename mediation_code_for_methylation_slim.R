@@ -26,7 +26,7 @@ mydata$batch = factor(mydata$batch)
 mydata$sex = factor(mydata$sex)
 
 nboot = 1000
-ncpus = future::availableCores() #4 # 8
+ncpus = 1 #future::availableCores() #4 # 8
 if (any(grepl(Ys, pattern='HI'))) { 
     fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
     fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
