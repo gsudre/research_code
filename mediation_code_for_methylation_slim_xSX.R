@@ -1,3 +1,5 @@
+# this version of the script is the same as without _xSX, but here the symptoms
+# are in the X variable
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) > 1) {
     fname = args[1]
@@ -27,7 +29,7 @@ mydata$sex = factor(mydata$sex)
 
 nboot = 1000
 ncpus = 1 #future::availableCores() #4 # 8
-if (any(grepl(Ys, pattern='HI'))) { 
+if (any(grepl(Xs, pattern='HI'))) { 
     fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
     fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
 } else {
@@ -68,16 +70,12 @@ run_model4 = function(X, M, Y, metadata, nboot=1000) {
 }
 
 all_res = c()
-for (x_str in Xs) {
-    X = mydata[, x_str]
-    # replace m_base by the baseline for the current X 
-    # this hack only works because all computations done in parallel correpond to
-    # the same X. If we had different X being processed in parallel, then a more
-    # elegant change would be needed
-    x_base = gsub(x=x_str, pattern='ROC', replacement='baseline')
-    mydata$m_base = mydata[, x_base]
-    for (y_str in Ys) {
-        Y = mydata[, y_str]
+for (y_str in Ys) {
+    Y = mydata[, y_str]
+    y_base = gsub(x=y_str, pattern='ROC', replacement='baseline')
+    mydata$m_base = mydata[, y_base]
+    for (x_str in xs) {
+        X = mydata[, x_str]
         for (m_str in Ms) {
             M = mydata[, m_str]
             print(sprintf('X=%s, M=%s, Y=%s', x_str, m_str, y_str))
