@@ -74,7 +74,7 @@ for (y_str in Ys) {
     Y = mydata[, y_str]
     y_base = gsub(x=y_str, pattern='ROC', replacement='baseline')
     mydata$m_base = mydata[, y_base]
-    for (x_str in xs) {
+    for (x_str in Xs) {
         X = mydata[, x_str]
         for (m_str in Ms) {
             M = mydata[, m_str]
