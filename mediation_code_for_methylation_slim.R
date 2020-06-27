@@ -24,16 +24,21 @@ mydata[mydata$batch=='3_2', 'batch'] = 'other_batches'
 mydata[mydata$batch=='10_10', 'batch'] = 'other_batches'
 mydata$batch = factor(mydata$batch)
 mydata$sex = factor(mydata$sex)
+mydata$sample_type.x = factor(mydata$sample_type.x)
 
 nboot = 1000
 ncpus = 1 #future::availableCores() #4 # 8
-if (any(grepl(Ys, pattern='HI'))) { 
-    fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-    fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-} else {
-    fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-    fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-}
+# # for DTI
+# if (any(grepl(Ys, pattern='HI'))) { 
+#     fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+#     fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+# } else {
+#     fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+#     fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+# }
+# for DLPFC variables
+fm = 'M ~ X + DLPFC_volume_baseline + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl_1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.x + sex'
+fy = 'Y ~ X + M + DLPFC_volume_baseline + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl_1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.x + sex'
 
 print(fm)
 print(fy)
@@ -75,7 +80,7 @@ for (x_str in Xs) {
     # the same X. If we had different X being processed in parallel, then a more
     # elegant change would be needed
     x_base = gsub(x=x_str, pattern='ROC', replacement='baseline')
-    mydata$m_base = mydata[, x_base]
+    mydata$x_base = mydata[, x_base]
     for (y_str in Ys) {
         Y = mydata[, y_str]
         for (m_str in Ms) {
