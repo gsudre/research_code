@@ -8,10 +8,10 @@ if (length(args) > 1) {
     Xs = read.table(args[2])[, 1]
     out_fname = args[5]
 } else {
-    fname = '~/tmp/HI_ROC_methyl_sx_dti_82.csv'
-    Ms = c('RD_left_ifo')
-    Ys = c('ROC_HI_one_SX_win')
-    Xs = c("cg00001814_ROC", "cg00009053_ROC", "cg00019746_ROC")
+    fname = '~/data/longitudinal_methylome/DLPFC_inatt_for_mediation.csv'
+    Ms = c('DLPFC_volume_ROC')
+    Ys = c("cg27487187_ROC", "cg27510871_ROC")
+    Xs = c("ROC_IN_one_win.1")
     out_fname = '~/tmp/temp1.csv'
 }
 
@@ -26,16 +26,21 @@ mydata[mydata$batch=='3_2', 'batch'] = 'other_batches'
 mydata[mydata$batch=='10_10', 'batch'] = 'other_batches'
 mydata$batch = factor(mydata$batch)
 mydata$sex = factor(mydata$sex)
+mydata$sample_type.x = factor(mydata$sample_type.x)
 
 nboot = 1000
 ncpus = 1 #future::availableCores() #4 # 8
-if (any(grepl(Xs, pattern='HI'))) { 
-    fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-    fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-} else {
-    fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-    fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-}
+# # for DTI variable
+# if (any(grepl(Xs, pattern='HI'))) { 
+#     fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+#     fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+# } else {
+#     fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+#     fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + m_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+# }
+# for DLPFC variables
+fm = 'M ~ X + DLPFC_volume_baseline + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + y_base + age_methyl_1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.x + sex'
+fy = 'Y ~ X + M + DLPFC_volume_baseline + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + y_base + age_methyl_1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.x + sex'
 
 print(fm)
 print(fy)
@@ -72,8 +77,7 @@ run_model4 = function(X, M, Y, metadata, nboot=1000) {
 all_res = c()
 for (y_str in Ys) {
     Y = mydata[, y_str]
-    y_base = gsub(x=y_str, pattern='ROC', replacement='baseline')
-    mydata$m_base = mydata[, y_base]
+    mydata$y_base = mydata[, gsub(x=y_str, pattern='ROC', replacement='baseline')]
     for (x_str in Xs) {
         X = mydata[, x_str]
         for (m_str in Ms) {
