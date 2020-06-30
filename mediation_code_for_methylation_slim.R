@@ -4,13 +4,17 @@ if (length(args) > 1) {
     Ms = read.table(args[3])[, 1]
     Ys = read.table(args[4])[, 1]
     Xs = read.table(args[2])[, 1]
-    out_fname = args[5]
+    add_Mbase = as.logical(args[5])
+    cg_fname = args[6]
+    out_fname = args[7]
 } else {
-    fname = '~/tmp/HI_ROC_methyl_sx_dti_82.csv'
-    Ms = c('RD_left_ifo')
-    Ys = c('ROC_HI_one_SX_win')
-    Xs = c("cg00001814_ROC", "cg00009053_ROC", "cg00019746_ROC")
+    fname = '~/data/longitudinal_methylome/DLPFC_inatt_for_mediation.csv'
+    Ms = c('DLPFC_volume_ROC')
+    Xs = c("cg27487187_ROC", "cg27510871_ROC")
+    Ys = c("ROC_IN_one_win.1")
     out_fname = '~/tmp/temp1.csv'
+    add_Mbase = F
+    cg_fname = 'INATT_ROC_methyl_sx_dti_82.csv'
 }
 
 library(mediation)
@@ -24,24 +28,32 @@ mydata[mydata$batch=='3_2', 'batch'] = 'other_batches'
 mydata[mydata$batch=='10_10', 'batch'] = 'other_batches'
 mydata$batch = factor(mydata$batch)
 mydata$sex = factor(mydata$sex)
-mydata$sample_type.x = factor(mydata$sample_type.x)
+mydata$sample_type.y = factor(mydata$sample_type.y)
+
+cg_data = read.csv(cg_fname)
+cg_vars = colnames(cg_data)[grepl(colnames(cg_data), pattern='^cg')]
+mydata = merge(mydata, cg_data[, c('PersonID', cg_vars)], by='PersonID')
 
 nboot = 1000
 ncpus = 1 #future::availableCores() #4 # 8
-# # for DTI
-# if (any(grepl(Ys, pattern='HI'))) { 
-#     fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-#     fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-# } else {
-#     fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-#     fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-# }
+# for DTI
+if (any(grepl(Ys, pattern='HI'))) { 
+    fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+} else {
+    fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+}
+if (add_Mbase) {
+    fm = sprintf('%s + m_base', fm)
+    fy = sprintf('%s + m_base', fy)
+}
 # # for DLPFC variables
 # fm = 'M ~ X + DLPFC_volume_baseline + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl_1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.x + sex'
 # fy = 'Y ~ X + M + DLPFC_volume_baseline + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl_1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.x + sex'
-# for DLPFC variables without baseline correction
-fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl_1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.x + sex'
-fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl_1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.x + sex'
+# # for DLPFC variables without baseline correction
+# fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl_1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.x + sex'
+# fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl_1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.x + sex'
 
 
 print(fm)
@@ -88,6 +100,10 @@ for (x_str in Xs) {
     for (y_str in Ys) {
         Y = mydata[, y_str]
         for (m_str in Ms) {
+            if (add_Mbase) {
+                mbase = gsub(x=m_str, pattern='rate', replacement='baseline')
+                mydata$m_base = mydata[, mbase]
+            }
             M = mydata[, m_str]
             print(sprintf('X=%s, M=%s, Y=%s', x_str, m_str, y_str))
             res = run_model4(X, M, Y, mydata, nboot)
