@@ -23,25 +23,33 @@ library(mediation)
 
 gf = read.csv(fname)
 mydata = gf
-mydata$qc.bad = factor(mydata$qc.bad)
+# mydata$qc.bad = factor(mydata$qc.bad)
+
+cg_data = read.csv(cg_fname)
+cg_vars = colnames(cg_data)[grepl(colnames(cg_data), pattern='^cg')]
+mydata = merge(mydata, cg_data, by='PersonID')
+print(dim(mydata))
+
 # make sure we have enough data in these batches
 mydata[mydata$batch=='11_11', 'batch'] = 'other_batches'
 mydata[mydata$batch=='3_2', 'batch'] = 'other_batches'
 mydata[mydata$batch=='10_10', 'batch'] = 'other_batches'
 mydata$batch = factor(mydata$batch)
 mydata$sex = factor(mydata$sex)
-mydata$sample_type.y = factor(mydata$sample_type.y)
-
-cg_data = read.csv(cg_fname)
-cg_vars = colnames(cg_data)[grepl(colnames(cg_data), pattern='^cg')]
-mydata = merge(mydata, cg_data[, c('PersonID', cg_vars)], by='PersonID')
+# mydata$sample_type.y = factor(mydata$sample_type.y)
+mydata$sample_type = factor(mydata$sample_type)
 
 nboot = 1000
 ncpus = 1 #future::availableCores() #4 # 8
 # for DTI variable
 if (any(grepl(Xs, pattern='HI'))) { 
-    fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + y_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-    fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + y_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    # # neuroimaging
+    # fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + y_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    # fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + y_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    
+    #cog
+    fm = 'M ~ X + SXHI.1 + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + y_base + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
+    fy = 'Y ~ X + M + SXHI.1 + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + y_base + ageACQ.1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
 } else {
     fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + y_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
     fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + y_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
