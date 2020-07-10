@@ -15,6 +15,9 @@ nvS_fname = NA #sprintf('%s/Nuclear Families/nv_interviews_simplex.xlsx', dir_na
 dicaS_fname = sprintf('%s/Nuclear Families/DICA nuclear families 2_10_20.xlsx', dir_name)
 family_fname = '/Volumes/Shaw/Family_Study_List/Family Study List 02102020.xlsx'
 papers_fname = sprintf('%s/sx_from_papers.xlsx', dir_name)
+philips_fname = sprintf('%s/philips_files_slim.xlsx', dir_name)
+manual_fname = sprintf('%s/clinical_data_sx_checked_2020_05_22.xlsx', dir_name)
+
 
 # cleaning up CAADID
 print(caadid_fname)
@@ -131,6 +134,23 @@ if (!is.na(family_fname)) {
   idx = family$DOA=='' | family$SX_inatt=='' | family$SX_hi==''
   family = family[!idx, ]
   sx = rbind(sx, family)
+
+  # adding people who only have DX from DICA
+  family = df[, c('MRN', 'Date.of.Assessment', 'Inatt.sx.child', 'HI.sx.child',
+                  'Inatt.sx.adult', 'HI.sx.adult')]
+  idx = (family$Inatt.sx.child!='' & family$HI.sx.child!='' &
+         family$Inatt.sx.adult=='' & family$HI.sx.adult=='')
+  family = family[idx, ]
+  family$Inatt.sx.adult = NULL
+  family$HI.sx.adult = NULL
+  colnames(family) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi')
+  family$source = 'FamilyStudyList'
+  other_dx = c("Other.Dx.1", "Other.Dx.2", "Other.Dx.3")
+  family$other_dx = do.call(paste, df[idx, other_dx])
+  # this spreadsheet is special because many entries don't have clinical interviews
+  idx = family$DOA=='' | family$SX_inatt=='' | family$SX_hi==''
+  family = family[!idx, ]
+  sx = rbind(sx, family)
 }
 
 # cleaning up data from papers
@@ -143,6 +163,32 @@ papers$source = 'OldPapers'
 other_dx = c("med")
 papers$other_dx = df[, other_dx]
 sx = rbind(sx, papers)
+
+# cleaning up Philip's Old data
+if (!is.na(philips_fname)) {
+  print(philips_fname)
+  df = read.xls(philips_fname, sheet = 1, header = TRUE, colClasses='character')  # bypassing some weird error in conversion
+  print(sprintf('Found %d records.', nrow(df)))
+  family = df[, c('MRN', 'DATESCAN')]
+  colnames(family) = c('MRN', 'DOA')
+  family$source = 'PhilipsOldFiles'
+  family$other_dx = df[, 'DX']
+  family$SX_inatt = NA
+  family$SX_hi = NA
+  sx = rbind(sx, family)
+}
+
+# cleaning up manually checked data
+if (!is.na(manual_fname)) {
+  print(manual_fname)
+  df = read.xls(manual_fname, sheet = 1, header = TRUE, colClasses='character')  # bypassing some weird error in conversion
+  print(sprintf('Found %d records.', nrow(df)))
+  papers = df[, c('MRN', 'DOA', 'SX_inatt', 'SX_hi')]
+  papers$source = 'ManuallyChecked'
+  other_dx = c('source_sx', 'other_dx', 'NOTES')
+  papers$other_dx = do.call(paste, df[, other_dx])
+  sx = rbind(sx, papers)
+}
 
 sx_bk = sx
 
