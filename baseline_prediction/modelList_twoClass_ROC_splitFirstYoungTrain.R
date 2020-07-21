@@ -97,12 +97,6 @@ data2$phen = as.factor(data[, phen])
 dummies = dummyVars(phen ~ ., data = data2)
 data3 = predict(dummies, newdata = data2)
 
-# selecting only kids in the 2 specified groups
-keep_me = data2$phen==c1 | data2$phen==c2
-data3 = data3[keep_me, ]
-data2 = data2[keep_me, ]
-data = data[keep_me, ]
-
 # split traing and test between members of the same family
 train_rows = c()
 for (fam in unique(data$FAMID)) {
@@ -118,8 +112,16 @@ for (fam in unique(data$FAMID)) {
 # data3 doesn't have the target column!
 X_train <- data3[train_rows, ]
 X_test <- data3[-train_rows, ]
-y_train <- factor(data2[train_rows,]$phen)
-y_test <- factor(data2[-train_rows,]$phen)
+y_train <- data2[train_rows,]$phen
+y_test <- data2[-train_rows,]$phen
+
+# selecting only kids in the 2 specified groups
+keep_me = y_train==c1 | y_train==c2
+X_train = X_train[keep_me, ]
+y_train = factor(y_train[keep_me])
+keep_me = y_test==c1 | y_test==c2
+X_test = X_test[keep_me, ]
+y_test = factor(y_test[keep_me])
 
 # imputation and feature engineering
 set.seed(42)
@@ -136,6 +138,7 @@ X_test = X_test[, -comboInfo$remove]
 registerDoParallel(ncores)
 getDoParWorkers()
 set.seed(42)
+
 fitControl <- trainControl(method = "repeatedcv",
                            number = nfolds,
                            repeats = nreps,
@@ -154,7 +157,6 @@ model_list <- caretList(X_train,
                         metric='ROC')
 
 fit = model_list[[clf_model]]
-
 resamps = resamples(list(fit=fit, tmp=fit))
 auc_stats = summary(resamps)$statistics$ROC['fit',]
 cnames = sapply(names(auc_stats), function(x) sprintf('AUC_%s', x))
@@ -176,16 +178,17 @@ names(test_results) = c('test_AUC', 'test_Sens', 'test_Spec')
 res = c(phen, clf_model, c1, c2, impute, use_covs, nfolds, nreps,
         auc_stats, sens_stats, spec_stats, test_results)
 line_res = paste(res,collapse=',')
-
 write(line_res, file=out_file, append=TRUE)
 print(line_res)
 
 # export variable importance
 a = varImp(fit, useModel=T)
 b = varImp(fit, useModel=F)
-out_dir = '~/data/baseline_prediction/twoClass/'
+out_dir = '~/data/baseline_prediction/splitFirstTwoClassYoungTrain/'
 fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%d_%d.csv',
                 out_dir, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
+# careful here because for non-linear models the rows of the importance matrix
+# are not aligned!!!
 write.csv(cbind(a$importance, b$importance), file=fname)
 
 # export fit
@@ -195,4 +198,4 @@ save(fit, file=fname)
 
 print(summary(y_train))
 print(summary(y_test))
-print(test_results)
+print(summary(train_rows))

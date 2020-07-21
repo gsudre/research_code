@@ -17,7 +17,7 @@ if (length(args) > 0) {
     use_covs = as.logical(args[10])
     out_file = args[11]
 } else {
-    fname = '~/data/baseline_prediction/gf_JULY_ols_definition_GS.csv'
+    fname = '~/data/baseline_prediction/DATA_JULY_2020.csv'
     phen = 'categ_all_lm'
     c1 = 'worsening'
     c2 = 'stable'
@@ -33,6 +33,7 @@ if (length(args) > 0) {
 data = read.csv(fname)
 data$sex_numeric = as.factor(data$sex_numeric)
 data$SES_group3 = as.factor(data$SES_group3)
+data$base_total = data$base_inatt + data$base_hi
 # data$slf_fa = data$slf_all  # just to make it easier to filter out
 var_names = c(# PRS
               'ADHD_PRS0.000100.orig', 'ADHD_PRS0.001000.orig',
@@ -43,19 +44,24 @@ var_names = c(# PRS
               # DTI
               'atr_fa', 'cst_fa', 'cing_cing_fa', 'cing_hipp_fa', 'cc_fa',
               'ilf_fa', 'slf_fa', 'unc_fa',
-              # demo
-              'sex_numeric', 'SES_group3',
+            #   demo
+              'sex_numeric', 'base_age', #'SES_group3', 
+                # 'SES_group3',
               # cog
               'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
-              # anat
+            #   # anat
               'cerebellum_white', 'cerebellum_grey', 'amygdala',
               'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus'
+            #   # base SX
+            #   'base_inatt', 'base_hi',
+            #   'slf_fa'
+            # 'age_onset'
               )
 
 covar_names = c(# DTI
                 'norm.rot', 'norm.trans', # base_age, gender,
                 # cog
-                # base_age, gender
+                # 'base_age', 'sex_numeric',
                 # anat
                 'average_qc', # age, gender (but not ICV)
                 # PRS
@@ -69,6 +75,12 @@ if (use_covs) {
 } else {
     data2 = data[, var_names]
 }
+
+# data2 = data2[data$ever_ADHD == 'include',]
+# data = data[data$ever_ADHD == 'include',]
+
+# data2 = data2[data$parent_history_include == 'yes',]
+# data = data[data$parent_history_include == 'yes',]
 
 if (impute == 'dti') {
     use_me = !is.na(data2$slf_fa)
@@ -91,17 +103,16 @@ if (impute == 'dti') {
     print('No imputation needed')
 }
 
+# data2$slf_fa = NULL
+
 # will need this later so training rows match data2
 data = data[use_me, ]
 data2$phen = as.factor(data[, phen])
+
+
+
 dummies = dummyVars(phen ~ ., data = data2)
 data3 = predict(dummies, newdata = data2)
-
-# selecting only kids in the 2 specified groups
-keep_me = data2$phen==c1 | data2$phen==c2
-data3 = data3[keep_me, ]
-data2 = data2[keep_me, ]
-data = data[keep_me, ]
 
 # split traing and test between members of the same family
 train_rows = c()
@@ -110,16 +121,24 @@ for (fam in unique(data$FAMID)) {
     if (length(fam_rows) == 1) {
         train_rows = c(train_rows, fam_rows[1])
     } else {
-        # choose the youngest kid in the family for training
+        # choose the oldest kid in the family for training
         train_rows = c(train_rows,
-                       fam_rows[which.min(data[fam_rows, 'base_age'])])
+                       fam_rows[which.max(data[fam_rows, 'base_age'])])
     }
 }
 # data3 doesn't have the target column!
-X_train <- data3[train_rows, ]
-X_test <- data3[-train_rows, ]
-y_train <- factor(data2[train_rows,]$phen)
-y_test <- factor(data2[-train_rows,]$phen)
+X_train <- as.data.frame(data3[train_rows, ])
+X_test <- as.data.frame(data3[-train_rows, ])
+y_train <- data2[train_rows,]$phen
+y_test <- data2[-train_rows,]$phen
+
+# selecting only kids in the 2 specified groups
+keep_me = y_train==c1 | y_train==c2
+X_train = as.data.frame(X_train[keep_me, ])
+y_train = factor(y_train[keep_me])
+keep_me = y_test==c1 | y_test==c2
+X_test = as.data.frame(X_test[keep_me, ])
+y_test = factor(y_test[keep_me])
 
 # imputation and feature engineering
 set.seed(42)
@@ -130,12 +149,19 @@ X_test = predict(pp, X_test)
 
 # remove linear combination variables
 comboInfo <- findLinearCombos(X_train)
-X_train = X_train[, -comboInfo$remove]
-X_test = X_test[, -comboInfo$remove]
+if (length(comboInfo$remove) > 0) {
+    X_train = X_train[, -comboInfo$remove]
+    X_test = X_test[, -comboInfo$remove]
+}
+
+print(colnames(X_train))
+print(table(y_train))
+print(table(y_test))
 
 registerDoParallel(ncores)
 getDoParWorkers()
 set.seed(42)
+
 fitControl <- trainControl(method = "repeatedcv",
                            number = nfolds,
                            repeats = nreps,
@@ -154,7 +180,6 @@ model_list <- caretList(X_train,
                         metric='ROC')
 
 fit = model_list[[clf_model]]
-
 resamps = resamples(list(fit=fit, tmp=fit))
 auc_stats = summary(resamps)$statistics$ROC['fit',]
 cnames = sapply(names(auc_stats), function(x) sprintf('AUC_%s', x))
@@ -176,23 +201,23 @@ names(test_results) = c('test_AUC', 'test_Sens', 'test_Spec')
 res = c(phen, clf_model, c1, c2, impute, use_covs, nfolds, nreps,
         auc_stats, sens_stats, spec_stats, test_results)
 line_res = paste(res,collapse=',')
-
 write(line_res, file=out_file, append=TRUE)
 print(line_res)
 
 # export variable importance
 a = varImp(fit, useModel=T)
 b = varImp(fit, useModel=F)
-out_dir = '~/data/baseline_prediction/twoClass/'
-fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%d_%d.csv',
-                out_dir, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
+split_fname = strsplit(x=out_file, split='/')[[1]]
+myprefix = gsub(x=split_fname[length(split_fname)], pattern='.csv', replacement='')
+out_dir = '~/data/baseline_prediction/more_models/'
+fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%s_%d_%d.csv',
+                out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
+# careful here because for non-linear models the rows of the importance matrix
+# are not aligned!!!
 write.csv(cbind(a$importance, b$importance), file=fname)
+print(varImp(fit, useModel=F, scale=F))
 
 # export fit
-fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%d_%d.RData',
-                out_dir, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
+fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%s_%d_%d.RData',
+                out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
 save(fit, file=fname)
-
-print(summary(y_train))
-print(summary(y_test))
-print(test_results)

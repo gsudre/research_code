@@ -33,7 +33,7 @@ if (length(args) > 0) {
 data = read.csv(fname)
 data$sex_numeric = as.factor(data$sex_numeric)
 data$SES_group3 = as.factor(data$SES_group3)
-data$slf_fa = data$slf_all  # just to make it easier to filter out
+# data$slf_fa = data$slf_all  # just to make it easier to filter out
 var_names = c(# PRS
               'ADHD_PRS0.000100.orig', 'ADHD_PRS0.001000.orig',
               'ADHD_PRS0.010000.orig', 'ADHD_PRS0.050000.orig',
@@ -195,7 +195,7 @@ print(line_res)
 # export variable importance
 a = varImp(fit, useModel=T)
 b = varImp(fit, useModel=F)
-out_dir = '~/data/baseline_prediction/prs_start/splitFirstTwoClassBA/'
+out_dir = '~/data/baseline_prediction/splitFirstTwoClassBA/'
 fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%d_%d.csv',
                 out_dir, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
 # careful here because for non-linear models the rows of the importance matrix

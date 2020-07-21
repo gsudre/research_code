@@ -1,7 +1,6 @@
 args <- commandArgs(trailingOnly = TRUE)
 
 library(caret)
-library(caretEnsemble)
 library(doParallel)
 
 if (length(args) > 0) {
@@ -11,11 +10,9 @@ if (length(args) > 0) {
     c2 = args[4]
     clf_model = args[5]
     impute = args[6]
-    nfolds = as.numeric(args[7])
-    nreps = as.numeric(args[8])
-    ncores = as.numeric(args[9])
-    use_covs = as.logical(args[10])
-    out_file = args[11]
+    ncores = as.numeric(args[7])
+    use_covs = as.logical(args[8])
+    out_file = args[9]
 } else {
     fname = '~/data/baseline_prediction/gf_JULY_ols_definition_GS.csv'
     phen = 'categ_all_lm'
@@ -23,10 +20,8 @@ if (length(args) > 0) {
     c2 = 'stable'
     clf_model = 'slda'
     impute = 'dti'
-    nfolds = 10
-    nreps = 10
     ncores = 2
-    use_covs = FALSE
+    use_covs = F
     out_file = '/dev/null'
 }
 
@@ -94,14 +89,6 @@ if (impute == 'dti') {
 # will need this later so training rows match data2
 data = data[use_me, ]
 data2$phen = as.factor(data[, phen])
-dummies = dummyVars(phen ~ ., data = data2)
-data3 = predict(dummies, newdata = data2)
-
-# selecting only kids in the 2 specified groups
-keep_me = data2$phen==c1 | data2$phen==c2
-data3 = data3[keep_me, ]
-data2 = data2[keep_me, ]
-data = data[keep_me, ]
 
 # split traing and test between members of the same family
 train_rows = c()
@@ -110,61 +97,81 @@ for (fam in unique(data$FAMID)) {
     if (length(fam_rows) == 1) {
         train_rows = c(train_rows, fam_rows[1])
     } else {
-        # choose the youngest kid in the family for training
+        # choose the oldest kid in the family for training
         train_rows = c(train_rows,
-                       fam_rows[which.min(data[fam_rows, 'base_age'])])
+                       fam_rows[which.max(data[fam_rows, 'base_age'])])
     }
 }
-# data3 doesn't have the target column!
-X_train <- data3[train_rows, ]
-X_test <- data3[-train_rows, ]
-y_train <- factor(data2[train_rows,]$phen)
-y_test <- factor(data2[-train_rows,]$phen)
+X_train <- data2[train_rows, ]
+X_test <- data2[-train_rows, ]
+X_train$phen = NULL
+X_test$phen = NULL
+y_train <- data2[train_rows,]$phen
+y_test <- data2[-train_rows,]$phen
 
-# imputation and feature engineering
 set.seed(42)
-pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'bagImpute')
+pp_order = c('bagImpute')
 pp = preProcess(X_train, method = pp_order)
 X_train = predict(pp, X_train)
 X_test = predict(pp, X_test)
 
-# remove linear combination variables
-comboInfo <- findLinearCombos(X_train)
-X_train = X_train[, -comboInfo$remove]
-X_test = X_test[, -comboInfo$remove]
+# with imputation out of the way, we can go ahead and normalize them all
+# together
+X = rbind(X_train, X_test)
+
+dummies = dummyVars(~., data=X, fullRank=T)
+# normalize non-dummy variables
+library(bestNormalize)
+for (v in setdiff(dummies$vars, dummies$facVars)) {
+    bn = orderNorm(X[, v])
+    X[, v] = bn$x.t
+}
+
+# codify dummies
+X = predict(dummies, newdata=X)
+# imputation and feature engineering
+set.seed(42)
+pp_order = c('zv', 'nzv', 'corr', 'center', 'scale')
+pp = preProcess(X, method = pp_order)
+X = predict(pp, X)
+
+# split everything again
+X_train = X[1:nrow(X_train), ]
+X_test = X[(nrow(X_train)+1):nrow(X), ]
+
+# selecting only kids in the 2 specified groups
+keep_me = y_train==c1 | y_train==c2
+X_train = X_train[keep_me, ]
+y_train = factor(y_train[keep_me])
+keep_me = y_test==c1 | y_test==c2
+X_test = X_test[keep_me, ]
+y_test = factor(y_test[keep_me])
+
+print(dim(X_train))
 
 registerDoParallel(ncores)
 getDoParWorkers()
 set.seed(42)
-fitControl <- trainControl(method = "repeatedcv",
-                           number = nfolds,
-                           repeats = nreps,
-                           savePredictions = 'final',
+
+fitControl <- trainControl(method = "none",
                            allowParallel = TRUE,
                            classProbs = TRUE,
                            summaryFunction=twoClassSummary)
 
+# set.seed(42)
+# up_train <- upSample(x = X_train, y = y_train, list=T) 
+# X_train = up_train[[1]]
+# y_train = up_train[[2]]
+# fitControl$sampling='smote'
+# model_weights <- ifelse(y_train == c1, (1/table(y_train)[1]) * 0.5,
+#                         (1/table(y_train)[2]) * 0.5)
+
 set.seed(42)
-model_list <- caretList(X_train,
+fit <- train(X_train,
                         y_train,
                         trControl = fitControl,
-                        methodList = c(clf_model, 'null'),
-                        tuneList = NULL,
-                        continue_on_fail = TRUE,
-                        metric='ROC')
-
-fit = model_list[[clf_model]]
-
-resamps = resamples(list(fit=fit, tmp=fit))
-auc_stats = summary(resamps)$statistics$ROC['fit',]
-cnames = sapply(names(auc_stats), function(x) sprintf('AUC_%s', x))
-names(auc_stats) = cnames
-sens_stats = summary(resamps)$statistics$Sens['fit',]
-cnames = sapply(names(sens_stats), function(x) sprintf('Sens_%s', x))
-names(sens_stats) = cnames
-spec_stats = summary(resamps)$statistics$Spec['fit',]
-cnames = sapply(names(spec_stats), function(x) sprintf('Spec_%s', x))
-names(spec_stats) = cnames
+                        method = clf_model,)
+                        # weights=model_weights)
 
 preds_class = predict.train(fit, newdata=X_test)
 preds_probs = predict.train(fit, newdata=X_test, type='prob')
@@ -173,26 +180,26 @@ mcs = twoClassSummary(dat, lev=colnames(preds_probs))
 test_results = c(mcs['ROC'], mcs['Sens'], mcs['Spec'])
 names(test_results) = c('test_AUC', 'test_Sens', 'test_Spec')
 
-res = c(phen, clf_model, c1, c2, impute, use_covs, nfolds, nreps,
-        auc_stats, sens_stats, spec_stats, test_results)
+res = c(phen, clf_model, c1, c2, impute, use_covs, test_results)
 line_res = paste(res,collapse=',')
-
 write(line_res, file=out_file, append=TRUE)
 print(line_res)
 
-# export variable importance
-a = varImp(fit, useModel=T)
-b = varImp(fit, useModel=F)
-out_dir = '~/data/baseline_prediction/twoClass/'
-fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%d_%d.csv',
-                out_dir, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
-write.csv(cbind(a$importance, b$importance), file=fname)
+# # export variable importance
+# a = varImp(fit, useModel=T)
+# b = varImp(fit, useModel=F)
+# out_dir = '~/data/baseline_prediction/splitFirstTwoClass/'
+# fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%d_%d.csv',
+#                 out_dir, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
+# # careful here because for non-linear models the rows of the importance matrix
+# # are not aligned!!!
+# write.csv(cbind(a$importance, b$importance), file=fname)
 
-# export fit
-fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%d_%d.RData',
-                out_dir, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
-save(fit, file=fname)
+# # export fit
+# fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%d_%d.RData',
+#                 out_dir, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
+# save(fit, file=fname)
 
-print(summary(y_train))
-print(summary(y_test))
-print(test_results)
+# print(summary(y_train))
+# print(summary(y_test))
+# print(summary(train_rows))

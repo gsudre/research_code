@@ -17,11 +17,11 @@ if (length(args) > 0) {
     use_covs = as.logical(args[10])
     out_file = args[11]
 } else {
-    fname = '~/data/baseline_prediction/prs_start/gf_philip_03292020.csv'
-    phen = 'categ_all.4'
-    c1 = 'emergent'
-    c2 = 'improvers'
-    clf_model = 'svmLinear'
+    fname = '~/data/baseline_prediction/gf_JULY_ols_definition_GS.csv'
+    phen = 'categ_all_lm'
+    c1 = 'worsening'
+    c2 = 'stable'
+    clf_model = 'slda'
     impute = 'dti'
     nfolds = 10
     nreps = 10
@@ -33,7 +33,6 @@ if (length(args) > 0) {
 data = read.csv(fname)
 data$sex_numeric = as.factor(data$sex_numeric)
 data$SES_group3 = as.factor(data$SES_group3)
-data$slf_fa = data$slf_all  # just to make it easier to filter out
 var_names = c(# PRS
               'ADHD_PRS0.000100.orig', 'ADHD_PRS0.001000.orig',
               'ADHD_PRS0.010000.orig', 'ADHD_PRS0.050000.orig',
@@ -183,7 +182,7 @@ print(line_res)
 # export variable importance
 a = varImp(fit, useModel=T)
 b = varImp(fit, useModel=F)
-out_dir = '~/data/baseline_prediction/prs_start/twoClass/'
+out_dir = '~/data/baseline_prediction/twoClass/'
 fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%d_%d.csv',
                 out_dir, clf_model, phen, c1, c2, impute, use_covs, nfolds, nreps)
 write.csv(cbind(a$importance, b$importance), file=fname)
