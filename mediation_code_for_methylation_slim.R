@@ -46,6 +46,11 @@ if (any(grepl(Ys, pattern='HI'))) {
     fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 +
     SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff +
     NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    # neuroimaging
+    fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 +
+    SV.one.m2 + age_methyl1 + age.diff +CD8T.diff + CD4T.diff +
+    NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
 
     # # cog
     # fm = 'M ~ X + SXHI.1 + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
@@ -55,6 +60,10 @@ if (any(grepl(Ys, pattern='HI'))) {
     fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
     fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 +
     SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff +
+    NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 +
+    SV.one.m2 + age_methyl1 + age.diff +CD8T.diff + CD4T.diff +
     NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
 }
 if (add_Mbase) {
