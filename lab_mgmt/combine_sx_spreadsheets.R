@@ -7,12 +7,12 @@
 library(gdata)
 
 dir_name = '/Volumes/Shaw/Clinical_Interviews/'
-caadid_fname = sprintf('%s/DSM Adult interview data 2-10-20.xlsx', dir_name)
+caadid_fname = sprintf('%s/DSM Adult interview data 7_15_20.xlsx', dir_name)
 nv_fname = sprintf('%s/nv_interviews_20200421.xlsx', dir_name)
-dica_fname = sprintf('%s/DICA 03-4-20.xlsx', dir_name)
-caadidS_fname = sprintf('%s/Nuclear Families/DSM Adult Interview data nuclear families 2_10_20.xlsx', dir_name)
-nvS_fname = NA #sprintf('%s/Nuclear Families/nv_interviews_simplex.xlsx', dir_name)
-dicaS_fname = sprintf('%s/Nuclear Families/DICA nuclear families 2_10_20.xlsx', dir_name)
+dica_fname = sprintf('%s/DICA 07-15-20.xlsx', dir_name)
+caadidS_fname = sprintf('%s/Nuclear Families/DSM Adult Interview data nuclear families_07_13_20.xlsx', dir_name)
+# nvS_fname = sprintf('%s/Nuclear Families/DICA interview nuclear families.xlsx', dir_name)
+dicaS_fname = sprintf('%s/Nuclear Families/DICA nuclear families_7_31_20.xlsx', dir_name)
 family_fname = '/Volumes/Shaw/Family_Study_List/Family Study List 02102020.xlsx'
 papers_fname = sprintf('%s/sx_from_papers.xlsx', dir_name)
 philips_fname = sprintf('%s/philips_files_slim.xlsx', dir_name)

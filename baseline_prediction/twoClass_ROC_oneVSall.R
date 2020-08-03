@@ -13,7 +13,7 @@ if (length(args) > 0) {
 } else {
     fname = '~/data/baseline_prediction/FINAL_DATA_08022020.csv'
     phen = 'categ_all_lm'
-    c1 = 'improvers'
+    c1 = 'worsening'
     clf_model = 'slda'
     impute = 'dti'
     use_covs = FALSE
@@ -43,13 +43,13 @@ var_names = c(
                 # 'SES_group3',
               # cog
               'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
-            #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
+            # #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
             #   # anat
               'cerbellum_white', 'cerebllum_grey', 'amygdala',
               'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus',
               # base SX
-            #   'base_inatt', 'base_hi'
-            'base_total'
+              'base_inatt', 'base_hi'
+            # 'base_total'
             # 'age_onset'
             # 'last_age'
               )
@@ -102,7 +102,7 @@ if (impute == 'dti') {
 # will need this later so training rows match data2
 data = data[use_me, ]
 
-dummies = dummyVars( ~ ., data = data2)
+dummies = dummyVars( ~ ., data = data2, fullRank=T)
 data3 = predict(dummies, newdata = data2)
 
 data2$phen = as.factor(data[, phen])
@@ -135,17 +135,10 @@ y_test = factor(y_test, lev=levels(y_train))
 
 # imputation and feature engineering
 set.seed(42)
-pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'bagImpute')
+pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'knnImpute')
 pp = preProcess(X_train, method = pp_order)
 X_train = predict(pp, X_train)
 X_test = predict(pp, X_test)
-
-# remove linear combination variables
-comboInfo <- findLinearCombos(X_train)
-if (length(comboInfo$remove) > 0) {
-    X_train = X_train[, -comboInfo$remove]
-    X_test = X_test[, -comboInfo$remove]
-}
 
 print(colnames(X_train))
 print(table(y_train))

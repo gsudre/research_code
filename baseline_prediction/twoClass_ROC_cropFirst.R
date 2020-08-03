@@ -12,7 +12,7 @@ if (length(args) > 0) {
     use_covs = as.logical(args[7])
     out_file = args[8]
 } else {
-    fname = '~/data/baseline_prediction/FINAL_DATA_to_gs_JULY_26_2020b.csv'
+    fname = '~/data/baseline_prediction/FINAL_DATA_07302020.csv'
     phen = 'categ_all_lm'
     c1 = 'worsening'
     c2 = 'stable'
@@ -27,6 +27,8 @@ data$sex_numeric = as.factor(data$sex_numeric)
 # data$SES_group3 = as.factor(data$SES_group3)
 data$base_total = data$base_inatt + data$base_hi
 
+data = data[data$pass2_58=='yes',]
+
 var_names = c(
               # PRS
               'ADHD_PRS0.000100', 'ADHD_PRS0.001000',
@@ -36,16 +38,16 @@ var_names = c(
               'ADHD_PRS0.500000',
               # DTI
               'atr_fa', 'cst_fa', 'cing_cing_fa', 'cing_hipp_fa', 'cc_fa',
-              'ilf_fa', 'slf_fa', 'unc_fa', 'ifof_fa',
+              'ilf_fa', 'slf_fa', 'unc_fa', 'ifo_fa',
               #   demo
               'sex_numeric', 'base_age',
                 # 'SES_group3',
               # cog
-              'FSIQ', 'SS.wisc', 'DS.wisc', 'PS', 'VMI.beery',
+              'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
             #   # anat
               'cerbellum_white', 'cerebllum_grey', 'amygdala',
               'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus'
-            #   # base SX
+              # base SX
             #   'base_inatt', 'base_hi'
             # 'age_onset'
             # 'last_age'

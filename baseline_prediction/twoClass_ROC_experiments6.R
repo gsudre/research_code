@@ -6,16 +6,18 @@ if (length(args) > 0) {
     fname = args[1]
     phen = args[2]
     c1 = args[3]
-    clf_model = args[4]
-    impute = args[5]
-    use_covs = as.logical(args[6])
-    out_file = args[7]
+    c2 = args[4]
+    clf_model = args[5]
+    impute = args[6]
+    use_covs = as.logical(args[7])
+    out_file = args[8]
 } else {
     fname = '~/data/baseline_prediction/FINAL_DATA_08022020.csv'
     phen = 'categ_all_lm'
     c1 = 'improvers'
-    clf_model = 'slda'
-    impute = 'dti'
+    c2 = 'never_affected'
+    clf_model = 'C5.0Tree'
+    impute = 'none'
     use_covs = FALSE
     out_file = '/dev/null'
 }
@@ -26,7 +28,6 @@ data$sex_numeric = as.factor(data$sex_numeric)
 data$base_total = data$base_inatt + data$base_hi
 
 data = data[data$pass2_58=='yes',]
-data = data[data[, phen] != 'never_affected', ]
 
 var_names = c(
               # PRS
@@ -42,14 +43,14 @@ var_names = c(
               'sex_numeric', 'base_age',
                 # 'SES_group3',
               # cog
-              'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
             #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
+              'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
             #   # anat
               'cerbellum_white', 'cerebllum_grey', 'amygdala',
-              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus',
+              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus'
               # base SX
             #   'base_inatt', 'base_hi'
-            'base_total'
+            # 'base_total'
             # 'age_onset'
             # 'last_age'
               )
@@ -71,6 +72,8 @@ if (use_covs) {
 } else {
     data2 = data[, var_names]
 }
+
+print(dim(data))
 
 # data2 = data2[data$EVER_ADHD == 'yes',]
 # data = data[data$EVER_ADHD == 'yes',]
@@ -102,7 +105,7 @@ if (impute == 'dti') {
 # will need this later so training rows match data2
 data = data[use_me, ]
 
-dummies = dummyVars( ~ ., data = data2)
+dummies = dummyVars( ~ ., data = data2, fullRank=T)
 data3 = predict(dummies, newdata = data2)
 
 data2$phen = as.factor(data[, phen])
@@ -122,34 +125,23 @@ for (fam in unique(data$FAMID)) {
 # data3 doesn't have the target column!
 X_train <- as.data.frame(data3[train_rows, ])
 X_test <- as.data.frame(data3[-train_rows, ])
-y_train <- as.character(data2[train_rows,]$phen)
-y_test <- as.character(data2[-train_rows,]$phen)
+y_train <- data2[train_rows,]$phen
+y_test <- data2[-train_rows,]$phen
 
 # selecting only kids in the 2 specified groups
-keep_me = y_train==c1
-y_train[!keep_me] = 'others'
-y_train = factor(y_train)
-keep_me = y_test==c1
-y_test[!keep_me] = 'others'
-y_test = factor(y_test, lev=levels(y_train))
+keep_me = y_train==c1 | y_train==c2
+X_train = as.data.frame(X_train[keep_me, ])
+y_train = factor(y_train[keep_me])
+keep_me = y_test==c1 | y_test==c2
+X_test = as.data.frame(X_test[keep_me, ])
+y_test = factor(y_test[keep_me])
 
-# imputation and feature engineering
-set.seed(42)
-pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'bagImpute')
-pp = preProcess(X_train, method = pp_order)
-X_train = predict(pp, X_train)
-X_test = predict(pp, X_test)
-
-# remove linear combination variables
-comboInfo <- findLinearCombos(X_train)
-if (length(comboInfo$remove) > 0) {
-    X_train = X_train[, -comboInfo$remove]
-    X_test = X_test[, -comboInfo$remove]
-}
-
-print(colnames(X_train))
-print(table(y_train))
-print(table(y_test))
+# # imputation and feature engineering
+# set.seed(42)
+# pp_order = c('zv', 'nzv')#, 'corr', 'YeoJohnson', 'center', 'scale', 'bagImpute')
+# pp = preProcess(X_train, method = pp_order)
+# X_train = predict(pp, X_train)
+# X_test = predict(pp, X_test)
 
 set.seed(42)
 up_train <- upSample(x = X_train, y = y_train) 
@@ -157,19 +149,34 @@ X_train = up_train
 X_train$Class = NULL
 y_train = up_train$Class
 
-set.seed(42)
-fitControl <- trainControl(method = "none",
-                           classProbs = TRUE,
-                           summaryFunction=twoClassSummary)
+# # remove linear combination variables
+# comboInfo <- findLinearCombos(X_train)
+# if (length(comboInfo$remove) > 0) {
+#     X_train = X_train[, -comboInfo$remove]
+#     X_test = X_test[, -comboInfo$remove]
+# }
 
 idx = y_train==c1
 pvals = sapply(1:ncol(X_train),
                 function(x) {t.test(X_train[idx, x],
                                         X_train[!idx, x])$p.value})
-good_vars = 0 #which(pvals < .1)
+spvals = sort(pvals, index.return=T)
+good_vars = spvals$ix[1:10]
 if (length(good_vars) < 2) {
     good_vars = 1:ncol(X_train)
 }
+
+
+print(colnames(X_train))
+print(table(y_train))
+print(table(y_test))
+
+print(dim(X_train))
+
+set.seed(42)
+fitControl <- trainControl(method = "none",
+                           classProbs = TRUE,
+                           summaryFunction=twoClassSummary)
 
 set.seed(42)
 fit <- train(X_train[, good_vars],
@@ -184,28 +191,28 @@ dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
 mcs = twoClassSummary(dat, lev=colnames(preds_probs))
 test_results = c(mcs['ROC'], mcs['Sens'], mcs['Spec'])
 names(test_results) = c('test_AUC', 'test_Sens', 'test_Spec')
-print(test_results)
-# res = c(phen, clf_model, c1, c2, impute, use_covs,
-#         test_results, table(y_train), table(y_test))
-# line_res = paste(res,collapse=',')
-# write(line_res, file=out_file, append=TRUE)
 
-# # export variable importance
-# a = varImp(fit, useModel=T)
-# b = varImp(fit, useModel=F)
-# split_fname = strsplit(x=out_file, split='/')[[1]]
-# myprefix = gsub(x=split_fname[length(split_fname)], pattern='.csv', replacement='')
-# out_dir = '~/data/baseline_prediction/more_models/'
-# fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%s.csv',
-#                 out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
-# # careful here because for non-linear models the rows of the importance matrix
-# # are not aligned!!!
-# write.csv(cbind(a$importance, b$importance), file=fname)
-# print(varImp(fit, useModel=F, scale=F))
+res = c(phen, clf_model, c1, c2, impute, use_covs,
+        test_results, table(y_train), table(y_test))
+line_res = paste(res,collapse=',')
+write(line_res, file=out_file, append=TRUE)
 
-# # export fit
-# fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%s.RData',
-#                 out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
-# save(fit, file=fname)
+# export variable importance
+a = varImp(fit, useModel=T)
+b = varImp(fit, useModel=F)
+split_fname = strsplit(x=out_file, split='/')[[1]]
+myprefix = gsub(x=split_fname[length(split_fname)], pattern='.csv', replacement='')
+out_dir = '~/data/baseline_prediction/more_models/'
+fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%s.csv',
+                out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
+# careful here because for non-linear models the rows of the importance matrix
+# are not aligned!!!
+write.csv(cbind(a$importance, b$importance), file=fname)
+print(varImp(fit, useModel=F, scale=F))
 
-# print(line_res)
+# export fit
+fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%s.RData',
+                out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
+save(fit, file=fname)
+
+print(line_res)

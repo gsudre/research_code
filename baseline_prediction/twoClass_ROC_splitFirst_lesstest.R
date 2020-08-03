@@ -6,15 +6,17 @@ if (length(args) > 0) {
     fname = args[1]
     phen = args[2]
     c1 = args[3]
-    clf_model = args[4]
-    impute = args[5]
-    use_covs = as.logical(args[6])
-    out_file = args[7]
+    c2 = args[4]
+    clf_model = args[5]
+    impute = args[6]
+    use_covs = as.logical(args[7])
+    out_file = args[8]
 } else {
     fname = '~/data/baseline_prediction/FINAL_DATA_08022020.csv'
-    phen = 'categ_all_lm'
-    c1 = 'improvers'
-    clf_model = 'slda'
+    phen = 'categ_all_lm.1'
+    c1 = 'worsening'
+    c2 = 'never_affected'
+    clf_model = 'svmRadialSigma'
     impute = 'dti'
     use_covs = FALSE
     out_file = '/dev/null'
@@ -26,7 +28,6 @@ data$sex_numeric = as.factor(data$sex_numeric)
 data$base_total = data$base_inatt + data$base_hi
 
 data = data[data$pass2_58=='yes',]
-data = data[data[, phen] != 'never_affected', ]
 
 var_names = c(
               # PRS
@@ -42,14 +43,14 @@ var_names = c(
               'sex_numeric', 'base_age',
                 # 'SES_group3',
               # cog
-              'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
-            #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
+              'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
+            #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
             #   # anat
               'cerbellum_white', 'cerebllum_grey', 'amygdala',
-              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus',
+              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus'
               # base SX
             #   'base_inatt', 'base_hi'
-            'base_total'
+            # 'base_total'
             # 'age_onset'
             # 'last_age'
               )
@@ -102,54 +103,39 @@ if (impute == 'dti') {
 # will need this later so training rows match data2
 data = data[use_me, ]
 
-dummies = dummyVars( ~ ., data = data2)
+dummies = dummyVars( ~ ., data = data2, fullRank=T)
 data3 = predict(dummies, newdata = data2)
 
 data2$phen = as.factor(data[, phen])
 
 # split traing and test between members of the same family
 train_rows = c()
+test_rows = c()
 for (fam in unique(data$FAMID)) {
     fam_rows = which(data$FAMID == fam)
     if (length(fam_rows) == 1) {
         train_rows = c(train_rows, fam_rows[1])
     } else {
-        # choose the oldest kid in the family for training
-        train_rows = c(train_rows,
-                       fam_rows[which.max(data[fam_rows, 'base_age'])])
+        # choose the oldest kid in the family for training, second oldest for
+        # testing... throwing away everyone else
+        age_sort = sort(data[fam_rows, 'base_age'], index.return=T, decreasing=T)
+        train_rows = c(train_rows, fam_rows[age_sort$ix[1]])
+        test_rows = c(test_rows, fam_rows[age_sort$ix[2:length(fam_rows)]])
     }
 }
 # data3 doesn't have the target column!
 X_train <- as.data.frame(data3[train_rows, ])
-X_test <- as.data.frame(data3[-train_rows, ])
-y_train <- as.character(data2[train_rows,]$phen)
-y_test <- as.character(data2[-train_rows,]$phen)
+X_test <- as.data.frame(data3[test_rows, ])
+y_train <- data2[train_rows,]$phen
+y_test <- data2[test_rows,]$phen
 
 # selecting only kids in the 2 specified groups
-keep_me = y_train==c1
-y_train[!keep_me] = 'others'
-y_train = factor(y_train)
-keep_me = y_test==c1
-y_test[!keep_me] = 'others'
-y_test = factor(y_test, lev=levels(y_train))
-
-# imputation and feature engineering
-set.seed(42)
-pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'bagImpute')
-pp = preProcess(X_train, method = pp_order)
-X_train = predict(pp, X_train)
-X_test = predict(pp, X_test)
-
-# remove linear combination variables
-comboInfo <- findLinearCombos(X_train)
-if (length(comboInfo$remove) > 0) {
-    X_train = X_train[, -comboInfo$remove]
-    X_test = X_test[, -comboInfo$remove]
-}
-
-print(colnames(X_train))
-print(table(y_train))
-print(table(y_test))
+keep_me = y_train==c1 | y_train==c2
+X_train = as.data.frame(X_train[keep_me, ])
+y_train = factor(y_train[keep_me])
+keep_me = y_test==c1 | y_test==c2
+X_test = as.data.frame(X_test[keep_me, ])
+y_test = factor(y_test[keep_me])
 
 set.seed(42)
 up_train <- upSample(x = X_train, y = y_train) 
@@ -157,55 +143,94 @@ X_train = up_train
 X_train$Class = NULL
 y_train = up_train$Class
 
+# library(DMwR)
+# set.seed(42)
+# X2 = cbind(X_train, y_train)
+# up_train <- SMOTE(y_train ~ ., data = X2) 
+# X_train = up_train
+# X_train$y_train = NULL
+# y_train = up_train$y_train
+
+# library(ROSE)
+# set.seed(42)
+# X2 = cbind(X_train, y_train)
+# up_train <- ROSE(y_train ~ ., data  = X2)$data                         
+# X_train = up_train
+# X_train$y_train = NULL
+# y_train = up_train$y_train
+
+# imputation and feature engineering
 set.seed(42)
-fitControl <- trainControl(method = "none",
+pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'knnImpute')
+# pp_order = c('zv', 'nzv', 'bagImpute')
+pp = preProcess(X_train, method = pp_order)
+X_train = predict(pp, X_train)
+X_test = predict(pp, X_test)
+
+# library(bestNormalize)
+# for (v in setdiff(dummies$vars, dummies$facVars)) {
+#     bn = orderNorm(X_train[, v])
+#     X_train[, v] = bn$x.t
+#     X_test[, v] = predict(bn, X_test[, v])
+# }
+
+# pp_order = c('corr', 'center')
+# pp = preProcess(X_train, method = pp_order)
+# X_train = predict(pp, X_train)
+# X_test = predict(pp, X_test)
+
+print(colnames(X_train))
+print(table(y_train))
+print(table(y_test))
+
+set.seed(42)
+fitControl <- trainControl(method = "repeatedcv", number=10, repeats=10,
                            classProbs = TRUE,
                            summaryFunction=twoClassSummary)
+# fitControl <- trainControl(method = "none",
+#                            classProbs = TRUE,
+#                            summaryFunction=twoClassSummary)
 
-idx = y_train==c1
-pvals = sapply(1:ncol(X_train),
-                function(x) {t.test(X_train[idx, x],
-                                        X_train[!idx, x])$p.value})
-good_vars = 0 #which(pvals < .1)
-if (length(good_vars) < 2) {
-    good_vars = 1:ncol(X_train)
-}
-
+# mygrid=expand.grid(mtry = 2:sqrt(ncol(X_train)))
+# mygrid=expand.grid(ncomp = 1:2)#qrt(ncol(X_train)))
+# mygrid=expand.grid(C = c(.01, .1, 1, 10, 100))
+mygrid=c()
 set.seed(42)
-fit <- train(X_train[, good_vars],
+fit <- train(X_train, #tuneGrid=mygrid,
                         y_train,
                         trControl = fitControl,
                         method = clf_model,
                         metric='ROC')
 
-preds_class = predict.train(fit, newdata=X_test[, good_vars])
-preds_probs = predict.train(fit, newdata=X_test[, good_vars], type='prob')
+preds_class = predict.train(fit, newdata=X_test)
+preds_probs = predict.train(fit, newdata=X_test, type='prob')
 dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
 mcs = twoClassSummary(dat, lev=colnames(preds_probs))
 test_results = c(mcs['ROC'], mcs['Sens'], mcs['Spec'])
 names(test_results) = c('test_AUC', 'test_Sens', 'test_Spec')
-print(test_results)
-# res = c(phen, clf_model, c1, c2, impute, use_covs,
-#         test_results, table(y_train), table(y_test))
-# line_res = paste(res,collapse=',')
-# write(line_res, file=out_file, append=TRUE)
+print(fit)
+res = c(phen, clf_model, c1, c2, impute, use_covs,
+        test_results, table(y_train), table(y_test))
+line_res = paste(res,collapse=',')
+write(line_res, file=out_file, append=TRUE)
 
-# # export variable importance
-# a = varImp(fit, useModel=T)
-# b = varImp(fit, useModel=F)
-# split_fname = strsplit(x=out_file, split='/')[[1]]
-# myprefix = gsub(x=split_fname[length(split_fname)], pattern='.csv', replacement='')
-# out_dir = '~/data/baseline_prediction/more_models/'
-# fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%s.csv',
-#                 out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
-# # careful here because for non-linear models the rows of the importance matrix
-# # are not aligned!!!
-# write.csv(cbind(a$importance, b$importance), file=fname)
+
+# export variable importance
+a = varImp(fit, useModel=T)
+b = varImp(fit, useModel=F)
+split_fname = strsplit(x=out_file, split='/')[[1]]
+myprefix = gsub(x=split_fname[length(split_fname)], pattern='.csv', replacement='')
+out_dir = '~/data/baseline_prediction/more_models/'
+fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%s.csv',
+                out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
+# careful here because for non-linear models the rows of the importance matrix
+# are not aligned!!!
+write.csv(cbind(a$importance, b$importance), file=fname)
 # print(varImp(fit, useModel=F, scale=F))
 
-# # export fit
-# fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%s.RData',
-#                 out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
-# save(fit, file=fname)
+# export fit
+fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%s.RData',
+                out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
+save(fit, file=fname)
 
-# print(line_res)
+print(line_res)

@@ -17,13 +17,13 @@ if (length(args) > 0) {
     use_covs = as.logical(args[10])
     out_file = args[11]
 } else {
-    fname = '~/data/baseline_prediction/gf_JULY_ols_definition_GS.csv'
+    fname = '~/data/baseline_prediction/FINAL_DATA_to_gs_JULY_26_2020b.csv'
     phen = 'categ_all_lm'
     c1 = 'never_affected'
     c2 = 'stable'
-    clf_model = 'cforest'
+    clf_model = 'svmRadialCost'
     impute = 'dti'
-    nfolds = 10
+    nfolds = 5
     nreps = 10
     ncores = 2
     use_covs = FALSE
@@ -32,30 +32,34 @@ if (length(args) > 0) {
 
 data = read.csv(fname)
 data$sex_numeric = as.factor(data$sex_numeric)
-data$SES_group3 = as.factor(data$SES_group3)
+# data$SES_group3 = as.factor(data$SES_group3)
 data$base_total = data$base_inatt + data$base_hi
+
+data = data[data$pass2_58=='yes',]
+
 # data$slf_fa = data$slf_all  # just to make it easier to filter out
-var_names = c(# PRS
-              'ADHD_PRS0.000100.orig', 'ADHD_PRS0.001000.orig',
-              'ADHD_PRS0.010000.orig', 'ADHD_PRS0.050000.orig',
-              'ADHD_PRS0.100000.orig', 'ADHD_PRS0.200000.orig',
-              'ADHD_PRS0.300000.orig', 'ADHD_PRS0.400000.orig',
-              'ADHD_PRS0.500000.orig',
+var_names = c(
+              # PRS
+              'ADHD_PRS0.000100', 'ADHD_PRS0.001000',
+              'ADHD_PRS0.010000', 'ADHD_PRS0.050000',
+              'ADHD_PRS0.100000', 'ADHD_PRS0.200000',
+              'ADHD_PRS0.300000', 'ADHD_PRS0.400000',
+              'ADHD_PRS0.500000',
               # DTI
               'atr_fa', 'cst_fa', 'cing_cing_fa', 'cing_hipp_fa', 'cc_fa',
-              'ilf_fa', 'slf_fa', 'unc_fa',
-            #   demo
-              'sex_numeric', 'base_age',# 'SES_group3', 
+              'ilf_fa', 'slf_fa', 'unc_fa', 'ifo_fa',
+              #   demo
+              'sex_numeric', 'base_age',
                 # 'SES_group3',
               # cog
               'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
             #   # anat
-              'cerebellum_white', 'cerebellum_grey', 'amygdala',
-              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus'
-            #   # base SX
-            #   'base_inatt', 'base_hi',
-            #   'slf_fa'
+              'cerbellum_white', 'cerebllum_grey', 'amygdala',
+              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus',
+              # base SX
+              'base_inatt', 'base_hi'
             # 'age_onset'
+            # 'last_age'
               )
 
 covar_names = c(# DTI
@@ -108,8 +112,6 @@ if (impute == 'dti') {
 # will need this later so training rows match data2
 data = data[use_me, ]
 data2$phen = as.factor(data[, phen])
-
-
 
 dummies = dummyVars(phen ~ ., data = data2)
 data3 = predict(dummies, newdata = data2)

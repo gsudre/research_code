@@ -12,8 +12,8 @@ if (length(args) > 0) {
     use_covs = as.logical(args[7])
     out_file = args[8]
 } else {
-    fname = '~/data/baseline_prediction/FINAL_DATA_to_gs_JULY_26_2020b.csv'
-    phen = 'categ_all_lm'
+    fname = '~/data/baseline_prediction/FINAL_DATA_08022020.csv'
+    phen = 'categ_all_lm.1'
     c1 = 'improvers'
     c2 = 'never_affected'
     clf_model = 'slda'
@@ -27,6 +27,8 @@ data$sex_numeric = as.factor(data$sex_numeric)
 # data$SES_group3 = as.factor(data$SES_group3)
 data$base_total = data$base_inatt + data$base_hi
 
+data = data[data$pass2_58=='yes',]
+
 var_names = c(
               # PRS
               'ADHD_PRS0.000100', 'ADHD_PRS0.001000',
@@ -36,19 +38,21 @@ var_names = c(
               'ADHD_PRS0.500000',
               # DTI
               'atr_fa', 'cst_fa', 'cing_cing_fa', 'cing_hipp_fa', 'cc_fa',
-              'ilf_fa', 'slf_fa', 'unc_fa', 'ifof_fa',
+              'ilf_fa', 'slf_fa', 'unc_fa', 'ifo_fa',
               #   demo
               'sex_numeric', 'base_age',
                 # 'SES_group3',
               # cog
-              'FSIQ', 'SS.wisc', 'DS.wisc', 'PS', 'VMI.beery',
+              'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
+            #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
             #   # anat
               'cerbellum_white', 'cerebllum_grey', 'amygdala',
-              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus',
-            #   # base SX
+              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus'
+              # base SX
             #   'base_inatt', 'base_hi'
+            # 'base_total'
             # 'age_onset'
-            'last_age'
+            # 'last_age'
               )
 
 covar_names = c(# DTI
@@ -99,7 +103,7 @@ if (impute == 'dti') {
 # will need this later so training rows match data2
 data = data[use_me, ]
 
-dummies = dummyVars( ~ ., data = data2)
+dummies = dummyVars( ~ ., data = data2, fullRank=T)
 data3 = predict(dummies, newdata = data2)
 
 data2$phen = as.factor(data[, phen])
@@ -130,19 +134,31 @@ keep_me = y_test==c1 | y_test==c2
 X_test = as.data.frame(X_test[keep_me, ])
 y_test = factor(y_test[keep_me])
 
+set.seed(42)
+up_train <- upSample(x = X_train, y = y_train) 
+X_train = up_train
+X_train$Class = NULL
+y_train = up_train$Class
+
 # imputation and feature engineering
 set.seed(42)
 pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'bagImpute')
+# pp_order = c('zv', 'nzv', 'bagImpute')
 pp = preProcess(X_train, method = pp_order)
 X_train = predict(pp, X_train)
 X_test = predict(pp, X_test)
 
-# remove linear combination variables
-comboInfo <- findLinearCombos(X_train)
-if (length(comboInfo$remove) > 0) {
-    X_train = X_train[, -comboInfo$remove]
-    X_test = X_test[, -comboInfo$remove]
-}
+# library(bestNormalize)
+# for (v in setdiff(dummies$vars, dummies$facVars)) {
+#     bn = orderNorm(X_train[, v])
+#     X_train[, v] = bn$x.t
+#     X_test[, v] = predict(bn, X_test[, v])
+# }
+
+# pp_order = c('corr', 'center')
+# pp = preProcess(X_train, method = pp_order)
+# X_train = predict(pp, X_train)
+# X_test = predict(pp, X_test)
 
 print(colnames(X_train))
 print(table(y_train))

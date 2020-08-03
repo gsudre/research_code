@@ -8,10 +8,10 @@ if (length(args) > 1) {
     cg_fname = args[6]
     out_fname = args[7]
 } else {
-    fname = '~/data/longitudinal_methylome/DLPFC_inatt_for_mediation.csv'
-    Ms = c('DLPFC_volume_ROC')
+    fname = '~/data/longitudinal_methylome/dti_2_for_sam_slim.csv'
+    Ms = c('AD_left_unc')
     Xs = c("cg27487187_ROC", "cg27510871_ROC")
-    Ys = c("ROC_IN_one_win.1")
+    Ys = c("ROC_IN_one_win")
     out_fname = '~/tmp/temp1.csv'
     add_Mbase = F
     cg_fname = 'INATT_ROC_methyl_sx_dti_82.csv'
@@ -41,19 +41,21 @@ nboot = 1000
 ncpus = 1 #future::availableCores() #4 # 8
 # for DTI
 if (any(grepl(Ys, pattern='HI'))) { 
-    # # neuroimaging
-    # fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-    # fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 +
-    # SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff +
-    # NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    # neuroimaging
+    fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 +
+    SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff +
+    NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
 
-    # cog
-    fm = 'M ~ X + SXHI.1 + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
-    fy = 'Y ~ X + M + SXHI.1 + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
+    # # cog
+    # fm = 'M ~ X + SXHI.1 + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
+    # fy = 'Y ~ X + M + SXHI.1 + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
 
 } else {
     fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-    fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 +
+    SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff +
+    NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
 }
 if (add_Mbase) {
     fm = sprintf('%s + m_base', fm)
@@ -102,7 +104,7 @@ run_model4 = function(X, M, Y, metadata, nboot=1000) {
 all_res = c()
 for (x_str in Xs) {
     X = mydata[, x_str]
-    # replace m_base by the baseline for the current X 
+    # replace x_base by the baseline for the current X 
     # this hack only works because all computations done in parallel correpond to
     # the same X. If we had different X being processed in parallel, then a more
     # elegant change would be needed
