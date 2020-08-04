@@ -12,7 +12,7 @@ if (length(args) > 0) {
 } else {
     fname = '~/data/baseline_prediction/FINAL_DATA_08022020.csv'
     phen = 'categ_all_lm.1'
-    clf_model = 'slda'
+    clf_model = 'svmRadialSigma'
     impute = 'dti'
     use_covs = FALSE
     out_file = '/dev/null'
@@ -27,24 +27,24 @@ data = data[data$pass2_58=='yes',]
 data = data[data$categ_all_lm.1!='never_affected',]
 
 var_names = c(
-              # PRS
-              'ADHD_PRS0.000100', 'ADHD_PRS0.001000',
-              'ADHD_PRS0.010000', 'ADHD_PRS0.050000',
-              'ADHD_PRS0.100000', 'ADHD_PRS0.200000',
-              'ADHD_PRS0.300000', 'ADHD_PRS0.400000',
-              'ADHD_PRS0.500000',
-              # DTI
-              'atr_fa', 'cst_fa', 'cing_cing_fa', 'cing_hipp_fa', 'cc_fa',
-              'ilf_fa', 'slf_fa', 'unc_fa', 'ifo_fa',
+            #   # PRS
+            #   'ADHD_PRS0.000100', 'ADHD_PRS0.001000',
+            #   'ADHD_PRS0.010000', 'ADHD_PRS0.050000',
+            #   'ADHD_PRS0.100000', 'ADHD_PRS0.200000',
+            #   'ADHD_PRS0.300000', 'ADHD_PRS0.400000',
+            #   'ADHD_PRS0.500000',
+            #   # DTI
+            #   'atr_fa', 'cst_fa', 'cing_cing_fa', 'cing_hipp_fa', 'cc_fa',
+            #   'ilf_fa', 'slf_fa', 'unc_fa', 'ifo_fa',
               #   demo
               'sex_numeric', 'base_age',
                 # 'SES_group3',
               # cog
-              'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
+            #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
             # # # #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
-            #   # anat
-              'cerbellum_white', 'cerebllum_grey', 'amygdala',
-              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus',
+            # #   # anat
+            #   'cerbellum_white', 'cerebllum_grey', 'amygdala',
+            #   'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus',
               # base SX
               'base_inatt', 'base_hi'
             # 'base_total'
@@ -120,71 +120,80 @@ for (fam in unique(data$FAMID)) {
         test_rows = c(test_rows, fam_rows[age_sort$ix[2:length(fam_rows)]])
     }
 }
-# data3 doesn't have the target column!
-X_train <- as.data.frame(data3[train_rows, ])
-X_test <- as.data.frame(data3[test_rows, ])
-y_train <- data2[train_rows,]$phen
-y_test <- data2[test_rows,]$phen
 
-set.seed(42)
-up_train <- upSample(x = X_train, y = y_train) 
-X_train = up_train
-X_train$Class = NULL
-y_train = up_train$Class
+X = data3
+y = factor(data2$phen)
 
-# library(DMwR)
-# set.seed(42)
-# X2 = cbind(X_train, y_train)
-# up_train <- SMOTE(y_train ~ ., data = X2) 
-# X_train = up_train
-# X_train$y_train = NULL
-# y_train = up_train$y_train
+test_preds = c()
+for (test_rows in 1:length(y)) {
+    print(sprintf('Hold out %d / %d', test_rows, length(y)))
+    X_train <- X[-test_rows, ]
+    X_test <- t(as.matrix(X[test_rows, ]))
+    y_train <- y[-test_rows]
+    y_test <- y[test_rows]
 
-# library(ROSE)
-# set.seed(42)
-# X2 = cbind(X_train, y_train)
-# up_train <- ROSE(y_train ~ ., data  = X2)$data                         
-# X_train = up_train
-# X_train$y_train = NULL
-# y_train = up_train$y_train
+    set.seed(42)
+    up_train <- upSample(x = X_train, y = y_train) 
+    X_train = up_train
+    X_train$Class = NULL
+    y_train = up_train$Class
 
-# imputation and feature engineering
-set.seed(42)
-pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'knnImpute')
-pp = preProcess(X_train, method = pp_order)
-X_train = predict(pp, X_train)
-X_test = predict(pp, X_test)
+    # library(DMwR)
+    # set.seed(42)
+    # X2 = cbind(X_train, y_train)
+    # up_train <- SMOTE(y_train ~ ., data = X2) 
+    # X_train = up_train
+    # X_train$y_train = NULL
+    # y_train = up_train$y_train
 
-print(colnames(X_train))
-print(table(y_train))
-print(table(y_test))
+    # library(ROSE)
+    # set.seed(42)
+    # X2 = cbind(X_train, y_train)
+    # up_train <- ROSE(y_train ~ ., data  = X2)$data                         
+    # X_train = up_train
+    # X_train$y_train = NULL
+    # y_train = up_train$y_train
 
-set.seed(42)
-fitControl <- trainControl(method = "repeatedcv", number=10, repeats=10,
-                           classProbs = TRUE,
-                           summaryFunction=multiClassSummary)
-# fitControl <- trainControl(method = "none",
-#                            classProbs = TRUE,
-#                            summaryFunction=twoClassSummary)
+    # imputation and feature engineering
+    set.seed(42)
+    pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'knnImpute')
+    pp = preProcess(X_train, method = pp_order)
+    X_train = predict(pp, X_train)
+    X_test = predict(pp, X_test)
 
-# mygrid=expand.grid(mtry = 2)
-# mygrid=expand.grid(ncomp = 1:2)#qrt(ncol(X_train)))
-# mygrid=expand.grid(C = c(.01, .1, 1, 10, 100))
-# mygrid=c()
-set.seed(42)
-fit <- train(X_train, #tuneGrid=mygrid,
-                        y_train,
-                        trControl = fitControl,
-                        method = clf_model,
-                        metric='AUC')
+    set.seed(42)
+    fitControl <- trainControl(method = "repeatedcv", number=3, repeats=10,
+                            classProbs = TRUE,
+                            summaryFunction=multiClassSummary)
+    # fitControl <- trainControl(method = "none",
+    #                            classProbs = TRUE,
+    #                            summaryFunction=twoClassSummary)
 
-preds_class = predict.train(fit, newdata=X_test)
-preds_probs = predict.train(fit, newdata=X_test, type='prob')
-dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
-mcs = multiClassSummary(dat, lev=colnames(preds_probs))
+    mygrid=expand.grid(mtry = 1:5)
+    # mygrid=expand.grid(ncomp = 1:2)#qrt(ncol(X_train)))
+    # mygrid=expand.grid(C = c(.01, .1, 1, 10, 100))
+    # mygrid=c()
+    set.seed(42)
+    fit <- train(X_train, #tuneGrid=mygrid,
+                            y_train,
+                            trControl = fitControl,
+                            method = clf_model,
+                            metric='AUC')
+
+    preds_class = predict.train(fit, newdata=X_test)
+    preds_probs = predict.train(fit, newdata=X_test, type='prob')
+    dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
+    test_preds = rbind(test_preds, dat)
+
+    # tmp = varImp(fit, useModel=T)$importance
+    # varimps[, test_rows] = tmp[,1]
+}
+
+mcs = multiClassSummary(test_preds, lev=levels(y))
+print(mcs)
+
 test_results = c(mcs['AUC'], mcs['Mean_Sensitivity'], mcs['Mean_Specificity'])
 names(test_results) = c('test_AUC', 'test_Sens', 'test_Spec')
-print(fit)
 res = c(phen, clf_model, impute, use_covs,
         test_results, table(y_train), table(y_test))
 line_res = paste(res,collapse=',')
