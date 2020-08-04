@@ -16,7 +16,7 @@ if (length(args) > 0) {
     phen = 'categ_all_lm.1'
     c1 = 'worsening'
     c2 = 'never_affected'
-    clf_model = 'svmRadialSigma'
+    clf_model = 'svmLinear'
     impute = 'dti'
     use_covs = FALSE
     out_file = '/dev/null'
@@ -44,12 +44,12 @@ var_names = c(
                 # 'SES_group3',
               # cog
               'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
-            #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
+            # # #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
             #   # anat
               'cerbellum_white', 'cerebllum_grey', 'amygdala',
-              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus'
+              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus',
               # base SX
-            #   'base_inatt', 'base_hi'
+              'base_inatt', 'base_hi'
             # 'base_total'
             # 'age_onset'
             # 'last_age'
@@ -191,12 +191,12 @@ fitControl <- trainControl(method = "repeatedcv", number=10, repeats=10,
 #                            classProbs = TRUE,
 #                            summaryFunction=twoClassSummary)
 
-# mygrid=expand.grid(mtry = 2:sqrt(ncol(X_train)))
+mygrid=expand.grid(mtry = 2)
 # mygrid=expand.grid(ncomp = 1:2)#qrt(ncol(X_train)))
 # mygrid=expand.grid(C = c(.01, .1, 1, 10, 100))
-mygrid=c()
+# mygrid=c()
 set.seed(42)
-fit <- train(X_train, #tuneGrid=mygrid,
+fit <- train(X_train, tuneGrid=mygrid,
                         y_train,
                         trControl = fitControl,
                         method = clf_model,

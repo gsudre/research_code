@@ -9,12 +9,12 @@ if (length(args) > 1) {
     out_fname = args[7]
 } else {
     fname = '~/data/longitudinal_methylome/dti_2_for_sam_slim.csv'
-    Ms = c('AD_left_unc')
+    Ms = c('AD_left_unc_rate')
     Xs = c("cg27487187_ROC", "cg27510871_ROC")
     Ys = c("ROC_IN_one_win")
     out_fname = '~/tmp/temp1.csv'
     add_Mbase = F
-    cg_fname = 'INATT_ROC_methyl_sx_dti_82.csv'
+    cg_fname = 'ROC_data_inattAndHI_160.csv'
 }
 
 library(mediation)
@@ -24,7 +24,8 @@ mydata = gf
 # mydata$qc.bad = factor(mydata$qc.bad)
 
 cg_data = read.csv(cg_fname)
-cg_vars = colnames(cg_data)[grepl(colnames(cg_data), pattern='^cg')]
+cg_vars = colnames(cg_data)[grepl(colnames(cg_data), pattern='^cg') | 
+                            grepl(colnames(cg_data), pattern='^ch')]
 mydata = merge(mydata, cg_data, by='PersonID')
 print(dim(mydata))
 
@@ -42,20 +43,16 @@ ncpus = 1 #future::availableCores() #4 # 8
 # for DTI
 if (any(grepl(Ys, pattern='HI'))) { 
     # neuroimaging
-    fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-    fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 +
-    SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff +
-    NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
+    fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
 
     # # cog
     # fm = 'M ~ X + SXHI.1 + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
     # fy = 'Y ~ X + M + SXHI.1 + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
 
 } else {
-    fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + age_methyl1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
-    fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 +
-    SV.one.m2 + x_base + age_methyl1 + age.diff +CD8T.diff + CD4T.diff +
-    NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type.y + sex'
+    fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
+    fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
 }
 if (add_Mbase) {
     fm = sprintf('%s + m_base', fm)
