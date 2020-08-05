@@ -38,7 +38,7 @@ mydata$sex = factor(mydata$sex)
 # mydata$sample_type.y = factor(mydata$sample_type.y)
 mydata$sample_type = factor(mydata$sample_type)
 
-nboot = 10000
+nboot = 2#10000
 ncpus = 1 #future::availableCores() #4 # 8
 # for DTI
 if (any(grepl(Ys, pattern='HI'))) { 
@@ -90,6 +90,7 @@ run_model4 = function(X, M, Y, metadata, nboot=1000) {
 
     model.M <- lm(as.formula(fm), data=run_data)
     model.Y <- lm(as.formula(fy), data=run_data)
+    
     results <- mediate(model.M, model.Y, treat='X', mediator='M', boot=T,
                         sims=nboot, boot.ci.type='bca', ncpus=ncpus)
     
@@ -101,6 +102,15 @@ run_model4 = function(X, M, Y, metadata, nboot=1000) {
     names(res) = c('M', 'nobs', 'tot', 'tot_p', 'acme', 'acme_p', 'ade',
                     'ade_p', 'prop', 'prop_p',
                     'tot_2p5ci', 'tot_97p5ci', 'acme_2p5ci', 'acme_97p5ci', 'ade_2p5ci', 'ade_97p5ci', 'prop_2p5ci', 'prop_97p5ci')
+    # adding regression results
+    tmp = summary(model.M)$coefficients
+    resX = tmp['X', ]
+    names(resX) = sapply(1:4, function(x) sprintf('X_XtoM_%s', colnames(tmp)[x]))
+    tmp = summary(model.Y)$coefficients
+    resY = cbind(tmp['X', ], tmp['M',])
+    names(resY) = c(sapply(1:4, function(x) sprintf('X_MtoY_%s', colnames(tmp)[x])),
+                    sapply(1:4, function(x) sprintf('M_MtoY_%s', colnames(tmp)[x])))
+    res = c(res, resX, resY)
     return(res)     
 }
 

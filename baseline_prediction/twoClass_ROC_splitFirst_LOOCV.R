@@ -20,7 +20,7 @@ if (length(args) > 0) {
     # c2 = 'stable'
     # c1 = 'improvers'
     # c2 = 'stable'
-    clf_model = 'treebag'
+    clf_model = 'rf'
     impute = 'dti'
     use_covs = FALSE
     out_file = '/dev/null'
