@@ -20,7 +20,7 @@ if (length(args) > 0) {
     # c2 = 'stable'
     # c1 = 'improvers'
     # c2 = 'stable'
-    clf_model = 'regLogistic'
+    clf_model = 'treebag'
     impute = 'dti'
     use_covs = FALSE
     out_file = '/dev/null'
@@ -135,6 +135,9 @@ y = factor(data2$phen)
 keep_me = y==c1 | y==c2
 X = as.data.frame(X[keep_me, ])
 y = factor(y[keep_me])
+
+print(dim(X))
+print(table(y))
 
 test_preds = c()
 for (test_rows in 1:length(y)) {
