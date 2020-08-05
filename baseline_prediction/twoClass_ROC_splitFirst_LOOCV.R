@@ -14,9 +14,13 @@ if (length(args) > 0) {
 } else {
     fname = '~/data/baseline_prediction/FINAL_DATA_08022020.csv'
     phen = 'categ_all_lm.1'
-    c1 = 'improvers'
-    c2 = 'never_affected'
-    clf_model = 'slda'
+    c1 = 'worsening'
+    c2 = 'improvers'
+    # c1 = 'worsening'
+    # c2 = 'stable'
+    # c1 = 'improvers'
+    # c2 = 'stable'
+    clf_model = 'regLogistic'
     impute = 'dti'
     use_covs = FALSE
     out_file = '/dev/null'
@@ -30,27 +34,27 @@ data$base_total = data$base_inatt + data$base_hi
 data = data[data$pass2_58=='yes',]
 
 var_names = c(
-            #   # PRS
-            #   'ADHD_PRS0.000100', 'ADHD_PRS0.001000',
-            #   'ADHD_PRS0.010000', 'ADHD_PRS0.050000',
-            #   'ADHD_PRS0.100000', 'ADHD_PRS0.200000',
-            #   'ADHD_PRS0.300000', 'ADHD_PRS0.400000',
-            #   'ADHD_PRS0.500000',
-            #   # DTI
-            #   'atr_fa', 'cst_fa', 'cing_cing_fa', 'cing_hipp_fa', 'cc_fa',
-            #   'ilf_fa', 'slf_fa', 'unc_fa', 'ifo_fa',
+              # PRS
+              'ADHD_PRS0.000100', 'ADHD_PRS0.001000',
+              'ADHD_PRS0.010000', 'ADHD_PRS0.050000',
+              'ADHD_PRS0.100000', 'ADHD_PRS0.200000',
+              'ADHD_PRS0.300000', 'ADHD_PRS0.400000',
+              'ADHD_PRS0.500000',
+              # DTI
+              'atr_fa', 'cst_fa', 'cing_cing_fa', 'cing_hipp_fa', 'cc_fa',
+              'ilf_fa', 'slf_fa', 'unc_fa', 'ifo_fa',
               #   demo
               'sex_numeric', 'base_age',
                 # 'SES_group3',
               # cog
-            #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
-            # # # #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
-            # #   # anat
-            #   'cerbellum_white', 'cerebllum_grey', 'amygdala',
-            #   'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus',
+              'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
+            # # #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
+              # anat
+              'cerbellum_white', 'cerebllum_grey', 'amygdala',
+              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus',
               # base SX
-              'base_inatt', 'base_hi'
-            # 'base_total'
+            #   'base_inatt', 'base_hi'
+            'base_total'
             # 'age_onset'
             # 'last_age'
               )
@@ -140,11 +144,11 @@ for (test_rows in 1:length(y)) {
     y_train <- y[-test_rows]
     y_test <- y[test_rows]
 
-    set.seed(42)
-    up_train <- upSample(x = X_train, y = y_train) 
-    X_train = up_train
-    X_train$Class = NULL
-    y_train = up_train$Class
+    # set.seed(42)
+    # up_train <- upSample(x = X_train, y = y_train) 
+    # X_train = up_train
+    # X_train$Class = NULL
+    # y_train = up_train$Class
 
     # library(DMwR)
     # set.seed(42)
@@ -162,6 +166,10 @@ for (test_rows in 1:length(y)) {
     # X_train$y_train = NULL
     # y_train = up_train$y_train
 
+    model_weights <- ifelse(y_train == levels(y_train)[1],
+                            (1/table(y_train)[1]) * 0.5,
+                            (1/table(y_train)[2]) * 0.5)
+
     # imputation and feature engineering
     set.seed(42)
     pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'knnImpute')
@@ -177,17 +185,23 @@ for (test_rows in 1:length(y)) {
     #                            classProbs = TRUE,
     #                            summaryFunction=twoClassSummary)
 
-    mygrid=expand.grid(mtry = 1:5)
-    # mygrid=expand.grid(ncomp = 1:2)#qrt(ncol(X_train)))
-    # mygrid=expand.grid(C = c(.01, .1, 1, 10, 100))
-    # mygrid=c()
     set.seed(42)
-    fit <- train(X_train, #tuneGrid=mygrid,
+    if (clf_model == 'rf') {
+        mygrid=expand.grid(mtry = 2:5)
+        fit <- train(X_train, tuneGrid=mygrid,
                             y_train,
                             trControl = fitControl,
                             method = clf_model,
+                            weights = model_weights,
                             metric='ROC')
-
+    } else {
+        fit <- train(X_train, #tuneGrid=mygrid,
+                            y_train,
+                            trControl = fitControl,
+                            method = clf_model,
+                            weights = model_weights,
+                            metric='ROC')
+    }
     preds_class = predict.train(fit, newdata=X_test)
     preds_probs = predict.train(fit, newdata=X_test, type='prob')
     dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
