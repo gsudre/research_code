@@ -42,7 +42,7 @@ mydata$sex = factor(mydata$sex)
 # mydata$sample_type.y = factor(mydata$sample_type.y)
 mydata$sample_type = factor(mydata$sample_type)
 
-nboot = 2#10000
+nboot = 1000
 ncpus = 1 #future::availableCores() #4 # 8
 # for DTI
 if (any(grepl(Ys, pattern='HI'))) { 
