@@ -125,7 +125,10 @@ for (x_str in Xs) {
     # this hack only works because all computations done in parallel correpond to
     # the same X. If we had different X being processed in parallel, then a more
     # elegant change would be needed
-    x_base = gsub(x=x_str, pattern='ROC', replacement='baseline')
+    
+    # the file with all probes doesn't have baseline in the var name
+    # x_base = gsub(x=x_str, pattern='ROC', replacement='baseline')
+    x_base = gsub(x=x_str, pattern='_ROC', replacement='')
     mydata$x_base = mydata[, x_base]
     for (y_str in Ys) {
         Y = mydata[, y_str]
