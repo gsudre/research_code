@@ -12,7 +12,7 @@ if (length(args) > 0) {
     use_covs = as.logical(args[7])
     out_file = args[8]
 } else {
-    fname = '~/data/baseline_prediction/FINAL_DATA_08022020.csv'
+    fname = '~/data/baseline_prediction/FINAL_DATA_08022020_IRMI.csv'
     phen = 'categ_all_lm.1'
     c1 = 'worsening'
     c2 = 'never_affected'
@@ -20,7 +20,7 @@ if (length(args) > 0) {
     # c2 = 'stable'
     # c1 = 'improvers'
     # c2 = 'stable'
-    clf_model = 'rf'
+    clf_model = 'slda'
     impute = 'dti'
     use_covs = TRUE
     out_file = '/dev/null'
@@ -176,18 +176,18 @@ for (test_rows in 1:length(y)) {
 
     # imputation and feature engineering
     set.seed(42)
-    pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'knnImpute')
+    pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale')
     pp = preProcess(X_train, method = pp_order)
     X_train = predict(pp, X_train)
     X_test = predict(pp, X_test)
 
-    set.seed(42)
-    fitControl <- trainControl(method = "repeatedcv", number=3, repeats=10,
-                            classProbs = TRUE,
-                            summaryFunction=twoClassSummary)
-    # fitControl <- trainControl(method = "none",
-    #                            classProbs = TRUE,
-    #                            summaryFunction=twoClassSummary)
+    # set.seed(42)
+    # fitControl <- trainControl(method = "repeatedcv", number=3, repeats=10,
+    #                         classProbs = TRUE,
+    #                         summaryFunction=twoClassSummary)
+    fitControl <- trainControl(method = "none",
+                               classProbs = TRUE,
+                               summaryFunction=twoClassSummary)
 
     set.seed(42)
     if (clf_model == 'rf') {
@@ -199,7 +199,9 @@ for (test_rows in 1:length(y)) {
                             weights = model_weights,
                             metric='ROC')
     } else {
-        fit <- train(X_train, #tuneGrid=mygrid,
+        fit <- train(X_train, #tuneGrid=data.frame(mfinal = 30,#nrow(X_train),
+                                                #   maxdepth = 3,
+                                                #   coeflearn = 'Zhu'),
                             y_train,
                             trControl = fitControl,
                             method = clf_model,

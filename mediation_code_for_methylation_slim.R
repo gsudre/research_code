@@ -23,7 +23,11 @@ gf = read.csv(fname)
 mydata = gf
 # mydata$qc.bad = factor(mydata$qc.bad)
 
-cg_data = read.csv(cg_fname)
+if (grepl(cg_fname, pattern='csv') {
+    cg_data = read.csv(cg_fname)
+} else {
+    cg_data = readRDS(cg_fname)
+}
 cg_vars = colnames(cg_data)[grepl(colnames(cg_data), pattern='^cg') | 
                             grepl(colnames(cg_data), pattern='^ch')]
 mydata = merge(mydata, cg_data, by='PersonID')
