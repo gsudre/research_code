@@ -23,7 +23,7 @@ gf = read.csv(fname)
 mydata = gf
 # mydata$qc.bad = factor(mydata$qc.bad)
 
-if (grepl(cg_fname, pattern='csv') {
+if (grepl(cg_fname, pattern='csv')) {
     cg_data = read.csv(cg_fname)
 } else {
     cg_data = readRDS(cg_fname)
