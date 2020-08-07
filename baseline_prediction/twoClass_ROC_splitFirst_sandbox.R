@@ -228,22 +228,22 @@ res = c(phen, clf_model, c1, c2, use_covs,
 line_res = paste(res,collapse=',')
 write(line_res, file=out_file, append=TRUE)
 
-# export variable importance
-a = varImp(fit, useModel=T)
-b = varImp(fit, useModel=F)
-split_fname = strsplit(x=out_file, split='/')[[1]]
-myprefix = gsub(x=split_fname[length(split_fname)], pattern='.csv', replacement='')
-out_dir = '~/data/baseline_prediction/more_models/'
-fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%s.csv',
-                out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
-# careful here because for non-linear models the rows of the importance matrix
-# are not aligned!!!
-write.csv(cbind(a$importance, b$importance), file=fname)
-print(varImp(fit, useModel=F, scale=F))
+# # export variable importance
+# a = varImp(fit, useModel=T)
+# b = varImp(fit, useModel=F)
+# split_fname = strsplit(x=out_file, split='/')[[1]]
+# myprefix = gsub(x=split_fname[length(split_fname)], pattern='.csv', replacement='')
+# out_dir = '~/data/baseline_prediction/more_models/'
+# fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%s.csv',
+#                 out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
+# # careful here because for non-linear models the rows of the importance matrix
+# # are not aligned!!!
+# write.csv(cbind(a$importance, b$importance), file=fname)
+# print(varImp(fit, useModel=F, scale=F))
 
-# export fit
-fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%s.RData',
-                out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
-save(fit, file=fname)
+# # export fit
+# fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%s.RData',
+#                 out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
+# save(fit, file=fname)
 print(fit)
 print(line_res)
