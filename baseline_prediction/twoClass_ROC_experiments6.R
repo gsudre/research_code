@@ -185,8 +185,8 @@ fit <- train(X_train[, good_vars],
                         method = clf_model,
                         metric='ROC')
 
-preds_class = predict.train(fit, newdata=X_test[, good_vars])
-preds_probs = predict.train(fit, newdata=X_test[, good_vars], type='prob')
+preds_class = predict.train(fit, newdata=t(as.matrix(X_test[, good_vars])))
+preds_probs = predict.train(fit, newdata=t(as.matrix(X_test[, good_vars])), type='prob')
 dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
 mcs = twoClassSummary(dat, lev=colnames(preds_probs))
 test_results = c(mcs['ROC'], mcs['Sens'], mcs['Spec'])

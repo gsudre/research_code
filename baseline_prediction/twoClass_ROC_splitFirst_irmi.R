@@ -16,7 +16,8 @@ if (length(args) > 0) {
     phen = 'categ_all_lm'
     c1 = 'improvers'
     c2 = 'never_affected'
-    clf_model = 'treebag'
+    clf_model = 'kernelpls'
+    mygrid=NULL #data.frame(ncomp=1)
     impute = 'dti'
     use_covs = FALSE
     out_file = '/dev/null'
@@ -148,6 +149,11 @@ X_train = up_train
 X_train$Class = NULL
 y_train = up_train$Class
 
+model_weights = NULL
+# model_weights <- ifelse(y_train == levels(y_train)[1],
+#                         (1/table(y_train)[1]) * 0.5,
+#                         (1/table(y_train)[2]) * 0.5)
+
 # library(bestNormalize)
 # for (v in setdiff(dummies$vars, dummies$facVars)) {
 #     bn = orderNorm(X_train[, v])
@@ -168,9 +174,13 @@ set.seed(42)
 fitControl <- trainControl(method = "none",
                            classProbs = TRUE,
                            summaryFunction=twoClassSummary)
+set.seed(42)
+fitControl <- trainControl(method = "repeatedcv", number=10, repeats=10,
+                        classProbs = TRUE,
+                        summaryFunction=twoClassSummary)
 
 set.seed(42)
-fit <- train(X_train,
+fit <- train(X_train, tuneGrid=mygrid,
                         y_train,
                         trControl = fitControl,
                         method = clf_model,

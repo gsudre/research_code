@@ -12,11 +12,12 @@ if (length(args) > 0) {
     use_covs = as.logical(args[7])
     out_file = args[8]
 } else {
-    fname = '~/data/baseline_prediction/FINAL_DATA_08022020.csv'
+    fname = '~/data/baseline_prediction/FINAL_DATA_08022020_IRMI.csv'
     phen = 'categ_all_lm.1'
-    c1 = 'improvers'
+    c1 = 'worsening'
     c2 = 'never_affected'
-    clf_model = 'slda'
+    clf_model = 'rf'
+    mygrid=data.frame(mtry = 3)
     impute = 'dti'
     use_covs = FALSE
     out_file = '/dev/null'
@@ -28,6 +29,8 @@ data$sex_numeric = as.factor(data$sex_numeric)
 data$base_total = data$base_inatt + data$base_hi
 
 data = data[data$pass2_58=='yes',]
+
+library(nFactors)
 
 var_names = c(
               # PRS
@@ -55,6 +58,11 @@ var_names = c(
             # 'age_onset'
             # 'last_age'
               )
+
+# var_names = c('PRS_PC1', 'PRS_PC2', 'DTI_PC01', 'COG_PC1', 'COG_PC2',
+#               'ANAT_PC1', 'ANAT_PC2',
+#               'sex_numeric', 'base_age'
+#               )
 
 covar_names = c(# DTI
                 'norm.rot', 'norm.trans',
@@ -135,6 +143,41 @@ keep_me = y_test==c1 | y_test==c2
 X_test = as.data.frame(X_test[keep_me, ])
 y_test = factor(y_test[keep_me])
 
+# domains = list(DTI=c(# DTI
+#               'atr_fa', 'cst_fa', 'cing_cing_fa', 'cing_hipp_fa', 'cc_fa',
+#               'ilf_fa', 'slf_fa', 'unc_fa', 'ifo_fa'),
+#               COG=c('FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD'),
+#               ANAT=c('cerbellum_white', 'cerebllum_grey', 'amygdala',
+#               'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus'),
+#               PRS=c('ADHD_PRS0.000100', 'ADHD_PRS0.001000',
+#               'ADHD_PRS0.010000', 'ADHD_PRS0.050000',
+#               'ADHD_PRS0.100000', 'ADHD_PRS0.200000',
+#               'ADHD_PRS0.300000', 'ADHD_PRS0.400000',
+#               'ADHD_PRS0.500000'))
+# pc_data = c()
+# for (d in names(domains)) {
+#     var_names = domains[[d]]
+#     fm_str = sprintf('~ %s', paste0(var_names, collapse='+ ', sep=' '))
+#     pca = prcomp(as.formula(fm_str),
+#                  rbind(X_train[, var_names], X_test[, var_names]), scale=T,
+#                 na.action=na.exclude)
+#     eigs <- pca$sdev^2
+#     nS = nScree(x=eigs)
+#     keep_me = 1:nS$Components$nkaiser
+#     mydata = data.frame(pca$x[, keep_me])
+#     cnames = sapply(1:ncol(mydata),
+#                     function(x) sprintf('%s_%s', d, colnames(mydata)[x]))
+#     colnames(mydata) = cnames
+#     if (length(pc_data) == 0) {
+#         pc_data = mydata
+#     } else {
+#         pc_data = cbind(pc_data, as.data.frame(mydata))
+#     }
+    
+# }
+# X_train = pc_data[1:nrow(X_train),]
+# X_test = pc_data[(nrow(X_train)+1):nrow(pc_data),]
+
 set.seed(42)
 up_train <- upSample(x = X_train, y = y_train) 
 X_train = up_train
@@ -151,7 +194,7 @@ y_train = up_train$Class
 
 # imputation and feature engineering
 set.seed(42)
-pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale', 'knnImpute')
+pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale')
 # pp_order = c('zv', 'nzv', 'bagImpute')
 pp = preProcess(X_train, method = pp_order)
 X_train = predict(pp, X_train)
@@ -162,12 +205,12 @@ print(table(y_train))
 print(table(y_test))
 
 set.seed(42)
-fitControl <- trainControl(method = "none",
+fitControl <- trainControl(method = "repeatedcv", repeats=10, number=5,
                            classProbs = TRUE,
                            summaryFunction=twoClassSummary)
 
 set.seed(42)
-fit <- train(X_train, tuneGrid = data.frame(mtry = 2),
+fit <- train(X_train, tuneGrid = NULL,
                         y_train,
                         trControl = fitControl,
                         method = clf_model,
@@ -202,5 +245,5 @@ print(varImp(fit, useModel=F, scale=F))
 fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%s.RData',
                 out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
 save(fit, file=fname)
-
+print(fit)
 print(line_res)
