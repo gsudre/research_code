@@ -12,12 +12,12 @@ if (length(args) > 0) {
     use_covs = as.logical(args[7])
     out_file = args[8]
 } else {
-    fname = '~/data/baseline_prediction/FINAL_DATA_08022020_IRMI.csv'
+    fname = '~/data/baseline_prediction/FINAL_DATA_08072020_IRMI.csv'
     phen = 'categ_all_lm.1'
     c1 = 'worsening'
     c2 = 'never_affected'
-    clf_model = 'rf'
-    mygrid=data.frame(mtry = 3)
+    clf_model = 'slda'
+    mygrid=NULL #data.frame(mtry = 3)
     impute = 'dti'
     use_covs = FALSE
     out_file = '/dev/null'

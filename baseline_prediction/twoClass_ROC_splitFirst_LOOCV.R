@@ -12,9 +12,9 @@ if (length(args) > 0) {
     use_covs = as.logical(args[7])
     out_file = args[8]
 } else {
-    fname = '~/data/baseline_prediction/FINAL_DATA_08022020_IRMI_PCs.csv'
+    fname = '~/data/baseline_prediction/FINAL_DATA_08072020_IRMI.csv'
     phen = 'categ_all_lm.1'
-    c1 = 'worsening'
+    c1 = 'stable'
     c2 = 'never_affected'
     # c1 = 'worsening'
     # c2 = 'stable'
@@ -49,7 +49,7 @@ var_names = c(
                 # 'SES_group3',
               # cog
               'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
-            # # #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
+            #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
               # anat
               'cerbellum_white', 'cerebllum_grey', 'amygdala',
               'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus'
@@ -60,10 +60,10 @@ var_names = c(
             # 'last_age'
               )
 
-var_names = c('PRS_PC1', 'PRS_PC2', 'DTI_PC01', 'COG_PC1', 'COG_PC2',
-              'ANAT_PC1', 'ANAT_PC2',
-              'sex_numeric', 'base_age'
-              )
+# var_names = c('PRS_PC1', 'PRS_PC2', 'DTI_PC01', 'COG_PC1', 'COG_PC2',
+#               'ANAT_PC1', 'ANAT_PC2',
+#               'sex_numeric', 'base_age'
+#               )
 
 covar_names = c(# DTI
                 'norm.rot', 'norm.trans',
@@ -187,12 +187,12 @@ for (test_rows in 1:length(y)) {
     #                         (1/table(y_train)[1]) * 0.5,
     #                         (1/table(y_train)[2]) * 0.5)
 
-    # imputation and feature engineering
-    set.seed(42)
-    pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale')
-    pp = preProcess(rbind(X_train, X_test), method = pp_order)
-    X_train = predict(pp, X_train)
-    X_test = predict(pp, X_test)
+    # # imputation and feature engineering
+    # set.seed(42)
+    # pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale')
+    # pp = preProcess(rbind(X_train, X_test), method = pp_order)
+    # X_train = predict(pp, X_train)
+    # X_test = predict(pp, X_test)
 
     set.seed(42)
     # fitControl <- trainControl(method = "repeatedcv", number=3, repeats=10,
