@@ -7,6 +7,7 @@ if (length(args) > 1) {
     add_Mbase = as.logical(args[5])
     cg_fname = args[6]
     out_fname = args[7]
+    nboot = as.numeric(args[8])
 } else {
     fname = '~/data/longitudinal_methylome/dti_2_for_sam_slim.csv'
     Ms = c('AD_left_unc_rate')
@@ -14,7 +15,8 @@ if (length(args) > 1) {
     Ys = c("ROC_IN_one_win")
     out_fname = '~/tmp/temp1.csv'
     add_Mbase = F
-    cg_fname = 'ROC_data_inattAndHI_160.csv'
+    cg_fname = 'ROC_data_ALL_160.rds'
+    nboot = 2  #000
 }
 
 library(mediation)
@@ -28,9 +30,12 @@ if (grepl(cg_fname, pattern='csv')) {
 } else {
     cg_data = readRDS(cg_fname)
 }
-cg_vars = colnames(cg_data)[grepl(colnames(cg_data), pattern='^cg') | 
-                            grepl(colnames(cg_data), pattern='^ch')]
-mydata = merge(mydata, cg_data, by='PersonID')
+# let's trim the big cg to only keep the methyl we want in this run, and then
+# all the meta data. This runs MUUUCH faster than without trimming it
+meta_vars = colnames(cg_data)[!(grepl(colnames(cg_data), pattern='^cg') | 
+                                grepl(colnames(cg_data), pattern='^ch'))]
+methyl_base_vars = gsub(x=Xs, pattern='_ROC', replacement='')
+mydata = merge(mydata, cg_data[, c(meta_vars, Xs, methyl_base_vars)], by='PersonID')
 print(dim(mydata))
 
 # make sure we have enough data in these batches
@@ -42,7 +47,6 @@ mydata$sex = factor(mydata$sex)
 # mydata$sample_type.y = factor(mydata$sample_type.y)
 mydata$sample_type = factor(mydata$sample_type)
 
-nboot = 1000
 ncpus = 1 #future::availableCores() #4 # 8
 # for DTI
 if (any(grepl(Ys, pattern='HI'))) { 
@@ -50,8 +54,8 @@ if (any(grepl(Ys, pattern='HI'))) {
     fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
     fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
     
-    fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
-    fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + ageACQ.1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
+    # fm = 'M ~ X + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
+    # fy = 'Y ~ X + M + SXHI.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + ageACQ.1 + age.diff +CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
 
     # # cog
     # fm = 'M ~ X + SXHI.1 + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
@@ -61,8 +65,8 @@ if (any(grepl(Ys, pattern='HI'))) {
     fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
     fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + x_base + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
     
-    fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
-    fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
+    # fm = 'M ~ X + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
+    # fy = 'Y ~ X + M + SXIN.1 + qc.bad + PC1 + PC2 + PC3 + PC4 + PC5 + SV.one.m2 + ageACQ.1 + age.diff + CD8T.diff + CD4T.diff + NK.diff + Bcell.diff + Mono.diff + Gran.diff + sample_type + sex'
 }
 if (add_Mbase) {
     fm = sprintf('%s + m_base', fm)
@@ -115,6 +119,16 @@ run_model4 = function(X, M, Y, metadata, nboot=1000) {
     names(resY) = c(sapply(1:4, function(x) sprintf('X_MtoY_%s', colnames(tmp)[x])),
                     sapply(1:4, function(x) sprintf('M_MtoY_%s', colnames(tmp)[x])))
     res = c(res, resX, resY)
+    # add X_base values if they're part of the equation
+    if (grepl(fm, pattern='x_base')) {
+        tmp = summary(model.M)$coefficients
+        resX = tmp['x_base', ]
+        names(resX) = sapply(1:4, function(x) sprintf('Xbase_XtoM_%s', colnames(tmp)[x]))
+        tmp = summary(model.Y)$coefficients
+        resY = tmp['x_base', ]
+        names(resY) = sapply(1:4, function(x) sprintf('Xbase_MtoY_%s', colnames(tmp)[x]))
+        res = c(res, resX, resY)
+    }
     return(res)     
 }
 
