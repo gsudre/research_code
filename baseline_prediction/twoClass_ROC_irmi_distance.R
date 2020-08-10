@@ -13,15 +13,11 @@ if (length(args) > 0) {
     out_file = args[8]
 } else {
     fname = '~/data/baseline_prediction/FINAL_DATA_08072020_IRMI.csv'
-    phen = 'categ_all_lm.1'
-    c1 = 'worsening'
+    phen = 'categ_all_lm'
+    c1 = 'improvers'
     c2 = 'never_affected'
-    # c1 = 'worsening'
-    # c2 = 'stable'
-    # c1 = 'improvers'
-    # c2 = 'stable'
-    clf_model = 'slda'
-    mygrid = NULL #data.frame(mtry=5)
+    clf_model = 'kernelpls'
+    mygrid=NULL #data.frame(ncomp=1)
     impute = 'dti'
     use_covs = FALSE
     out_file = '/dev/null'
@@ -50,7 +46,7 @@ var_names = c(
               # cog
               'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
             #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
-              # anat
+            #   # anat
               'cerbellum_white', 'cerebllum_grey', 'amygdala',
               'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus'
               # base SX
@@ -59,11 +55,6 @@ var_names = c(
             # 'age_onset'
             # 'last_age'
               )
-
-# var_names = c('PRS_PC1', 'PRS_PC2', 'DTI_PC01', 'COG_PC1', 'COG_PC2',
-#               'ANAT_PC1', 'ANAT_PC2',
-#               'sex_numeric', 'base_age'
-#               )
 
 covar_names = c(# DTI
                 'norm.rot', 'norm.trans',
@@ -118,22 +109,6 @@ data3 = predict(dummies, newdata = data2)
 
 data2$phen = as.factor(data[, phen])
 
-# split traing and test between members of the same family
-train_rows = c()
-test_rows = c()
-for (fam in unique(data$FAMID)) {
-    fam_rows = which(data$FAMID == fam)
-    if (length(fam_rows) == 1) {
-        train_rows = c(train_rows, fam_rows[1])
-    } else {
-        # choose the oldest kid in the family for training, second oldest for
-        # testing... throwing away everyone else
-        age_sort = sort(data[fam_rows, 'base_age'], index.return=T, decreasing=T)
-        train_rows = c(train_rows, fam_rows[age_sort$ix[1]])
-        test_rows = c(test_rows, fam_rows[age_sort$ix[2:length(fam_rows)]])
-    }
-}
-
 X = data3
 y = factor(data2$phen)
 
@@ -145,91 +120,99 @@ y = factor(y[keep_me])
 print(dim(X))
 print(table(y))
 
-test_preds = c()
-for (test_rows in 1:length(y)) {
-    print(sprintf('Hold out %d / %d', test_rows, length(y)))
-    X_train <- X[-test_rows, ]
-    X_test <- as.matrix(X[test_rows, ])
-    y_train <- y[-test_rows]
-    y_test <- y[test_rows]
+X_train = c()
+X_test = c()
+y_train = c()
+y_test = c()
+for (t in c(c1, c2)) {
+    # this refers to X
+    candidates = which(y==t)
+    while (length(candidates) >= 3) {
+        X_group = scale(X[candidates,])
+        # all indexes refer to X_group!
+        dists = dist(data.frame(X_group), upper=T)
+        closest = which(as.matrix(dists)==min(dists), arr.ind=T)
+        X_test = rbind(X_test, X_group[closest[1], ])
+        y_test = c(y_test, t)
+        # get the kids most similar to our testing kid
+        s = sort(as.matrix(dists)[closest[1],], index.return=T)
+        # the first is always zero... select kids not chosen yet
+        cnt = 2
+        chosen = c()
+        while ((length(chosen) < 2) && (cnt <= nrow(X_group))) {
+            chosen = c(chosen, s$ix[cnt])
+            y_train = c(y_train, t)
+            cnt = cnt + 1
+        }
+        X_train = rbind(X_train, X_group[chosen,])
+        # need to remove candidates based on X!
+        candidates = candidates[-c(closest[1], chosen)]
 
-    # set.seed(42)
-    # up_train <- upSample(x = X_train, y = y_train) 
-    # X_train = up_train
-    # X_train$Class = NULL
-    # y_train = up_train$Class
+    }
+}
+y_train = factor(y_train)
+y_test = factor(y_test)
 
-    # library(DMwR)
-    # set.seed(42)
-    # X2 = cbind(X_train, y_train)
-    # up_train <- SMOTE(y_train ~ ., data = X2) 
-    # X_train = up_train
-    # X_train$y_train = NULL
-    # y_train = up_train$y_train
+print(dim(X_train))
+print(dim(X_test))
+print(table(y_train))
+print(table(y_test))
 
-    # library(ROSE)
-    # set.seed(42)
-    # X2 = cbind(X_train, y_train)
-    # up_train <- ROSE(y_train ~ ., data  = X2)$data                         
-    # X_train = up_train
-    # X_train$y_train = NULL
-    # y_train = up_train$y_train
+# imputation and feature engineering
+set.seed(42)
+pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale')
+# pp_order = c('zv', 'nzv', 'bagImpute')
+pp = preProcess(rbind(X_train, X_test), method = pp_order)
+X_train = predict(pp, X_train)
+X_test = predict(pp, X_test)
 
-    # idx = y_train==c1
-    # pvals = sapply(1:ncol(X_train),
-    #                 function(x) {t.test(X_train[idx, x],
-    #                                         X_train[!idx, x])$p.value})
-    # spvals = sort(pvals, index.return=T)
-    # good_vars = spvals$ix[1:5]
+set.seed(42)
+up_train <- upSample(x = X_train, y = y_train) 
+X_train = up_train
+X_train$Class = NULL
+y_train = up_train$Class
 
-    model_weights = NULL
-    # model_weights <- ifelse(y_train == levels(y_train)[1],
-    #                         (1/table(y_train)[1]) * 0.5,
-    #                         (1/table(y_train)[2]) * 0.5)
+model_weights = NULL
+# model_weights <- ifelse(y_train == levels(y_train)[1],
+#                         (1/table(y_train)[1]) * 0.5,
+#                         (1/table(y_train)[2]) * 0.5)
 
-    # # imputation and feature engineering
-    # set.seed(42)
-    # pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale')
-    # pp = preProcess(rbind(X_train, X_test), method = pp_order)
-    # X_train = predict(pp, X_train)
-    # X_test = predict(pp, X_test)
+# library(bestNormalize)
+# for (v in setdiff(dummies$vars, dummies$facVars)) {
+#     bn = orderNorm(X_train[, v])
+#     X_train[, v] = bn$x.t
+#     X_test[, v] = predict(bn, X_test[, v])
+# }
 
-    set.seed(42)
-    # fitControl <- trainControl(method = "repeatedcv", number=3, repeats=10,
-    #                         classProbs = TRUE,
-    #                         summaryFunction=twoClassSummary)
-    fitControl <- trainControl(method = "none",
-                               classProbs = TRUE,
-                               summaryFunction=twoClassSummary)
+# pp_order = c('corr', 'center')
+# pp = preProcess(X_train, method = pp_order)
+# X_train = predict(pp, X_train)
+# X_test = predict(pp, X_test)
 
-    fit1 <- train(X_train,
-                            y_train,
-                            trControl = fitControl,
-                            method = 'slda',
-                            metric='ROC')
-    varimps = varImp(fit1, useModel=F, scale=F)$importance[,1]
-    spvals = sort(varimps, index.return=T, decreasing=T)
-    good_vars = 1:ncol(X_train) #spvals$ix[1:5]
+print(colnames(X_train))
+print(table(y_train))
+print(table(y_test))
 
-    set.seed(42)
-    fit <- train(X_train[, good_vars], tuneGrid=mygrid,
+set.seed(42)
+fitControl <- trainControl(method = "none",
+                           classProbs = TRUE,
+                           summaryFunction=twoClassSummary)
+set.seed(42)
+fitControl <- trainControl(method = "repeatedcv", number=10, repeats=10,
+                        classProbs = TRUE,
+                        summaryFunction=twoClassSummary)
+
+set.seed(42)
+fit <- train(X_train, tuneGrid=mygrid,
                         y_train,
                         trControl = fitControl,
                         method = clf_model,
-                        weights = model_weights,
                         metric='ROC')
-    preds_class = predict.train(fit, newdata=t(as.matrix(X_test[, good_vars])))
-    preds_probs = predict.train(fit, newdata=t(as.matrix(X_test[, good_vars])), type='prob')
-    dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
-    test_preds = rbind(test_preds, dat)
 
-    # tmp = varImp(fit, useModel=T)$importance
-    # varimps[, test_rows] = tmp[,1]
-}
-
-mcs = twoClassSummary(test_preds, lev=levels(y))
-print(mcs)
-
+preds_class = predict.train(fit, newdata=X_test)
+preds_probs = predict.train(fit, newdata=X_test, type='prob')
+dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
+mcs = twoClassSummary(dat, lev=colnames(preds_probs))
 test_results = c(mcs['ROC'], mcs['Sens'], mcs['Spec'])
 names(test_results) = c('test_AUC', 'test_Sens', 'test_Spec')
 
