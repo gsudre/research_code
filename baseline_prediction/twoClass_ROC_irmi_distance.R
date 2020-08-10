@@ -14,10 +14,10 @@ if (length(args) > 0) {
 } else {
     fname = '~/data/baseline_prediction/FINAL_DATA_08072020_IRMI.csv'
     phen = 'categ_all_lm'
-    c1 = 'improvers'
+    c1 = 'stable'
     c2 = 'never_affected'
-    clf_model = 'kernelpls'
-    mygrid=NULL #data.frame(ncomp=1)
+    clf_model = 'rf'
+    mygrid=data.frame(mtry=2)
     impute = 'dti'
     use_covs = FALSE
     out_file = '/dev/null'
@@ -197,10 +197,10 @@ set.seed(42)
 fitControl <- trainControl(method = "none",
                            classProbs = TRUE,
                            summaryFunction=twoClassSummary)
-set.seed(42)
-fitControl <- trainControl(method = "repeatedcv", number=10, repeats=10,
-                        classProbs = TRUE,
-                        summaryFunction=twoClassSummary)
+# set.seed(42)
+# fitControl <- trainControl(method = "repeatedcv", number=10, repeats=10,
+#                         classProbs = TRUE,
+#                         summaryFunction=twoClassSummary)
 
 set.seed(42)
 fit <- train(X_train, tuneGrid=mygrid,
