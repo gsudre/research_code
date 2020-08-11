@@ -11,6 +11,8 @@ if (length(args) > 0) {
     impute = args[6]
     use_covs = as.logical(args[7])
     out_file = args[8]
+    ncandidates = as.numeric(args[9])
+    mygrid=data.frame(mtry=5)
 } else {
     fname = '~/data/baseline_prediction/FINAL_DATA_08072020_IRMI.csv'
     phen = 'categ_all_lm'
@@ -21,6 +23,7 @@ if (length(args) > 0) {
     impute = 'dti'
     use_covs = FALSE
     out_file = '/dev/null'
+    ncandidates = 4 # one for testing, rest for training
 }
 
 data = read.csv(fname)
@@ -127,10 +130,10 @@ y_test = c()
 for (t in c(c1, c2)) {
     # this refers to X
     candidates = which(y==t)
-    while (length(candidates) >= 3) {
-        X_group = scale(X[candidates,])
+    while (length(candidates) >= ncandidates) {
+        X_group = X[candidates,]
         # all indexes refer to X_group!
-        dists = dist(data.frame(X_group), upper=T)
+        dists = dist(data.frame(scale(X_group)), upper=T)
         closest = which(as.matrix(dists)==min(dists), arr.ind=T)
         X_test = rbind(X_test, X_group[closest[1], ])
         y_test = c(y_test, t)
@@ -139,7 +142,7 @@ for (t in c(c1, c2)) {
         # the first is always zero... select kids not chosen yet
         cnt = 2
         chosen = c()
-        while ((length(chosen) < 2) && (cnt <= nrow(X_group))) {
+        while ((length(chosen) < (ncandidates-1)) && (cnt <= nrow(X_group))) {
             chosen = c(chosen, s$ix[cnt])
             y_train = c(y_train, t)
             cnt = cnt + 1
@@ -147,9 +150,13 @@ for (t in c(c1, c2)) {
         X_train = rbind(X_train, X_group[chosen,])
         # need to remove candidates based on X!
         candidates = candidates[-c(closest[1], chosen)]
-
     }
+    # if there are any candidates left, push them to training
+    X_train = rbind(X_train, X[candidates,])
+    y_train = c(y_train, rep(t, length(candidates)))
 }
+
+
 y_train = factor(y_train)
 y_test = factor(y_test)
 
@@ -157,6 +164,20 @@ print(dim(X_train))
 print(dim(X_test))
 print(table(y_train))
 print(table(y_test))
+
+set.seed(42)
+up_train <- upSample(x = X_train, y = y_train) 
+X_train = up_train
+X_train$Class = NULL
+y_train = up_train$Class
+
+# library(DMwR)
+# set.seed(42)
+# X2 = cbind(as.data.frame(X_train), y_train)
+# up_train <- SMOTE(y_train ~ ., data = X2) 
+# X_train = up_train
+# X_train$y_train = NULL
+# y_train = up_train$y_train
 
 # imputation and feature engineering
 set.seed(42)
@@ -166,11 +187,8 @@ pp = preProcess(rbind(X_train, X_test), method = pp_order)
 X_train = predict(pp, X_train)
 X_test = predict(pp, X_test)
 
-set.seed(42)
-up_train <- upSample(x = X_train, y = y_train) 
-X_train = up_train
-X_train$Class = NULL
-y_train = up_train$Class
+
+
 
 model_weights = NULL
 # model_weights <- ifelse(y_train == levels(y_train)[1],
@@ -198,7 +216,7 @@ fitControl <- trainControl(method = "none",
                            classProbs = TRUE,
                            summaryFunction=twoClassSummary)
 # set.seed(42)
-# fitControl <- trainControl(method = "repeatedcv", number=10, repeats=10,
+# fitControl <- trainControl(method = "repeatedcv", number=3, repeats=10,
 #                         classProbs = TRUE,
 #                         summaryFunction=twoClassSummary)
 
