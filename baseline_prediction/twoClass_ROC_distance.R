@@ -13,19 +13,19 @@ if (length(args) > 0) {
     out_file = args[8]
     ncandidates = as.numeric(args[9])
     resamp=args[10]
-    mygrid=NULL#data.frame(mtry=6)
+    mygrid=NULL#data.frame(mtry=7)
 } else {
-    fname = '~/data/baseline_prediction/FINAL_DATA_08072020.csv'
+    fname = '~/data/baseline_prediction/FINAL_DATA_08162020_short_cleanDTI.csv'
     phen = 'categ_all_lm'
-    c1 = 'worsening'
-    c2 = 'never_affected'
-    clf_model = 'svmLinear'
+    c1 = 'improvers'
+    c2 = 'stable'
+    clf_model = 'cforest'
     mygrid=NULL#data.frame(mtry=5)
     impute = 'none'
     use_covs = TRUE
     out_file = '/dev/null'
     resamp='down'
-    ncandidates = 9 # one for testing, rest for training
+    ncandidates = 10 # one for testing, rest for training
 }
 
 data = read.csv(fname)
@@ -46,17 +46,17 @@ var_names = c(
               # DTI
               'atr_fa', 'cst_fa', 'cing_cing_fa', 'cing_hipp_fa', 'cc_fa',
               'ilf_fa', 'slf_fa', 'unc_fa', 'ifo_fa',
-              #   demo
+                # demo
               'sex_numeric', 'base_age',
                 # 'SES_group3',
               # cog
               'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
-            # # #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
+            # # # # #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
             #   # anat
               'cerbellum_white', 'cerebllum_grey', 'amygdala',
               'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus',
-              # base SX
-            #   'base_inatt', 'base_hi',
+            #   # base SX
+              'base_inatt', 'base_hi',
             # 'base_total',
             # 'age_onset',
             'last_age'
@@ -79,23 +79,6 @@ if (use_covs) {
 } else {
     data2 = data[, var_names]
 }
-
-# just keep these variables after using the ones above to split between train
-# and test
-keep_vars = c('ADHD_PRS0.000100', 'ADHD_PRS0.001000',
-              'ADHD_PRS0.010000', 'ADHD_PRS0.050000',
-              'ADHD_PRS0.100000', 'ADHD_PRS0.200000',
-              'ADHD_PRS0.300000', 'ADHD_PRS0.400000',
-              'ADHD_PRS0.500000', sapply(1:10, function(x) sprintf('PC%02d', x)),
-              'atr_fa', 'cst_fa', 'cing_cing_fa', 'cing_hipp_fa', 'cc_fa',
-              'ilf_fa', 'slf_fa', 'unc_fa', 'ifo_fa', 'norm.rot', 'norm.trans',
-              'sex_numeric.1', 'base_age',
-              'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
-              'cerbellum_white', 'cerebllum_grey', 'amygdala',
-              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus', 'average_qc',
-              'last_age'
-              )
-keep_vars = NULL
 
 # data2 = data2[data$EVER_ADHD == 'yes',]
 # data = data[data$EVER_ADHD == 'yes',]
@@ -121,7 +104,7 @@ if (impute == 'dti') {
                   ncol(data2)))
 } else {
     use_me = TRUE
-    print('No restrictions needed')
+    print('No imputation needed')
 }
 
 # will need this later so training rows match data2
@@ -134,33 +117,15 @@ data3 = predict(dummies, newdata = data2)
 
 data2$phen = as.factor(data[, phen])
 
-if (is.null(keep_vars)) {
-    X = data3
-} else {
-    X = data3[, keep_vars]
-}
+X = data3
 y = factor(data2$phen)
 
-
-# # imputing
-# library(VIM)
-# print('Imputing IRMI before class cropping')
-# set.seed(42)
-# X = irmi(X, imp_var=F)
-
+# X = cbind(X, data$age_onset)
 
 # selecting only kids in the 2 specified groups
 keep_me = y==c1 | y==c2
 X = as.data.frame(X[keep_me, ])
 y = factor(y[keep_me])
-
-
-# imputing
-library(VIM)
-print('Imputing IRMI after class cropping')
-set.seed(42)
-X = irmi(X, imp_var=F)
-
 
 print(dim(X))
 print(table(y))
@@ -229,7 +194,7 @@ if (resamp == 'down') {
     y_train = up_train$y_train
 }
 
-# feature engineering
+# imputation and feature engineering
 set.seed(42)
 pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale')
 # pp_order = c('zv', 'nzv', 'bagImpute')
@@ -237,29 +202,15 @@ pp = preProcess(rbind(X_train, X_test), method = pp_order)
 X_train = predict(pp, X_train)
 X_test = predict(pp, X_test)
 
-
-
-
 model_weights = NULL
-# model_weights <- ifelse(y_train == levels(y_train)[1],
-#                         (1/table(y_train)[1]) * 0.5,
-#                         (1/table(y_train)[2]) * 0.5)
-
-# library(bestNormalize)
-# for (v in setdiff(dummies$vars, dummies$facVars)) {
-#     bn = orderNorm(X_train[, v])
-#     X_train[, v] = bn$x.t
-#     X_test[, v] = predict(bn, X_test[, v])
-# }
-
-# pp_order = c('corr', 'center')
-# pp = preProcess(X_train, method = pp_order)
-# X_train = predict(pp, X_train)
-# X_test = predict(pp, X_test)
 
 print(colnames(X_train))
 print(table(y_train))
 print(table(y_test))
+
+# only_these_vars = c('base_inatt', 'base_hi')
+# X_train = X_train[, only_these_vars]
+# X_test = X_test[, only_these_vars]
 
 set.seed(42)
 fitControl <- trainControl(method = "none",
@@ -285,13 +236,20 @@ mcs = twoClassSummary(dat, lev=colnames(preds_probs))
 test_results = c(mcs['ROC'], mcs['Sens'], mcs['Spec'])
 names(test_results) = c('test_AUC', 'test_Sens', 'test_Spec')
 
+# preds_class = predict.train(fit, newdata=X_train)
+# preds_probs = predict.train(fit, newdata=X_train, type='prob')
+# dat_train = cbind(data.frame(obs = y_train, pred = preds_class), preds_probs)
+# mcs_train = twoClassSummary(dat_train, lev=colnames(preds_probs))
+# train_results = c(mcs_train['ROC'], mcs_train['Sens'], mcs_train['Spec'])
+# names(train_results) = c('train_AUC', 'train_Sens', 'train_Spec')
+
 res = c(phen, clf_model, c1, c2, impute, use_covs, resamp, ncandidates,
         test_results, table(y_train), table(y_test))
 line_res = paste(res,collapse=',')
 write(line_res, file=out_file, append=TRUE)
 
 # export variable importance
-a = varImp(fit, useModel=F)
+a = varImp(fit, useModel=T)
 # b = varImp(fit, useModel=F)
 split_fname = strsplit(x=out_file, split='/')[[1]]
 myprefix = gsub(x=split_fname[length(split_fname)], pattern='.csv', replacement='')

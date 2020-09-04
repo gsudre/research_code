@@ -7,7 +7,7 @@ pal = brewer.pal(9, "Reds")
 # remove the whitest and reddest colors
 pal = pal[2:8]
 # expand the palette so that we have enough colors
-ped = read.csv('~/data/pedigrees/pedigree_20200619.csv')
+ped = read.csv('~/data/pedigrees/pedigree_20200824.csv')
 phe = read.csv('~/data/pedigrees/pheno.csv')
 for (myfam in families) {
     cat(sprintf('Plotting family %d\n', myfam))

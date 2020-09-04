@@ -5,27 +5,23 @@ library(caret)
 if (length(args) > 0) {
     fname = args[1]
     phen = args[2]
-    c1 = args[3]
-    c2 = args[4]
-    clf_model = args[5]
-    impute = args[6]
-    use_covs = as.logical(args[7])
-    out_file = args[8]
-    ncandidates = as.numeric(args[9])
-    resamp=args[10]
+    clf_model = args[3]
+    impute = args[4]
+    use_covs = as.logical(args[5])
+    out_file = args[6]
+    ncandidates = as.numeric(args[7])
+    resamp=args[8]
     mygrid=NULL#data.frame(mtry=6)
 } else {
-    fname = '~/data/baseline_prediction/FINAL_DATA_08072020.csv'
+    fname = '~/data/baseline_prediction/FINAL_DATA_08072020_IRMI.csv'
     phen = 'categ_all_lm'
-    c1 = 'worsening'
-    c2 = 'never_affected'
-    clf_model = 'svmLinear'
-    mygrid=NULL#data.frame(mtry=5)
-    impute = 'none'
-    use_covs = TRUE
+    clf_model = 'svmRadialCost'
+    mygrid=NULL#data.frame(mtry=2)
+    impute = 'dti'
+    use_covs = FALSE
     out_file = '/dev/null'
-    resamp='down'
-    ncandidates = 9 # one for testing, rest for training
+    ncandidates = 5 # one for testing, rest for training
+    resamp = 'up' # up, down, SMOTE, or none
 }
 
 data = read.csv(fname)
@@ -33,8 +29,8 @@ data$sex_numeric = as.factor(data$sex_numeric)
 # data$SES_group3 = as.factor(data$SES_group3)
 data$base_total = data$base_inatt + data$base_hi
 
-# data = data[data$pass2_58=='yes',]
-# data = data[!is.na(data$slf_fa),]
+data = data[data$pass2_58=='yes',]
+data = data[data$categ_all_lm.1!='never_affected',]
 
 var_names = c(
               # PRS
@@ -51,15 +47,15 @@ var_names = c(
                 # 'SES_group3',
               # cog
               'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
-            # # #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
+            # # # #   'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_RAW', 'VMI.beery_RAW',
             #   # anat
               'cerbellum_white', 'cerebllum_grey', 'amygdala',
-              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus',
+              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus'
               # base SX
-            #   'base_inatt', 'base_hi',
-            # 'base_total',
-            # 'age_onset',
-            'last_age'
+            #   'base_inatt', 'base_hi'
+            # 'base_total'
+            # 'age_onset'
+            # 'last_age'
               )
 
 covar_names = c(# DTI
@@ -79,23 +75,6 @@ if (use_covs) {
 } else {
     data2 = data[, var_names]
 }
-
-# just keep these variables after using the ones above to split between train
-# and test
-keep_vars = c('ADHD_PRS0.000100', 'ADHD_PRS0.001000',
-              'ADHD_PRS0.010000', 'ADHD_PRS0.050000',
-              'ADHD_PRS0.100000', 'ADHD_PRS0.200000',
-              'ADHD_PRS0.300000', 'ADHD_PRS0.400000',
-              'ADHD_PRS0.500000', sapply(1:10, function(x) sprintf('PC%02d', x)),
-              'atr_fa', 'cst_fa', 'cing_cing_fa', 'cing_hipp_fa', 'cc_fa',
-              'ilf_fa', 'slf_fa', 'unc_fa', 'ifo_fa', 'norm.rot', 'norm.trans',
-              'sex_numeric.1', 'base_age',
-              'FSIQ', 'SS_RAW', 'DS_RAW', 'PS_STD', 'VMI.beery_STD',
-              'cerbellum_white', 'cerebllum_grey', 'amygdala',
-              'cingulate', 'lateral_PFC', 'OFC', 'striatum', 'thalamus', 'average_qc',
-              'last_age'
-              )
-keep_vars = NULL
 
 # data2 = data2[data$EVER_ADHD == 'yes',]
 # data = data[data$EVER_ADHD == 'yes',]
@@ -121,46 +100,19 @@ if (impute == 'dti') {
                   ncol(data2)))
 } else {
     use_me = TRUE
-    print('No restrictions needed')
+    print('No imputation needed')
 }
 
 # will need this later so training rows match data2
 data = data[use_me, ]
-
-print(dim(data))
 
 dummies = dummyVars( ~ ., data = data2, fullRank=T)
 data3 = predict(dummies, newdata = data2)
 
 data2$phen = as.factor(data[, phen])
 
-if (is.null(keep_vars)) {
-    X = data3
-} else {
-    X = data3[, keep_vars]
-}
+X = data3
 y = factor(data2$phen)
-
-
-# # imputing
-# library(VIM)
-# print('Imputing IRMI before class cropping')
-# set.seed(42)
-# X = irmi(X, imp_var=F)
-
-
-# selecting only kids in the 2 specified groups
-keep_me = y==c1 | y==c2
-X = as.data.frame(X[keep_me, ])
-y = factor(y[keep_me])
-
-
-# imputing
-library(VIM)
-print('Imputing IRMI after class cropping')
-set.seed(42)
-X = irmi(X, imp_var=F)
-
 
 print(dim(X))
 print(table(y))
@@ -169,7 +121,7 @@ X_train = c()
 X_test = c()
 y_train = c()
 y_test = c()
-for (t in c(c1, c2)) {
+for (t in unique(y)) {
     # this refers to X
     candidates = which(y==t)
     while (length(candidates) >= ncandidates) {
@@ -229,84 +181,57 @@ if (resamp == 'down') {
     y_train = up_train$y_train
 }
 
-# feature engineering
+# imputation and feature engineering
 set.seed(42)
 pp_order = c('zv', 'nzv', 'corr', 'YeoJohnson', 'center', 'scale')
-# pp_order = c('zv', 'nzv', 'bagImpute')
-pp = preProcess(rbind(X_train, X_test), method = pp_order)
+pp = preProcess(X_train, method = pp_order)
 X_train = predict(pp, X_train)
 X_test = predict(pp, X_test)
 
-
-
-
-model_weights = NULL
-# model_weights <- ifelse(y_train == levels(y_train)[1],
-#                         (1/table(y_train)[1]) * 0.5,
-#                         (1/table(y_train)[2]) * 0.5)
-
-# library(bestNormalize)
-# for (v in setdiff(dummies$vars, dummies$facVars)) {
-#     bn = orderNorm(X_train[, v])
-#     X_train[, v] = bn$x.t
-#     X_test[, v] = predict(bn, X_test[, v])
-# }
-
-# pp_order = c('corr', 'center')
-# pp = preProcess(X_train, method = pp_order)
-# X_train = predict(pp, X_train)
-# X_test = predict(pp, X_test)
-
-print(colnames(X_train))
-print(table(y_train))
-print(table(y_test))
-
 set.seed(42)
+# fitControl <- trainControl(method = "repeatedcv", number=3, repeats=10,
+#                            classProbs = TRUE,
+#                            summaryFunction=multiClassSummary)
 fitControl <- trainControl(method = "none",
                            classProbs = TRUE,
-                           summaryFunction=twoClassSummary)
-set.seed(42)
-fitControl <- trainControl(method = "repeatedcv", number=3, repeats=10,
-                        classProbs = TRUE,
-                        summaryFunction=twoClassSummary)
+                           summaryFunction=multiClassSummary)
 
 set.seed(42)
 fit <- train(X_train, tuneGrid=mygrid,
                         y_train,
                         trControl = fitControl,
                         method = clf_model,
-                        metric='ROC')
-print(fit)
+                        metric='AUC')
 
 preds_class = predict.train(fit, newdata=X_test)
 preds_probs = predict.train(fit, newdata=X_test, type='prob')
 dat = cbind(data.frame(obs = y_test, pred = preds_class), preds_probs)
-mcs = twoClassSummary(dat, lev=colnames(preds_probs))
-test_results = c(mcs['ROC'], mcs['Sens'], mcs['Spec'])
+mcs = multiClassSummary(dat, lev=colnames(preds_probs))
+test_results = c(mcs['AUC'], mcs['Mean_Sensitivity'], mcs['Mean_Specificity'])
 names(test_results) = c('test_AUC', 'test_Sens', 'test_Spec')
-
-res = c(phen, clf_model, c1, c2, impute, use_covs, resamp, ncandidates,
+print(fit)
+res = c(phen, clf_model, impute, use_covs, resamp, ncandidates,
         test_results, table(y_train), table(y_test))
 line_res = paste(res,collapse=',')
 write(line_res, file=out_file, append=TRUE)
 
-# export variable importance
-a = varImp(fit, useModel=F)
-# b = varImp(fit, useModel=F)
-split_fname = strsplit(x=out_file, split='/')[[1]]
-myprefix = gsub(x=split_fname[length(split_fname)], pattern='.csv', replacement='')
-out_dir = '~/data/baseline_prediction/more_models/'
-fname = sprintf('%s/varimp_%s_%s_%s_%s_%s_%s_%s.csv',
-                out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
-# careful here because for non-linear models the rows of the importance matrix
-# are not aligned!!!
-# write.csv(cbind(a$importance, b$importance), file=fname)
-write.csv(a$importance, file=fname)
-print(varImp(fit, useModel=F, scale=F))
 
-# export fit
-fname = sprintf('%s/fit_%s_%s_%s_%s_%s_%s_%s.RData',
-                out_dir, myprefix, clf_model, phen, c1, c2, impute, use_covs)
-save(fit, file=fname)
+# # export variable importance
+# a = varImp(fit, useModel=T)
+# b = varImp(fit, useModel=F)
+# split_fname = strsplit(x=out_file, split='/')[[1]]
+# myprefix = gsub(x=split_fname[length(split_fname)], pattern='.csv', replacement='')
+# out_dir = '~/data/baseline_prediction/more_models/'
+# fname = sprintf('%s/varimp_%s_%s_%s_%s_%s.csv',
+#                 out_dir, myprefix, clf_model, phen, impute, use_covs)
+# # careful here because for non-linear models the rows of the importance matrix
+# # are not aligned!!!
+# write.csv(cbind(a$importance, b$importance), file=fname)
+# print(varImp(fit, useModel=F, scale=F))
+
+# # export fit
+# fname = sprintf('%s/fit_%s_%s_%s_%s_%s.RData',
+#                 out_dir, myprefix, clf_model, phen, impute, use_covs)
+# save(fit, file=fname)
 
 print(line_res)
