@@ -7,12 +7,12 @@
 library(gdata)
 
 dir_name = '/Volumes/Shaw/Clinical_Interviews/'
-caadid_fname = sprintf('%s/DSM Adult interview data 7_15_20.xlsx', dir_name)
+caadid_fname = sprintf('%s/DSM Adult interview data 09_09_20.xlsx', dir_name)
 nv_fname = sprintf('%s/nv_interviews_20200421.xlsx', dir_name)
-dica_fname = sprintf('%s/DICA 07-15-20.xlsx', dir_name)
+dica_fname = sprintf('%s/DICA 08_26_20.xlsx', dir_name)
 caadidS_fname = sprintf('%s/Nuclear Families/DSM Adult Interview data nuclear families_07_13_20.xlsx', dir_name)
 nvS_fname = NA #sprintf('%s/Nuclear Families/DICA interview nuclear families.xlsx', dir_name)
-dicaS_fname = sprintf('%s/Nuclear Families/DICA nuclear families_7_31_20.xlsx', dir_name)
+dicaS_fname = sprintf('%s/Nuclear Families/DICA nuclear families_08_25_20.xlsx', dir_name)
 family_fname = '/Volumes/Shaw/Family_Study_List/Family Study List 02102020.xlsx'
 papers_fname = sprintf('%s/sx_from_papers.xlsx', dir_name)
 philips_fname = sprintf('%s/philips_files_slim.xlsx', dir_name)
@@ -41,6 +41,18 @@ other_dx = c("DX1...NV.Interview", "DX2...NV.Interview", "DX3...NV.Interview")
 nv$other_dx = do.call(paste, df[, other_dx])
 
 sx = rbind(caadid, nv)
+
+# cleaning up CAADID childhood symptoms
+print(caadid_fname)
+df = read.xls(caadid_fname, sheet = 1, header = TRUE, colClasses='character')
+print(sprintf('Found %d records.', nrow(df)))
+caadid = df[, c('MRN', 'date.collected', 'inatt.as.child', 'hi.as.child')]
+colnames(caadid) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi')
+caadid$source = 'CAADID'
+caadid$DOA = 'child'
+other_dx = c("Other.dx", "Other.dx2", "Other.dx3", "Other.dx4", "Other.dx5")
+caadid$other_dx = do.call(paste, df[, other_dx])
+sx = rbind(sx, caadid)
 
 # cleaning up DICA interviews
 print(dica_fname)
@@ -101,7 +113,7 @@ if (!is.na(nvS_fname)) {
 print(dicaS_fname)
 df = read.xls(dicaS_fname, sheet = 'DICA', header = TRUE, colClasses='character')
 print(sprintf('Found %d records.', nrow(df)))
-dicaS = df[, c('MR', 'Date', 'X..of.inatten', 'X..H.I', 'Comments', 'Meds')]
+dicaS = df[, c('MRN', 'Date', 'X..of.inatten', 'X..H.I', 'Comments', 'Meds')]
 # keep all entries off medication
 dicaS_off = dicaS[grepl('off', dicaS$Meds, ignore.case=T), 1:5]
 dicaS_off$source = 'DICA_off'
@@ -198,8 +210,10 @@ sx = sx[idx, ]
 
 # convert the different date formats across sheets
 x = as.character(sx$DOA)
-idx = grepl('-', x)
 new_date = vector(length=length(sx$DOA))
+idx = which(x=='child')
+new_date[idx] = 'child'
+idx = grepl('-', x)
 new_date[idx] = format(as.Date(x[idx], format='%Y-%m-%d'), format='%m/%d/%Y')
 idx = grepl('/', x) & lapply(x, nchar) < 10
 new_date[idx] = format(as.Date(x[idx], format='%m/%d/%y'), format='%m/%d/%Y')
