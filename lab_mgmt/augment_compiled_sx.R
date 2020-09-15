@@ -9,6 +9,7 @@ dobs = read.csv(dob_fname)
 # there are some old records that we won't have DOB in Labmatrix. 
 data = merge(df, dobs, by='MRN', all.x=T, all.y=F)
 data$DX_dsm5 = NA
+data$age_at_clinical = NA
 
 # records in Philip's files and childhood CAADIA records are special
 idx = which(data$source=='PhilipsOldFiles')
@@ -27,7 +28,34 @@ for (i in idx) {
     } else {
         data[i, 'DX_dsm5'] = 'NV'
     }
+    data[i, 'age_at_clinical'] = 'child'
 }
+
+# calculating age at assessment and DX whenever possible
+for (i in 1:nrow(data)) {
+    if (!is.na(data[i, 'DOB']) && is.na(data[i, 'DX_dsm5'])) {
+        doa = as.Date(data[i, 'DOA'], format='%m/%d/%y')
+        dob = as.Date(data[i, 'DOB'], format='%m/%d/%Y')
+        data[i, 'age_at_clinical'] = as.numeric(doa - dob)/365.25
+        # some people from old papers don't have DOA
+        if (is.na(data[i, 'age_at_clinical'])) {
+            data[i, 'DX_dsm5'] = data[i, 'other_dx']
+        } else {
+            if (data[i, 'age_at_clinical'] >= 17) {
+                threshold = 5
+            } else {
+                threshold = 6
+            }
+            if (data[i, 'SX_inatt'] >= threshold ||
+                data[i, 'SX_hi'] >= threshold) {
+                data[i, 'DX_dsm5'] = 'ADHD'
+            } else {
+                data[i, 'DX_dsm5'] = 'NV'
+            }
+        }
+    }
+}
+
 
 
 today = format(Sys.time(), "%m%d%Y")
