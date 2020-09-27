@@ -150,10 +150,25 @@ for (dx in dxs) {
     }
 }
 
+# let's add max ADHD symptoms
+data$maxOverTimeSX_inatt = NA
+data$maxOverTimeSX_hi = NA
+for (s in unique(data$MRN)) {
+    idx = which(data$MRN==s)
+    sdata = data[idx,]
+    if (!all(is.na(sdata$SX_inatt))) {
+        data[idx, 'maxOverTimeSX_inatt'] = max(sdata$SX_inatt, na.rm=T)
+    }
+    if (!all(is.na(sdata$SX_hi))) {
+        data[idx, 'maxOverTimeSX_hi'] = max(sdata$SX_hi, na.rm=T)
+    }
+}
+
 # shaping it to a nicer column order
 data = data[, c('MRN', 'SID', 'DOA', 'DOB', 'age_clin', 'SX_inatt',
                 'SX_hi', 'source', 'DX_dsm', 'everADHD_dsm', 'outcome_dsm',
-                'DX_nv012', 'everADHD_nv012', 'outcome_nv012', 'other_dx')]
+                'DX_nv012', 'everADHD_nv012', 'outcome_nv012',
+                'maxOverTimeSX_inatt', 'maxOverTimeSX_hi', 'other_dx')]
 data_anon = data
 data_anon$MRN = data_anon$SID
 data_anon$SID = NULL
