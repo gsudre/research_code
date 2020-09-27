@@ -81,7 +81,7 @@ isexpr <- filterByExpr(geneCounts, group=data$Diagnosis)
 genes = DGEList( geneCounts[isexpr,], genes=G_list2[isexpr,] ) 
 
 genes = calcNormFactors( genes)
-form = ~ Diagnosis + scale(RINe) + scale(PMI) + scale(Age) + MoD
+form = ~ Diagnosis + scale(RINe) + scale(PMI) + scale(Age) + MoD + C1 + C2 + C3 + C4 + C5
 design = model.matrix( form, data)
 vobj_tmp = voom( genes, design, plot=FALSE)
 dupcor <- duplicateCorrelation(vobj_tmp, design, block=data$batch)
@@ -145,7 +145,11 @@ iid2 = sapply(a$IID, function(x) strsplit(x, '_')[[1]][2])
 a$IID = iid2
 pcs = read.csv('~/data/expression_impute/pop_pcs.csv')
 imp_data = merge(a, pcs, by='IID', all.x=F, all.y=F)
-gf = read.csv('~/data/expression_impute/gf_823_09102020_onePerFamily.csv')
+gf = read.csv('~/data/expression_impute/gf_823_09152020_onePerFamily.csv')
+
+gf$Diagnosis = gf$everADHD_nv012
+gf = gf[!is.na(gf$Diagnosis), ]
+
 imp_data = merge(imp_data, gf, by.x='IID', by.y='Subject.Code...Subjects', all.x=F, all.y=F)
 grex_vars = colnames(imp_data)[grepl(colnames(imp_data), pattern='^ENS')]
 keep_me = imp_data$PC01 < 0 & imp_data$PC02 > 0
@@ -197,7 +201,7 @@ good_grex = grex_vars[keep_me]
 mydata = cbind(imp_data, t(X))
 stats = lapply(good_grex,
                   function(x) {
-                    fm_str = sprintf('%s ~ Diagnosis + Sex...Subjects + age_base + sample_type + PC01 + PC02 + PC03 + PC04 + PC05', x)
+                    fm_str = sprintf('%s ~ Diagnosis + Sex...Subjects + sample_type + PC01 + PC02 + PC03 + PC04 + PC05', x)
                     fit = lm(as.formula(fm_str), data=mydata)
                     return(summary(fit)$coefficients[2, c(3,4)])})
 imp_res = cbind(G_list2[keep_me, 1:2], do.call(rbind, stats))

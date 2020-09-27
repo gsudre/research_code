@@ -1,5 +1,4 @@
 # TODO:
-# - grab medication field
 # - add assumed symptoms (for NVs)
 # - check that we don't have any duplicate MRN-date combinations
 # - add a flag saying whether the subject has a on medication entry along with off
@@ -7,16 +6,21 @@
 library(gdata)
 
 dir_name = '/Volumes/Shaw/Clinical_Interviews/'
-caadid_fname = sprintf('%s/DSM Adult interview data 09_09_20.xlsx', dir_name)
-nv_fname = sprintf('%s/nv_interviews_20200915.xlsx', dir_name)
-dica_fname = sprintf('%s/DICA 09_15_20.xlsx', dir_name)
-caadidS_fname = sprintf('%s/Nuclear Families/DSM Adult Interview data nuclear families_07_13_20.xlsx', dir_name)
+caadid_fname = sprintf('%s/DSM Adult interview data 09_25_20.xlsx', dir_name)
+nv_fname = sprintf('%s/nv_interviews_20200925.xlsx', dir_name)
+dica_fname = sprintf('%s/DICA 09_25_20.xlsx', dir_name)
+caadidS_fname = sprintf('%s/Nuclear Families/DSM Adult Interview data nuclear families_09_25_20.xlsx', dir_name)
 nvS_fname = NA #sprintf('%s/Nuclear Families/DICA interview nuclear families.xlsx', dir_name)
-dicaS_fname = sprintf('%s/Nuclear Families/DICA nuclear families_09_15_20.xlsx', dir_name)
-family_fname = '/Volumes/Shaw/Family_Study_List/Family Study List 02102020.xlsx'
+dicaS_fname = sprintf('%s/Nuclear Families/DICA nuclear families_09_25_20.xlsx', dir_name)
+
+# on 09/25/2020 I copied all the other_dx from the FamilySpreadsheet (Family
+# Study List 02102020.xlsx) to their actual interview spreadsheets, and checked
+# that all SX was also there, so we didn't have to use the family spreadsheet
+# anymore 
+family_fname = NA #'/Volumes/Shaw/Family_Study_List/Family Study List 02102020.xlsx'
 papers_fname = sprintf('%s/sx_from_papers.xlsx', dir_name)
 philips_fname = sprintf('%s/philips_files_slim.xlsx', dir_name)
-manual_fname = sprintf('%s/clinical_data_sx_checked_2020_05_22.xlsx', dir_name)
+manual_fname = sprintf('%s/clinical_data_sx_checked_2020_09_25.xlsx', dir_name)
 
 
 # cleaning up CAADID
@@ -26,7 +30,8 @@ print(sprintf('Found %d records.', nrow(df)))
 caadid = df[, c('MRN', 'date.collected', 'inatt.as.adult', 'hi.as.adult')]
 colnames(caadid) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi')
 caadid$source = 'CAADID'
-other_dx = c("Other.dx", "Other.dx2", "Other.dx3", "Other.dx4", "Other.dx5")
+other_dx = c("Other.dx", "Other.dx2", "Other.dx3", "Other.dx4", "Other.dx5",
+             'Notes')
 caadid$other_dx = do.call(paste, df[, other_dx])
 
 # cleaning up NV interviews
@@ -50,7 +55,8 @@ caadid = df[, c('MRN', 'date.collected', 'inatt.as.child', 'hi.as.child')]
 colnames(caadid) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi')
 caadid$source = 'CAADID'
 caadid$DOA = 'child'
-other_dx = c("Other.dx", "Other.dx2", "Other.dx3", "Other.dx4", "Other.dx5")
+other_dx = c("Other.dx", "Other.dx2", "Other.dx3", "Other.dx4", "Other.dx5",
+             'Notes')
 caadid$other_dx = do.call(paste, df[, other_dx])
 sx = rbind(sx, caadid)
 
@@ -172,8 +178,8 @@ print(sprintf('Found %d records.', nrow(df)))
 papers = df[, c('MRN', 'date_of_scan', 'inatt', 'hi')]
 colnames(papers) = c('MRN', 'DOA', 'SX_inatt', 'SX_hi')
 papers$source = 'OldPapers'
-other_dx = c("med")
-papers$other_dx = df[, other_dx]
+other_dx = c("med", 'other_dx')
+papers$other_dx = do.call(paste, df[, other_dx])
 sx = rbind(sx, papers)
 
 # cleaning up Philip's Old data
