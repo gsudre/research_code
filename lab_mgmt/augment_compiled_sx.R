@@ -1,12 +1,12 @@
 # adds columns to the compiled sx spreadsheet
-sx_fname = '~/tmp/clinical_09272020.csv'
-dob_fname = '~/data/DOBs_SIDs.csv'
+sx_fname = '~/tmp/clinical_10242020.csv'
+dob_fname = '~/data/MRNs_DOBs_SIDs.csv'
 
 # adding DOB so we can compute age
 df = read.csv(sx_fname)
 dobs = read.csv(dob_fname)
 
-# there are some old records that we won't have DOB in Labmatrix. 
+# there are some old records that we won't have DOB in Labmatrix.
 data = merge(df, dobs, by='MRN', all.x=T, all.y=F)
 if (sum(is.na(data$SID) & data$source!='PhilipsOldFiles') > 0) {
     print('Found people without SID not in PhilipsOldFiles!')
@@ -83,10 +83,17 @@ for (i in 1:nrow(data)) {
                     data[i, 'DX_dsm'] = 'ADHD'
                 } else {
                     data[i, 'DX_dsm'] = 'NV'
-                    if (data[i, 'SX_inatt'] <= 2 &&
+                }
+            }
+            # for nv012 we need actual symptoms
+            if (is.na(data[i, 'DX_nv012']) && !is.na(data[i, 'SX_inatt']) &&
+                !is.na(data[i, 'SX_hi'])) {
+                if (data[i, 'SX_inatt'] >= threshold ||
+                    data[i, 'SX_hi'] >= threshold) {
+                    data[i, 'DX_nv012'] = 'ADHD'
+                } else if (data[i, 'SX_inatt'] <= 2 &&
                         data[i, 'SX_hi'] <= 2) {
                         data[i, 'DX_nv012'] = 'NV'
-                    }
                 }
             }
         }
@@ -98,17 +105,19 @@ data$everADHD_dsm = NA
 data$everADHD_nv012 = NA
 for (s in unique(data$MRN)) {
     idx = which(data$MRN==s)
-    sdata = data[idx,]
     for (dx in dxs) {
+        sdata = data[idx,]
         dx_str = sprintf('DX_%s', dx)
-        if (all(!is.na(sdata[, dx_str])) &&
-            any(sdata[, dx_str] == 'other')) {
-            data[idx, sprintf('everADHD_%s', dx)] = 'other'
-        } else if (all(!is.na(sdata[, dx_str])) &&
-                   any(sdata[, dx_str]=='ADHD')) {
-            data[idx, sprintf('everADHD_%s', dx)] = 'yes'
-        } else {
-            data[idx, sprintf('everADHD_%s', dx)] = 'no'
+        # we can't do much with DX == NA
+        sdata = sdata[!is.na(sdata[, dx_str]), ]
+        if (nrow(sdata) > 0) {
+            if (any(sdata[, dx_str]=='ADHD')) {
+                data[idx, sprintf('everADHD_%s', dx)] = 'yes'
+            } else if (any(sdata[, dx_str] == 'other')) {
+                data[idx, sprintf('everADHD_%s', dx)] = 'other'
+            } else {
+                data[idx, sprintf('everADHD_%s', dx)] = 'no'
+            }
         }
     }
 }
