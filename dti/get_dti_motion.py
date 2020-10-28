@@ -19,8 +19,13 @@ path = net_dir + '/MR_data_by_maskid/%04d/edti_proc/'
 subj_movement = []
 for line in fid:
     maskid = int(line)
+    # reliability subjects have a different directory format
+    proc_dir = path % maskid
+    if not os.path.isdir(proc_dir):
+        proc_dir = net_dir + '/MR_data_by_maskid/%04d/edti_run01_proc/'
+
     # find what's the name of the transformations folder
-    trans_file = glob.glob(path % maskid + '/*rpd.transformations')
+    trans_file = glob.glob(proc_dir + '/*rpd.transformations')
     if len(trans_file) > 0:
         print('Working on', trans_file[-1])
         data = np.genfromtxt(trans_file[-1])
