@@ -31,7 +31,7 @@ for line in fid:
         data = np.genfromtxt(trans_file[-1])
         nvolumes = data.shape[0]
         # look for the path to all slices
-        path_file = glob.glob(path % maskid + '/*DMC*_R1.path')
+        path_file = glob.glob(proc_dir + '/*DMC*_R1.path')
         if len(path_file) > 0:
             slices = np.genfromtxt(path_file[-1], dtype='str')
             # we only need to look at the first directory to figure out what
