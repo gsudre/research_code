@@ -22,7 +22,7 @@ for line in fid:
     # reliability subjects have a different directory format
     proc_dir = path % maskid
     if not os.path.isdir(proc_dir):
-        proc_dir = net_dir + '/MR_data_by_maskid/%04d/edti_run01_proc/'
+        proc_dir = net_dir + '/MR_data_by_maskid/%04d/edti_run01_proc/' % maskid
 
     # find what's the name of the transformations folder
     trans_file = glob.glob(proc_dir + '/*rpd.transformations')
